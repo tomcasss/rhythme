@@ -1,0 +1,169 @@
+
+.home-container {
+  background-color: rgb(237, 237, 237);
+  min-height: 100vh;
+  width: 100%; 
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.feed {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+
+.home-logo {
+  width: 120px;
+  height: auto;
+}
+
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background:
+    radial-gradient(ellipse at top, #ff8113, transparent),
+    radial-gradient(ellipse at bottom, #fd4410, transparent);
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.search-bar {
+  width: 40%;
+  padding: 0.6rem 1rem;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 1rem;
+}
+
+.navbar-icons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.stories {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  overflow-x: auto;
+  background-color: #fdfdfd;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.story {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #ff8113;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #333;
+  background-color: #ff7b0053;
+  flex-shrink: 0;
+}
+
+.story.add {
+  background-color: #ff7b0053;
+  color: white;
+  font-size: 1.5rem;
+}
+
+
+.feed {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+
+.post-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.post-user {
+  display: flex;
+  flex-direction: column;
+  color: black;
+}
+
+.time {
+  font-size: 0.8rem;
+  color: gray;
+}
+
+.post-text {
+  font-size: 1rem;
+  margin: 0.5rem 0 1rem 0;
+  color: black;
+}
+
+.post-image {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+
+.post-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #777;
+  transition: color 0.3s ease;
+}
+
+.action-btn:hover {
+  color: orange;
+}
+
+.logo1 {
+  position: absolute;
+  top: 0.5%;
+  left: 3rem;
+  width: 90px;
+  height: auto;
+  z-index: 10;
+}
