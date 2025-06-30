@@ -95,7 +95,16 @@ Accede al frontend normalmente en `http://localhost:5173` (o el puerto que indiq
 
 - **Registro:** `POST /api/v1/auth/register`
 - **Login:** `POST /api/v1/auth/login`
-- **Usuarios:** `GET /api/v1/users/`
+- **Obtener usuario por ID:** `GET /api/v1/users/:id`
+- **Actualizar usuario:** `PUT /api/v1/users/:id`
+- **Eliminar usuario:** `DELETE /api/v1/users/:id`
+- **Seguir usuario:** `POST /api/v1/users/follow/:id`
+- **Dejar de seguir usuario:** `POST /api/v1/users/unfollow/:id`
+- **Crear post:** `POST /api/v1/posts/`
+- **Actualizar usuario:** `PUT /api/v1/users/:id`
+- **Obtener todos los posts:** `GET /api/v1/posts/`
+- **Obtener post por ID:** `GET /api/v1/posts/:id`
+- **Eliminar post:** `DELETE /api/v1/posts/:id`
 
 (Agrega más rutas conforme crezcas el proyecto)
 
@@ -117,4 +126,5 @@ Actualmente este proyecto no tiene una licencia asignada.
 https://github.com/emrls81
 
 https://github.com/jmunozc023
+
 ---
