@@ -1,7 +1,3 @@
-Here's a full README.md tailored for your repository, reflecting its MERN stack architecture and current implementation details:
-
----
-
 # RhythMe
 
 Proyecto Final para Diseño Web II
