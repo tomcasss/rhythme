@@ -23,16 +23,21 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 ## Características Principales
 
 - Registro e inicio de sesión de usuarios con autenticación segura
+- Autenticación con Google OAuth: Permite a los usuarios iniciar sesión de manera rápida y segura usando su cuenta de Google.
+- Gestión de usuarios: Registro, actualización, eliminación, seguimiento y dejar de seguir a otros usuarios.
+- Gestión de publicaciones: Crear, obtener y eliminar posts relacionados con la música.
+- Base de datos MongoDB Atlas: Almacena de manera segura usuarios y publicaciones en la nube.
 - Publicaciones estilo "feed" y "stories" para compartir experiencias musicales
 - Interacción mediante likes, comentarios y seguimiento a usuarios
 - Interfaz de usuario moderna y responsiva usando React + Vite
 - Backend robusto con Express.js y MongoDB, siguiendo buenas prácticas de seguridad
+- Interfaz web responsiva: Utiliza HTML y CSS moderno para una experiencia de usuario óptima.
 
 ## Tecnologías Utilizadas
 
 - **Frontend:** React, Vite, CSS
 - **Backend:** Node.js, Express.js, MongoDB, Mongoose
-- **Autenticación:** JWT, Bcrypt
+- **Autenticación:** JWT, Bcrypt, Google OAuth 2.0
 - **Herramientas Adicionales:** ESLint, Helmet, Morgan, CORS, dotenv
 
 ## Estructura del Proyecto
