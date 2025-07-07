@@ -1,4 +1,5 @@
 import postModel from "../models/post.model.js";
+import userModel from "../models/user.model.js";
 
 export const createPost = async (body) => {
     try {
@@ -73,3 +74,18 @@ export const getPost = async (params) => {
     }
 };
 
+export const getTimelinePosts = async (body) => {
+    try {
+        const currentUser = await userModel.findById(body.userId);
+        const userPosts = await postModel.find({userId: currentUser._id});
+        const timeLinePosts = await Promise.all(
+            currentUser.following.map((friendId) => {
+                return postModel.find({userId: friendId});
+            })
+        );
+        return userPosts.concat({...timeLinePosts});
+    } catch (error) {
+        throw error;
+
+    }
+};

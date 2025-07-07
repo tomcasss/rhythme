@@ -48,8 +48,8 @@ export const followUser = async (userData, updateData) => {
       const user = await userModel.findById(userData.userId);
       const currentUser = await userModel.findById(updateData.id);
       if (!user.followers.includes(userData.userId)) {
-        await user.updateOne({ $push: { followers: updateData.id } });
-        await currentUser.updateOne({ $push: { following: userData.userId} });
+        await currentUser.updateOne({ $push: { followers: userData.userId } });
+        await user.updateOne({ $push: { following: updateData.id } });
         return { user, currentUser };
       } else {
         throw new Error("You already follow this user");
@@ -68,8 +68,8 @@ export const unFollowUser = async (userData, updateData) => {
       const user = await userModel.findById(userData.userId);
       const currentUser = await userModel.findById(updateData.id);
       if (!user.followers.includes(userData.userId)) {
-        await user.updateOne({ $pull: { followers: updateData.id } }, { new: true });
-        await currentUser.updateOne({ $pull: { following: userData.userId } }, { new: true });
+        await currentUser.updateOne({ $pull: { followers: userData.userId } }, { new: true });
+        await user.updateOne({ $pull: { following: updateData.id} }, { new: true });
         return { user, currentUser };
       } else {
         throw new Error("You don't follow this user");
