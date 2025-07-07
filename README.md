@@ -7,6 +7,7 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 ## Tabla de Contenidos
 
 - [Características Principales](#características-principales)
+- [Novedades](#novedades)
 - [Tecnologías Utilizadas](#tecnologías-utilizadas)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Instalación y Ejecución](#instalación-y-ejecución)
@@ -28,6 +29,18 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 - Interfaz de usuario moderna y responsiva usando React + Vite
 - Backend robusto con Express.js y MongoDB, siguiendo buenas prácticas de seguridad
 - Interfaz web responsiva: Utiliza HTML y CSS moderno para una experiencia de usuario óptima.
+
+## Novedades
+
+**Novedades (julio 2025):**
+- Gestión completa de publicaciones: Crear, actualizar, eliminar, dar like/unlike, obtener publicaciones individuales y obtener las publicaciones del timeline.
+- Nuevos controladores y servicios para gestión avanzada de posts.
+- Corrección de la lógica de seguir/dejar de seguir usuarios, asegurando que los campos de seguidores/seguidos se actualicen correctamente.
+- Actualización de rutas para soportar los nuevos endpoints de publicación (PUT /update-post/:id, DELETE /delete-post/:id, GET /get-timeline-posts, etc).
+- Mejoras internas en la agregación de timeline y validaciones de usuario para operaciones de post.
+- Actualización de dependencias y modularización de servicios.
+
+Referencia del pull request: https://github.com/emrls81/rhythme/pull/6
 
 ## Tecnologías Utilizadas
 
