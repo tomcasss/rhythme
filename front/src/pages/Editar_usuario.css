@@ -1,0 +1,152 @@
+/*Pagina Usuario*/
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #eeeeee;
+}
+
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.encabezado {
+  background-color: #ff7a00;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.logo {
+  font-size: 20px;
+  color: white;
+  font-weight: bold;
+}
+
+.contenido {
+  display: flex;
+  flex: 1;
+  padding: 40px 60px;
+  gap: 80px;
+}
+
+.columna-izquierda {
+  flex: 1;
+}
+
+.columna-izquierda h2 {
+  font-size: 22px;
+  margin-bottom: 25px;
+}
+
+.perfil {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.foto-perfil {
+  width: 120px;
+  height: 120px;
+  border-radius: 100%;
+  object-fit: cover;
+  border: 4px solid #000;
+}
+
+.info-usuario h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.info-usuario .rol {
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.info-usuario p {
+  margin: 3px 0;
+}
+
+.redes {
+  display: flex;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.redes img {
+  height: 30px;
+}
+
+.columna-derecha {
+  width: 300px;
+}
+
+.opciones {
+  background-color: white;
+  border-radius: 20px;
+  padding: 25px 20px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+}
+
+.opciones h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.opciones p {
+  font-size: 14px;
+  color: #333;
+  margin: 5px 0;
+  cursor: pointer;
+}
+
+.opciones hr {
+  margin: 15px 0;
+  border: 0.5px solid #ddd;
+}
+
+.acciones {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.reporte {
+  background-color: #ff7a00;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.cerrar-sesion {
+  background: none;
+  border: none;
+  color: #ff7a00;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-opcion {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.btn-opcion:hover {
+  color: #ff7a00;
+}
