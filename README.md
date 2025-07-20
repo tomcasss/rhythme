@@ -32,15 +32,28 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 
 ## Novedades
 
-**Novedades (julio 2025):**
+**Novedades (julio 2025 y posteriores):**
+- Implementación del sistema de comentarios en publicaciones: ahora los usuarios pueden comentar y ver comentarios en los posts.
+- Sistema de búsqueda de usuarios mejorado.
+- Sistema completo de seguir/dejar de seguir usuarios, ahora con hook personalizado (useFollowSystem) y actualización en tiempo real del estado de seguimiento.
+- Nuevo componente Stories para mostrar las historias tipo Instagram.
+- Refactorización y optimización de componentes y hooks, mejorando el rendimiento y limpieza del código.
+- Mejoras en la Navbar y navegación.
+- Optimización de importaciones y eliminación de componentes/hook no usados.
+- Corrección de errores tipográficos y espacios en los componentes de edición y perfil de usuario.
+- Conexión del API y ajustes de endpoints en frontend y backend.
+- Modularización avanzada de servicios y controladores.
+- Mejoras internas en la agregación de timeline y validaciones de usuario para operaciones de post.
+- Actualización de dependencias y seguridad.
 - Gestión completa de publicaciones: Crear, actualizar, eliminar, dar like/unlike, obtener publicaciones individuales y obtener las publicaciones del timeline.
 - Nuevos controladores y servicios para gestión avanzada de posts.
 - Corrección de la lógica de seguir/dejar de seguir usuarios, asegurando que los campos de seguidores/seguidos se actualicen correctamente.
 - Actualización de rutas para soportar los nuevos endpoints de publicación (PUT /update-post/:id, DELETE /delete-post/:id, GET /get-timeline-posts, etc).
 - Mejoras internas en la agregación de timeline y validaciones de usuario para operaciones de post.
 - Actualización de dependencias y modularización de servicios.
+- [Ver más commits recientes](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc) (la lista puede estar incompleta).
 
-Referencia del pull request: https://github.com/emrls81/rhythme/pull/6
+Referencia del pull request: https://github.com/emrls81/rhythme/pull/6 y últimos [commits](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc)
 
 ## Tecnologías Utilizadas
 
@@ -119,6 +132,10 @@ Accede al frontend normalmente en `http://localhost:5173` (o el puerto que indiq
 - **Obtener todos los posts:** `GET /api/v1/posts/`
 - **Obtener post por ID:** `GET /api/v1/posts/:id`
 - **Eliminar post:** `DELETE /api/v1/posts/:id`
+- **Agregar comentario:** `POST /api/v1/comments/:postId`
+- **Obtener comentarios de un post:** `GET /api/v1/comments/:postId`
+- **Obtener stories:** `GET /api/v1/stories`
+- **Timeline de publicaciones:** `GET /api/v1/posts/timeline/:userId`
 
 (Agrega más rutas conforme crezcas el proyecto)
 
