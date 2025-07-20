@@ -12,7 +12,7 @@ export const Perfil_usuario = () => {
 const [user, setUser] = useState(null);
 const [loading, setLoading] = useState(true); 
 
-const userId = "123"; //esta linea de codigo es importante, ya que es lo que enviara a buscar la id de la persona para cargar los datos, pero podriamos cambiarlo por algo msa dinamico o un hook
+const userId = "123"; //esta linea de codigo es importante, ya que es lo que enviara a buscar la id de la persona para cargar los datos, pero podriamos cambiarlo por algo más dinamico o un hook
 
 useEffect(() => {
   const fetchUser = async () => {
