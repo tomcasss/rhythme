@@ -96,3 +96,81 @@ export const getTimelinePosts = async (body) => {
         throw error;
     }
 };
+
+// Comentar un post
+export const commentPost = async (params, body) => {
+    try {
+        // Validar que el ID del post sea válido
+        if (!mongoose.Types.ObjectId.isValid(params.id)) {
+            throw new Error("Invalid post ID");
+        }
+
+        // Validar que el userId sea válido
+        if (!body.userId || !mongoose.Types.ObjectId.isValid(body.userId)) {
+            throw new Error("Invalid user ID");
+        }
+
+        // Validar que el texto del comentario existe
+        if (!body.text || body.text.trim() === "") {
+            throw new Error("Comment text is required");
+        }
+
+        // Buscar el post
+        const post = await postModel.findById(params.id);
+        if (!post) {
+            throw new Error("Post not found");
+        }
+
+        // Verificar que el usuario existe
+        const user = await userModel.findById(body.userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Convertir userId a ObjectId si es string
+        const userIdObjectId = typeof body.userId === "string" 
+            ? new mongoose.Types.ObjectId(body.userId) 
+            : body.userId;
+
+        // Agregar comentario usando el esquema definido
+        const newComment = {
+            userId: userIdObjectId,
+            text: body.text.trim(),
+        };
+
+        post.comments.push(newComment);
+        await post.save();
+
+        // Retornar el post actualizado con populate
+        const populatedPost = await postModel.findById(params.id)
+            .populate('userId', 'username email profilePicture')
+            .populate('comments.userId', 'username email profilePicture');
+
+        return populatedPost;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Obtener comentarios de un post
+export const getPostComments = async (params) => {
+    try {
+        // Validar que el ID del post sea válido
+        if (!mongoose.Types.ObjectId.isValid(params.id)) {
+            throw new Error("Invalid post ID");
+        }
+
+        // Buscar el post y sus comentarios
+        const post = await postModel.findById(params.id)
+            .populate('comments.userId', 'username email profilePicture')
+            .select('comments');
+
+        if (!post) {
+            throw new Error("Post not found");
+        }
+
+        return post.comments;
+    } catch (error) {
+        throw error;
+    }
+};

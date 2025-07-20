@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useRef } from "react";
+import { API_ENDPOINTS } from "../config/api.js";
 
 export default function Home() {
   // Estados para posts, formularios y menús
@@ -29,6 +30,13 @@ export default function Home() {
   const [editImg, setEditImg] = useState("");
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState("");
+  
+  // Estados para comentarios
+  const [showCommentsForPost, setShowCommentsForPost] = useState(null);
+  const [comments, setComments] = useState({});
+  const [loadingComments, setLoadingComments] = useState({});
+  const [commentText, setCommentText] = useState({});
+  const [submittingComment, setSubmittingComment] = useState({});
 
   // Cierra el menú de opciones de post si se hace clic fuera
   useEffect(() => {
@@ -66,10 +74,10 @@ export default function Home() {
       setLoading(true);
       setError("");
       try {
-        const res = await axios.get(`http://localhost:5000/api/v1/posts/get-timeline-posts/${user._id}`);
+        const res = await axios.get(API_ENDPOINTS.GET_TIMELINE_POSTS(user._id));
         setPosts(res.data.timeLinePosts || []);
         setLoading(false);
-      } catch (err) {
+      } catch {
         setError("Error al cargar los posts. Intenta de nuevo.");
         setLoading(false);
       }
@@ -89,7 +97,7 @@ export default function Home() {
       return;
     }
     try {
-      const res = await axios.post("http://localhost:5000/api/v1/posts/create-post", {
+      const res = await axios.post(API_ENDPOINTS.CREATE_POST, {
         userId: user._id,
         desc,
         img,
@@ -107,7 +115,7 @@ export default function Home() {
       setDesc("");
       setImg("");
       setCreating(false);
-    } catch (err) {
+    } catch {
       setCreateError("Error al crear el post. Intenta de nuevo.");
       setCreating(false);
     }
@@ -119,7 +127,7 @@ export default function Home() {
   const handleLike = async (postId) => {
     if (!user || !user._id) return;
     try {
-      await axios.put(`http://localhost:5000/api/v1/posts/like-post/${postId}`, {
+      await axios.put(API_ENDPOINTS.LIKE_POST(postId), {
         userId: user._id
       });
       setPosts((prev) => prev.map(post => {
@@ -134,7 +142,7 @@ export default function Home() {
         }
         return post;
       }));
-    } catch (err) {
+    } catch {
       alert("Error al dar like. Intenta de nuevo.");
     }
   };
@@ -144,9 +152,9 @@ export default function Home() {
     if (!user || !user._id) return;
     if (!window.confirm("¿Seguro que quieres eliminar este post?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/v1/posts/delete-post/${postId}/${user._id}`);
+      await axios.delete(API_ENDPOINTS.DELETE_POST(postId, user._id));
       setPosts((prev) => prev.filter(post => post._id !== postId));
-    } catch (err) {
+    } catch {
       alert("Error al eliminar el post. Intenta de nuevo.");
     }
   };
@@ -171,7 +179,7 @@ export default function Home() {
     setEditLoading(true);
     setEditError("");
     try {
-      await axios.put(`http://localhost:5000/api/v1/posts/update-post/${editingPostId}`, {
+      await axios.put(API_ENDPOINTS.UPDATE_POST(editingPostId), {
         userId: user._id,
         desc: editDesc,
         img: editImg,
@@ -180,7 +188,7 @@ export default function Home() {
         post._id === editingPostId ? { ...post, desc: editDesc, img: editImg } : post
       ));
       cancelEdit();
-    } catch (err) {
+    } catch {
       setEditError("Error al editar el post. Intenta de nuevo.");
     }
     setEditLoading(false);
@@ -190,6 +198,79 @@ export default function Home() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/");
+  };
+
+  // Mostrar/ocultar comentarios
+  const toggleComments = async (postId) => {
+    if (showCommentsForPost === postId) {
+      setShowCommentsForPost(null);
+      return;
+    }
+
+    setShowCommentsForPost(postId);
+    
+    // Si no hemos cargado los comentarios para este post, cargarlos
+    if (!comments[postId]) {
+      setLoadingComments(prev => ({ ...prev, [postId]: true }));
+      try {
+        const res = await axios.get(API_ENDPOINTS.GET_COMMENTS(postId));
+        setComments(prev => ({ ...prev, [postId]: res.data.comments || [] }));
+      } catch (error) {
+        alert("Error al cargar comentarios");
+        console.error("Error loading comments:", error);
+      } finally {
+        setLoadingComments(prev => ({ ...prev, [postId]: false }));
+      }
+    }
+  };
+
+  // Agregar comentario
+  const handleAddComment = async (postId) => {
+    const text = commentText[postId]?.trim();
+    if (!text || !user?._id) return;
+
+    setSubmittingComment(prev => ({ ...prev, [postId]: true }));
+    
+    try {
+      await axios.post(API_ENDPOINTS.COMMENT_POST(postId), {
+        userId: user._id,
+        text
+      });
+
+      // Actualizar comentarios localmente
+      const newComment = {
+        _id: Date.now().toString(), // ID temporal
+        userId: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          profilePicture: user.profilePicture
+        },
+        text,
+        createdAt: new Date().toISOString()
+      };
+
+      setComments(prev => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), newComment]
+      }));
+
+      // Limpiar el campo de texto
+      setCommentText(prev => ({ ...prev, [postId]: "" }));
+
+      // Actualizar el contador de comentarios en el post
+      setPosts(prev => prev.map(post => 
+        post._id === postId 
+          ? { ...post, comments: [...(post.comments || []), newComment] }
+          : post
+      ));
+
+    } catch (error) {
+      alert("Error al agregar comentario");
+      console.error("Error adding comment:", error);
+    } finally {
+      setSubmittingComment(prev => ({ ...prev, [postId]: false }));
+    }
   };
 
   return (
@@ -325,7 +406,78 @@ export default function Home() {
               <button className="action-btn" onClick={() => handleLike(post._id)}>
                 {post.likes && post.likes.includes(user?._id) ? "💖" : "❤️"} {post.likes?.length || 0}
               </button>
+              <button className="action-btn" onClick={() => toggleComments(post._id)}>
+                💬 {(comments[post._id] || post.comments || []).length}
+              </button>
             </div>
+
+            {/* Sección de comentarios */}
+            {showCommentsForPost === post._id && (
+              <div className="comments-section">
+                {/* Formulario para agregar comentario */}
+                <div className="comment-form">
+                  <input
+                    type="text"
+                    placeholder="Escribe un comentario..."
+                    value={commentText[post._id] || ""}
+                    onChange={(e) => setCommentText(prev => ({
+                      ...prev,
+                      [post._id]: e.target.value
+                    }))}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !submittingComment[post._id]) {
+                        handleAddComment(post._id);
+                      }
+                    }}
+                    disabled={submittingComment[post._id]}
+                    className="comment-input"
+                  />
+                  <button
+                    onClick={() => handleAddComment(post._id)}
+                    disabled={submittingComment[post._id] || !commentText[post._id]?.trim()}
+                    className="comment-submit-btn"
+                  >
+                    {submittingComment[post._id] ? '...' : 'Enviar'}
+                  </button>
+                </div>
+
+                {/* Lista de comentarios */}
+                {loadingComments[post._id] ? (
+                  <div className="comments-loading">Cargando comentarios...</div>
+                ) : (
+                  <div className="comments-list">
+                    {(comments[post._id] || []).length === 0 ? (
+                      <div className="comments-empty">
+                        No hay comentarios aún. ¡Sé el primero en comentar!
+                      </div>
+                    ) : (
+                      (comments[post._id] || []).map((comment, index) => (
+                        <div key={comment._id || index} className="comment-item">
+                          <img 
+                            src={comment.userId?.profilePicture || userImg} 
+                            alt="user" 
+                            className="comment-avatar"
+                          />
+                          <div className="comment-content">
+                            <div className="comment-header">
+                              <span className="comment-author">
+                                {comment.userId?.username || comment.userId?.email || 'Usuario'}
+                              </span>
+                              <span className="comment-time">
+                                {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : ''}
+                              </span>
+                            </div>
+                            <p className="comment-text">
+                              {comment.text}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </main>
