@@ -78,7 +78,7 @@ useEffect(() => {
               /*Si la ID no existe saldra de esta manera */
               <>
                 <div className="perfil">
-                  <img src= {perfil} alt="Foto de perfil"className="foto-perfil"
+                  <img src= {perfil} alt="Foto de perfil" className="foto-perfil"
                   />
                   <div className="info-usuario">
                     <h3>Nombre del usuario</h3>
