@@ -63,24 +63,7 @@ export default function CreatePostForm({ user, onPostCreated }) {
 
   return (
     <>
-      {/* Información del timeline */}
-      <div style={{
-        background: '#f8f9fa',
-        border: '1px solid #e9ecef',
-        borderRadius: '12px',
-        padding: '1rem',
-        marginBottom: '1rem',
-        textAlign: 'center'
-      }}>
-        <h3 style={{margin: '0 0 0.5rem 0', color: '#495057', fontSize: '1.1rem'}}>
-          📱 Tu Timeline
-        </h3>
-        <p style={{margin: 0, color: '#6c757d', fontSize: '0.9rem'}}>
-          Aquí ves tus posts y los posts de las personas que sigues. 
-          ¡Sigue a más usuarios para ver más contenido!
-        </p>
-      </div>
-
+      
       {/* Formulario para crear post */}
       <form 
         onSubmit={handleCreatePost} 

@@ -195,7 +195,7 @@ export default function Navbar({
               style={{
                 position: 'absolute',
                 right: '0.5rem',
-                top: '50%',
+                top: '35%',
                 transform: 'translateY(-50%)',
                 background: 'none',
                 border: 'none',
