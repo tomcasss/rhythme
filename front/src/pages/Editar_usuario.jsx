@@ -46,7 +46,7 @@ useEffect(() => {
               <>
                 <div className="perfil">
                   <img
-                    src={user.profilePicture ||{perfil} }
+                    src={user.profilePicture || perfil}
                     alt="Foto de perfil"
                     className="foto-perfil"
                   />
