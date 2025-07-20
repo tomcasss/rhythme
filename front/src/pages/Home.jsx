@@ -38,6 +38,36 @@ export default function Home() {
   const [commentText, setCommentText] = useState({});
   const [submittingComment, setSubmittingComment] = useState({});
 
+  // Estados para seguimiento de usuarios
+  const [followingUsers, setFollowingUsers] = useState(new Set());
+  const [followLoading, setFollowLoading] = useState({});
+
+  // Estados para búsqueda de usuarios
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchRef = useRef();
+
+  // Función helper para obtener el ID del usuario del post
+  const getPostUserId = (post) => {
+    if (!post.userId) return null;
+    return typeof post.userId === 'object' ? post.userId._id : post.userId;
+  };
+
+  // Función helper para verificar si es post propio
+  const isOwnPost = (post) => {
+    if (!user || !user._id || !post.userId) return false;
+    const postUserId = getPostUserId(post);
+    return postUserId === user._id;
+  };
+
+  // Función helper para verificar si ya sigue al usuario
+  const isFollowingUser = (post) => {
+    const postUserId = getPostUserId(post);
+    return postUserId ? followingUsers.has(postUserId) : false;
+  };
+
   // Cierra el menú de opciones de post si se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -64,12 +94,26 @@ export default function Home() {
     };
   }, []);
 
+  // Cierra los resultados de búsqueda si se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearchResults(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user._id) {
       navigate("/");
       return;
     }
+    
     const fetchPosts = async () => {
       setLoading(true);
       setError("");
@@ -82,7 +126,20 @@ export default function Home() {
         setLoading(false);
       }
     };
+
+    const fetchUserFollowing = async () => {
+      try {
+        const res = await axios.get(API_ENDPOINTS.GET_USER(user._id));
+        if (res.data.user && res.data.user.following) {
+          setFollowingUsers(new Set(res.data.user.following));
+        }
+      } catch (error) {
+        console.error("Error al cargar lista de seguidos:", error);
+      }
+    };
+
     fetchPosts();
+    fetchUserFollowing();
   }, [navigate]);
 
   // Crear un nuevo post
@@ -200,6 +257,157 @@ export default function Home() {
     navigate("/");
   };
 
+  // Buscar usuarios
+  const handleSearchUsers = async (query) => {
+    if (!query || query.trim() === '') {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const res = await axios.get(API_ENDPOINTS.SEARCH_USERS(query.trim()));
+      setSearchResults(res.data.users || []);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error("Error al buscar usuarios:", error);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Debounce para la búsqueda (esperar 300ms después de que el usuario deje de escribir)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim()) {
+        handleSearchUsers(searchQuery);
+      } else {
+        setSearchResults([]);
+        setShowSearchResults(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  // Navegar al perfil del usuario seleccionado
+  const handleSelectUser = (selectedUser) => {
+    setShowSearchResults(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    // Aquí puedes navegar al perfil del usuario
+    console.log("Usuario seleccionado:", selectedUser);
+    // navigate(`/perfil/${selectedUser._id}`);
+  };
+
+  // Seguir usuario desde búsqueda
+  const handleFollowFromSearch = async (targetUserId, e) => {
+    e.stopPropagation(); // Evitar que se ejecute handleSelectUser
+    await handleFollowUser(targetUserId);
+  };
+
+  // Dejar de seguir usuario desde búsqueda
+  const handleUnfollowFromSearch = async (targetUserId, e) => {
+    e.stopPropagation(); // Evitar que se ejecute handleSelectUser
+    await handleUnfollowUser(targetUserId);
+  };
+
+  // Seguir usuario
+  const handleFollowUser = async (targetUserId) => {
+    if (!user || !user._id || targetUserId === user._id) return;
+    
+    // Verificar si ya sigue al usuario
+    if (followingUsers.has(targetUserId)) {
+      console.log("Ya sigues a este usuario");
+      return;
+    }
+    
+    setFollowLoading(prev => ({ ...prev, [targetUserId]: true }));
+    
+    try {
+      await axios.put(API_ENDPOINTS.FOLLOW_USER(targetUserId), {
+        userId: user._id
+      });
+      
+      // Actualizar estado local
+      setFollowingUsers(prev => new Set([...prev, targetUserId]));
+      
+      // Mostrar mensaje de éxito
+      const userName = posts.find(p => getPostUserId(p) === targetUserId);
+      const displayName = userName?.userId?.username || userName?.userId?.email || 'usuario';
+      console.log(`Ahora sigues a ${displayName}`);
+      
+    } catch (error) {
+      console.error("Error al seguir usuario:", error);
+      
+      // Manejo de errores específicos
+      if (error.response?.status === 400) {
+        alert("Ya sigues a este usuario.");
+        // Sincronizar estado local con el servidor
+        setFollowingUsers(prev => new Set([...prev, targetUserId]));
+      } else if (error.response?.status === 404) {
+        alert("Usuario no encontrado.");
+      } else {
+        alert("Error al seguir usuario. Intenta de nuevo.");
+      }
+    } finally {
+      setFollowLoading(prev => ({ ...prev, [targetUserId]: false }));
+    }
+  };
+
+  // Dejar de seguir usuario
+  const handleUnfollowUser = async (targetUserId) => {
+    if (!user || !user._id || targetUserId === user._id) return;
+    
+    // Verificar si realmente sigue al usuario
+    if (!followingUsers.has(targetUserId)) {
+      console.log("No sigues a este usuario");
+      return;
+    }
+    
+    setFollowLoading(prev => ({ ...prev, [targetUserId]: true }));
+    
+    try {
+      await axios.put(API_ENDPOINTS.UNFOLLOW_USER(targetUserId), {
+        userId: user._id
+      });
+      
+      // Actualizar estado local
+      setFollowingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(targetUserId);
+        return newSet;
+      });
+
+      // Mostrar mensaje de éxito
+      const userName = posts.find(p => getPostUserId(p) === targetUserId);
+      const displayName = userName?.userId?.username || userName?.userId?.email || 'usuario';
+      console.log(`Dejaste de seguir a ${displayName}`);
+      
+    } catch (error) {
+      console.error("Error al dejar de seguir usuario:", error);
+      
+      // Manejo de errores específicos
+      if (error.response?.status === 400) {
+        alert("No sigues a este usuario.");
+        // Sincronizar estado local con el servidor
+        setFollowingUsers(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(targetUserId);
+          return newSet;
+        });
+      } else if (error.response?.status === 404) {
+        alert("Usuario no encontrado.");
+      } else {
+        alert("Error al dejar de seguir usuario. Intenta de nuevo.");
+      }
+    } finally {
+      setFollowLoading(prev => ({ ...prev, [targetUserId]: false }));
+    }
+  };
+
   // Mostrar/ocultar comentarios
   const toggleComments = async (postId) => {
     if (showCommentsForPost === postId) {
@@ -279,11 +487,164 @@ export default function Home() {
         <div className="logo-area">
           <img src={logo} alt="RhythMe logo" className="logo1" />
         </div>
-        <input
-          type="text"
-          placeholder="Busca música, artistas, playlist..."
-          className="search-bar"
-        />
+        
+        {/* Barra de búsqueda con funcionalidad */}
+        <div className="search-container" style={{position: 'relative', flex: 1, maxWidth: '500px'}} ref={searchRef}>
+          <div style={{position: 'relative'}}>
+            <input
+              type="text"
+              placeholder="Buscar usuarios..."
+              className="search-bar"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => searchQuery.trim() && setShowSearchResults(true)}
+              style={{paddingRight: searchQuery ? '2.5rem' : '1rem'}}
+            />
+            {/* Icono de limpiar búsqueda */}
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSearchResults([]);
+                  setShowSearchResults(false);
+                }}
+                style={{
+                  position: 'absolute',
+                  right: '0.5rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  color: '#999',
+                  padding: '0.25rem'
+                }}
+                title="Limpiar búsqueda"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          
+          {/* Resultados de búsqueda */}
+          {showSearchResults && (
+            <div className="search-results" style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              background: '#fff',
+              border: '1px solid #ddd',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              maxHeight: '400px',
+              overflowY: 'auto',
+              zIndex: 1000,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}>
+              {searchLoading ? (
+                <div style={{padding: '1rem', textAlign: 'center', color: '#666'}}>
+                  Buscando usuarios...
+                </div>
+              ) : searchResults.length > 0 ? (
+                <>
+                  <div style={{padding: '0.5rem 1rem', background: '#f8f9fa', borderBottom: '1px solid #eee', fontSize: '0.9rem', color: '#666'}}>
+                    {searchResults.length} usuario{searchResults.length !== 1 ? 's' : ''} encontrado{searchResults.length !== 1 ? 's' : ''}
+                  </div>
+                  {searchResults.map((searchUser) => (
+                    <div 
+                      key={searchUser._id} 
+                      className="search-result-item"
+                      onClick={() => handleSelectUser(searchUser)}
+                      style={{
+                        padding: '0.75rem 1rem',
+                        borderBottom: '1px solid #f0f0f0',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      <img 
+                        src={searchUser.profilePicture || userImg} 
+                        alt="avatar" 
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                      <div style={{flex: 1}}>
+                        <div style={{fontWeight: '600', color: '#333'}}>
+                          {searchUser.username || searchUser.name || 'Usuario'}
+                        </div>
+                        <div style={{fontSize: '0.85rem', color: '#666'}}>
+                          {searchUser.email}
+                        </div>
+                        {searchUser.desc && (
+                          <div style={{fontSize: '0.8rem', color: '#999', marginTop: '0.25rem'}}>
+                            {searchUser.desc.length > 50 ? `${searchUser.desc.substring(0, 50)}...` : searchUser.desc}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Botones de acción para seguir/dejar de seguir */}
+                      <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                        {searchUser._id === user?._id ? (
+                          <span style={{fontSize: '0.8rem', color: '#999', fontStyle: 'italic'}}>Tú</span>
+                        ) : followingUsers.has(searchUser._id) ? (
+                          <button
+                            onClick={(e) => handleUnfollowFromSearch(searchUser._id, e)}
+                            disabled={followLoading[searchUser._id]}
+                            style={{
+                              background: '#dc3545',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              cursor: 'pointer',
+                              fontWeight: '500'
+                            }}
+                          >
+                            {followLoading[searchUser._id] ? '...' : 'Dejar de seguir'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => handleFollowFromSearch(searchUser._id, e)}
+                            disabled={followLoading[searchUser._id]}
+                            style={{
+                              background: 'linear-gradient(90deg, #fb7202, #e82c0b)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              cursor: 'pointer',
+                              fontWeight: '500'
+                            }}
+                          >
+                            {followLoading[searchUser._id] ? '...' : 'Seguir'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : searchQuery.trim() && !searchLoading ? (
+                <div style={{padding: '1rem', textAlign: 'center', color: '#666'}}>
+                  No se encontraron usuarios para "{searchQuery}"
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
+        
         <div className="navbar-icons">
           <span className="icon notif">🔔</span>
           {/* Menú de usuario (cerrar sesión) */}
@@ -306,6 +667,8 @@ export default function Home() {
         ))}
       </section>
       <main className="feed">
+        {/* Información del feed */}
+
         {/* Formulario para crear post */}
         <form onSubmit={handleCreatePost} style={{
           background: '#fff',
@@ -352,10 +715,79 @@ export default function Home() {
                     ? (post.userId.username || post.userId.email || `ID: ${post.userId._id?.slice(0, 6)}...`)
                     : (post.username || (post.userId ? `ID: ${post.userId.slice(0, 6)}...` : "Usuario"))
                 }</strong>
-                <span className="time">{post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}</span>
+                <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                  <span className="time">{post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}</span>
+                  {/* Indicador de tipo de post */}
+                  {isOwnPost(post) ? (
+                    <span style={{
+                      background: '#fb7202',
+                      color: 'white',
+                      fontSize: '0.7rem',
+                      padding: '0.2rem 0.4rem',
+                      borderRadius: '10px',
+                      fontWeight: '600'
+                    }}>
+                      Tu post
+                    </span>
+                  ) : isFollowingUser(post) ? (
+                    <span style={{
+                      background: '#28a745',
+                      color: 'white',
+                      fontSize: '0.7rem',
+                      padding: '0.2rem 0.4rem',
+                      borderRadius: '10px',
+                      fontWeight: '600'
+                    }}>
+                      Siguiendo
+                    </span>
+                  ) : (
+                    <span style={{
+                      background: '#6c757d',
+                      color: 'white',
+                      fontSize: '0.7rem',
+                      padding: '0.2rem 0.4rem',
+                      borderRadius: '10px',
+                      fontWeight: '600'
+                    }}>
+                      No sigues
+                    </span>
+                  )}
+                </div>
               </div>
+              
+              {/* Botón de seguir/dejar de seguir SOLO para posts de otros usuarios */}
+              {!isOwnPost(post) && (
+                <div style={{marginLeft: 'auto', marginRight: '3rem'}}>
+                  {isFollowingUser(post) ? (
+                    <button 
+                      className="following-btn"
+                      onClick={() => handleUnfollowUser(getPostUserId(post))}
+                      disabled={followLoading[getPostUserId(post)]}
+                      title="Haz clic para dejar de seguir"
+                    >
+                      {followLoading[getPostUserId(post)] 
+                        ? '...' 
+                        : 'Siguiendo'
+                      }
+                    </button>
+                  ) : (
+                    <button 
+                      className="follow-btn"
+                      onClick={() => handleFollowUser(getPostUserId(post))}
+                      disabled={followLoading[getPostUserId(post)]}
+                      title="Haz clic para seguir"
+                    >
+                      {followLoading[getPostUserId(post)] 
+                        ? '...' 
+                        : 'Seguir'
+                      }
+                    </button>
+                  )}
+                </div>
+              )}
+
               {/* Menú de tres puntos solo para el autor */}
-              {post.userId && ((typeof post.userId === 'object' && post.userId._id === user._id) || post.userId === user._id) && (
+              {isOwnPost(post) && (
                 <div style={{position: 'absolute', top: 10, right: 10, zIndex: 2}}>
                   <button className="action-btn" onClick={() => setOpenMenuId(openMenuId === post._id ? null : post._id)} title="Opciones">⋮</button>
                   {openMenuId === post._id && (

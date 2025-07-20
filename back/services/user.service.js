@@ -79,3 +79,26 @@ export const unFollowUser = async (userData, updateData) => {
     }
   }
 };
+
+export const searchUsers = async (query) => {
+  try {
+    if (!query || query.trim() === '') {
+      return [];
+    }
+    
+    // Buscar usuarios por username, email o descripción
+    const users = await userModel.find({
+      $or: [
+        { username: { $regex: query, $options: 'i' } },
+        { email: { $regex: query, $options: 'i' } },
+        { desc: { $regex: query, $options: 'i' } },
+        { name: { $regex: query, $options: 'i' } },
+        { from: { $regex: query, $options: 'i' } }
+      ]
+    }).select('-password').limit(20); // Excluir password y limitar resultados
+    
+    return users;
+  } catch (error) {
+    throw error;
+  }
+};

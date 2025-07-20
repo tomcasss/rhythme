@@ -1,4 +1,4 @@
-import { deleteUser, getUser, updateUser, followUser, unFollowUser } from "../services/user.service.js";
+import { deleteUser, getUser, updateUser, followUser, unFollowUser, searchUsers } from "../services/user.service.js";
 
 export const updateUserController = async (req, res) => {
   if (req.body.userId === req.params.id || req.body.isAdmin) {
@@ -73,5 +73,22 @@ export const unFollowUserController = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
+  }
+};
+
+export const searchUsersController = async (req, res) => {
+  try {
+    const { q } = req.query;
+    const users = await searchUsers(q);
+    res.status(200).json({
+      users,
+      message: "Users found successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error searching users",
+      error,
+    });
   }
 };

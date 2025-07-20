@@ -12,6 +12,9 @@ export const API_ENDPOINTS = {
   GET_USER: (id) => `${BASE_URL}/users/${id}`,
   UPDATE_USER: (id) => `${BASE_URL}/users/${id}`,
   DELETE_USER: (id) => `${BASE_URL}/users/${id}`,
+  FOLLOW_USER: (id) => `${BASE_URL}/users/follow/${id}`,
+  UNFOLLOW_USER: (id) => `${BASE_URL}/users/unfollow/${id}`,
+  SEARCH_USERS: (query) => `${BASE_URL}/users/search?q=${encodeURIComponent(query)}`,
   
   // Post endpoints
   GET_POSTS: `${BASE_URL}/posts`,

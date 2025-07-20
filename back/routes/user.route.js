@@ -1,9 +1,11 @@
 import express from 'express';
-import { deleteUserController, getUserController, updateUserController, followUserController, unFollowUserController } from '../controllers/user.controller.js';
+import { deleteUserController, getUserController, updateUserController, followUserController, unFollowUserController, searchUsersController } from '../controllers/user.controller.js';
 
 
 const router = express.Router();
 
+// Search users
+router.get('/search', searchUsersController);
 //Update user profile
 router.put('/:id', updateUserController);
 // Delete user profile

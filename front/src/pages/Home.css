@@ -56,6 +56,67 @@
   font-size: 1rem;
 }
 
+/* Estilos para el contenedor y resultados de búsqueda */
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 500px;
+}
+
+.search-container .search-bar {
+  width: 100%;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.search-result-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+  background-color: #f8f9fa;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+/* Botones dentro de los resultados de búsqueda */
+.search-result-item button {
+  transition: all 0.2s ease;
+}
+
+.search-result-item button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.search-result-item button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .navbar-icons {
   display: flex;
   align-items: center;
@@ -286,4 +347,47 @@
   text-align: center;
   color: #666;
   padding: 1rem;
+}
+
+/* Estilos para botones de seguir */
+.follow-btn {
+  background: linear-gradient(90deg, #fb7202, #e82c0b);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.follow-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(251, 114, 2, 0.3);
+}
+
+.following-btn {
+  background: #e9ecef;
+  color: #6c757d;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.following-btn:hover:not(:disabled) {
+  background: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+}
+
+.follow-btn:disabled, .following-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
