@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import axios from 'axios';
 import "./Perfil_usuario.css";
 import spotify from '../assets/spotify.png';
 import soundcloud from '../assets/soundcloud.png';
