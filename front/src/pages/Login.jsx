@@ -101,7 +101,7 @@ export default function Login() {
                 disabled={loading}
               />
               <input
-                type="text"
+                type="email"
                 placeholder="Correo"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
