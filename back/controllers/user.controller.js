@@ -1,4 +1,4 @@
-import { deleteUser, getUser, updateUser, followUser, unFollowUser } from "../services/user.service.js";
+import { deleteUser, getUser, updateUser, followUser, unFollowUser, searchUsers } from "../services/user.service.js";
 
 export const updateUserController = async (req, res) => {
   if (req.body.userId === req.params.id || req.body.isAdmin) {
@@ -41,7 +41,7 @@ export const getUserController = async (req, res) => {
     const user = await getUser(req.params.id);
     const { password, ...data } = user._doc;
     res.status(200).json({
-      data,
+      user: data,
       message: "User retrieved successfully",
     });
   } catch (error) {
@@ -59,7 +59,20 @@ export const followUserController = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    
+    // Manejar errores específicos
+    if (error.message === "You already follow this user" || 
+        error.message === "You cannot follow yourself") {
+      res.status(400).json({
+        message: error.message,
+        error: error.message
+      });
+    } else {
+      res.status(500).json({
+        message: "Error following user",
+        error: error.message || error
+      });
+    }
   }
 };
 
@@ -72,6 +85,36 @@ export const unFollowUserController = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    
+    // Manejar errores específicos
+    if (error.message === "You don't follow this user" || 
+        error.message === "You cannot unfollow yourself") {
+      res.status(400).json({
+        message: error.message,
+        error: error.message
+      });
+    } else {
+      res.status(500).json({
+        message: "Error unfollowing user",
+        error: error.message || error
+      });
+    }
+  }
+};
+
+export const searchUsersController = async (req, res) => {
+  try {
+    const { q } = req.query;
+    const users = await searchUsers(q);
+    res.status(200).json({
+      users,
+      message: "Users found successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error searching users",
+      error,
+    });
   }
 };

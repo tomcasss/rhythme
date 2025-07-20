@@ -47,7 +47,9 @@ export const followUser = async (userData, updateData) => {
     try {
       const user = await userModel.findById(userData.userId);
       const currentUser = await userModel.findById(updateData.id);
-      if (!user.followers.includes(userData.userId)) {
+      
+      // Verificar si ya sigue al usuario objetivo
+      if (!user.following.includes(updateData.id)) {
         await currentUser.updateOne({ $push: { followers: userData.userId } });
         await user.updateOne({ $push: { following: updateData.id } });
         return { user, currentUser };
@@ -67,7 +69,9 @@ export const unFollowUser = async (userData, updateData) => {
     try {
       const user = await userModel.findById(userData.userId);
       const currentUser = await userModel.findById(updateData.id);
-      if (!user.followers.includes(userData.userId)) {
+      
+      // Verificar si realmente sigue al usuario objetivo
+      if (user.following.includes(updateData.id)) {
         await currentUser.updateOne({ $pull: { followers: userData.userId } }, { new: true });
         await user.updateOne({ $pull: { following: updateData.id} }, { new: true });
         return { user, currentUser };
@@ -77,5 +81,28 @@ export const unFollowUser = async (userData, updateData) => {
     } catch (error) {
       throw error;
     }
+  }
+};
+
+export const searchUsers = async (query) => {
+  try {
+    if (!query || query.trim() === '') {
+      return [];
+    }
+    
+    // Buscar usuarios por username, email o descripción
+    const users = await userModel.find({
+      $or: [
+        { username: { $regex: query, $options: 'i' } },
+        { email: { $regex: query, $options: 'i' } },
+        { desc: { $regex: query, $options: 'i' } },
+        { name: { $regex: query, $options: 'i' } },
+        { from: { $regex: query, $options: 'i' } }
+      ]
+    }).select('-password').limit(20); // Excluir password y limitar resultados
+    
+    return users;
+  } catch (error) {
+    throw error;
   }
 };

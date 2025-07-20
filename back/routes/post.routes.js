@@ -1,5 +1,5 @@
 import express from "express";
-import { createPostController, deletePostController, getPostController, getTimelinePostsController, likeAndUnlikePostController, updatePostController } from "../controllers/post.controller.js";
+import { commentPostController, createPostController, deletePostController, getPostController, getPostCommentsController, getTimelinePostsController, likeAndUnlikePostController, updatePostController } from "../controllers/post.controller.js";
 const router = express.Router();
 
 router.post("/create-post", createPostController);
@@ -8,5 +8,7 @@ router.delete("/delete-post/:id/:userId", deletePostController);
 router.put("/like-post/:id", likeAndUnlikePostController);
 router.get("/get-post/:id", getPostController);
 router.get("/get-timeline-posts/:userId", getTimelinePostsController);
+router.post("/comment-post/:id", commentPostController);
+router.get("/get-comments/:id", getPostCommentsController);
 
 export default router;
