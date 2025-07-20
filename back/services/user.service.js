@@ -47,7 +47,9 @@ export const followUser = async (userData, updateData) => {
     try {
       const user = await userModel.findById(userData.userId);
       const currentUser = await userModel.findById(updateData.id);
-      if (!user.followers.includes(userData.userId)) {
+      
+      // Verificar si ya sigue al usuario objetivo
+      if (!user.following.includes(updateData.id)) {
         await currentUser.updateOne({ $push: { followers: userData.userId } });
         await user.updateOne({ $push: { following: updateData.id } });
         return { user, currentUser };
@@ -67,7 +69,9 @@ export const unFollowUser = async (userData, updateData) => {
     try {
       const user = await userModel.findById(userData.userId);
       const currentUser = await userModel.findById(updateData.id);
-      if (!user.followers.includes(userData.userId)) {
+      
+      // Verificar si realmente sigue al usuario objetivo
+      if (user.following.includes(updateData.id)) {
         await currentUser.updateOne({ $pull: { followers: userData.userId } }, { new: true });
         await user.updateOne({ $pull: { following: updateData.id} }, { new: true });
         return { user, currentUser };
