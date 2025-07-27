@@ -11,13 +11,14 @@ import logo from '../../assets/logoR.png';
 export default function ProfileHeader() {
     const navigate = useNavigate();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const userMenuRef = useRef(null);
 
 
 
     // Cerrar menú de usuario al hacer clic fuera
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (userMenuOpen && !userMenuOpen.contains(event.target)) {
+            if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(event.target)) {
                 setUserMenuOpen(false);
             }
         };
