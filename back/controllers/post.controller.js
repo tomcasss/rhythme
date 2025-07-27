@@ -1,4 +1,4 @@
-import { createPost, deletePost, updatePost, likeAndUnlikePost, getPost, getTimelinePosts, commentPost, getPostComments} from "../services/post.service.js";
+import { createPost, deletePost, updatePost, likeAndUnlikePost, getPost, getTimelinePosts, commentPost, getPostComments, getUserPosts} from "../services/post.service.js";
 
 export const createPostController = async (req, res) => {
     try {
@@ -169,6 +169,30 @@ export const getPostCommentsController = async (req, res) => {
         
         res.status(500).json({
             message: "Failed to fetch comments",
+            error: error.message,
+        });
+    }
+};
+
+export const getUserPostsController = async (req, res) => {
+    try {
+        const posts = await getUserPosts(req.params);
+        res.status(200).json({
+            posts,
+            message: "User posts fetched successfully",
+        });
+    } catch (error) {
+        console.log(error);
+        
+        if (error.message === "Invalid user ID") {
+            return res.status(400).json({
+                message: "Invalid user ID format",
+                error: error.message,
+            });
+        }
+        
+        res.status(500).json({
+            message: "Failed to fetch user posts",
             error: error.message,
         });
     }

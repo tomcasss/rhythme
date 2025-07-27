@@ -1,129 +1,124 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import "./Editar_usuario.css";
 import axios from 'axios';
-import spotify from '../assets/spotify.png';
-import soundcloud from '../assets/soundcloud.png';
-import apple from '../assets/apple.png';
-import youtube from '../assets/youtube.png';
-import perfil from '../assets/perfil.png';
+import { API_ENDPOINTS } from "../config/api.js";
+
+// Componentes
+import EditHeader from "../components/Edit/EditHeader";
+import EditProfile from "../components/Edit/EditProfile";
+import EditOptions from "../components/Edit/EditOptions";
 
 export const Editar_usuario = () => {
+  const navigate = useNavigate();
+  
+  const [user, setUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-const [user, setUser] = useState(null);
-const [loading, setLoading] = useState(true); 
+  // Inicialización - obtener usuario actual del localStorage
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (!userData || !userData._id) {
+      navigate("/");
+      return;
+    }
+    
+    setCurrentUser(userData);
+    fetchUserData(userData._id);
+  }, [navigate]);
 
-const userId = "123"; //esta linea de codigo es importante, ya que es lo que enviara a buscar la id de la persona para cargar los datos, pero podriamos cambiarlo por algo más dinamico o un hook
-useEffect(() => {
-  const fetchUser = async () => {
+  // Obtener datos actuales del usuario desde el backend
+  const fetchUserData = async (userId) => {
+    setLoading(true);
+    setError("");
+    
     try {
-      const res = await axios.get(`http://localhost:3000/api/users/${userId}`);
-      setUser(res.data.data);
+      const response = await axios.get(API_ENDPOINTS.GET_USER(userId));
+      setUser(response.data.user);
     } catch (error) {
       console.error("Error al obtener el usuario:", error);
+      setError("No se pudieron cargar los datos del usuario");
     } finally {
       setLoading(false);
     }
   };
 
-  fetchUser();
-}, []);
 
+  // Manejar actualización de usuario
+  const handleUpdateUser = async (updatedData) => {
+    if (!currentUser?._id) return;
+    
+    try {
+      const response = await axios.put(API_ENDPOINTS.UPDATE_USER(currentUser._id), updatedData);
+      setUser(response.data.user);
+      
+      // Actualizar localStorage si es necesario
+      if (updatedData.username || updatedData.email) {
+        const updatedUserData = { ...currentUser, ...updatedData };
+        localStorage.setItem("user", JSON.stringify(updatedUserData));
+        setCurrentUser(updatedUserData);
+      }
+      
+      // Recargar datos del usuario desde el backend
+      await fetchUserData(currentUser._id);
+      
+      return { success: true, message: "Usuario actualizado correctamente" };
+    } catch (error) {
+      console.error("Error al actualizar usuario:", error);
+      return { success: false, message: "Error al actualizar el usuario" };
+    }
+  };
 
-  return (
-   <>
-<div className="contenedor">
-        <header className="encabezado">
-          <div className="logo">Logo</div>
-        </header>
+  // Manejar logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
 
-        <div className="contenido">
-          <div className="columna-izquierda">
-            <h2>Mi Cuenta</h2>
-
-            {loading ? (
-              <p>Cargando datos...</p>
-            ) : user ? (
-              <>
-                <div className="perfil">
-                  <img
-                    src={user.profilePicture || perfil}
-                    alt="Foto de perfil"
-                    className="foto-perfil"
-                  />
-                  <div className="info-usuario">
-                    <h3>{user.nombre || user.username}</h3>
-                    <p className="rol">{user.rol || "Usuario"}</p>
-                    <p>{user.location}</p>
-                    <p>{user.email}</p>
-                    <p>{user.phone || "(sin número)"}</p>
-                  </div>
-                </div>
-
-                <div className="generos">
-                  {(user.generos || []).map((g, i) => (
-                    <p key={i}>{g}</p>
-                  ))}
-                </div>
-
-                <div className="redes">
-                  {user.spotify && <a href={user.spotify}><img src={spotify} alt="Spotify" /></a>}
-                  {user.soundcloud && <a href={user.soundcloud}><img src={soundcloud} alt="SoundCloud" /></a>}
-                  {user.applemusic && <a href={user.applemusic}><img src={apple} alt="Apple Music" /></a>}
-                  {user.youtube && <a href={user.youtube}><img src={youtube} alt="YouTube" /></a>}
-                </div>
-              </>
-        //los parentesis de abajo es un if para que si no se encuentra la ID se carga el div de abajo
-            ) : (
-
-              /*Si la ID no existe saldra de esta manera */
-              <>
-                <div className="perfil">
-                  <img src= {perfil} alt="Foto de perfil" className="foto-perfil"
-                  />
-                  <div className="info-usuario">
-                    <h3>Nombre del usuario</h3>
-                    <p className="rol">Rol del usuario</p>
-                    <p>Ubicación del usuario</p>
-                    <p>Correo electrónico</p>
-                    <p>Teléfono</p>
-                  </div>
-                </div>
-
-           
-
-                <div className="redes">
-                <img src={spotify} alt="Spotify" />
-                <img src={soundcloud} alt="SoundCloud" />
-                <img src={apple} alt="Apple Music" />
-                <img src={youtube} alt="YouTube" />
-                </div>
-              </>
-            )}
-          </div>
-
-          <div className="columna-derecha">
-            <div className="opciones">
-              <h3>Editar mi información</h3>
-            <button className="btn-opcion">Editar mi foto de perfil</button>
-            <button className="btn-opcion">Editar mi nombre</button>
-            <button className="btn-opcion">Editar mi contacto</button>
-              <hr />
-            <button className="btn-opcion">Privacidad y Seguridad</button>
-            <hr />
-            <button className="btn-opcion">Mis Preferencias</button>
-            <hr />
-            <button className="btn-opcion">Mi Actividad</button>
-            <hr />
-              <div className="acciones">
-                <button className="reporte">Reportar un problema</button>
-                <button className="cerrar-sesion">Cerrar Sesión</button>
-              </div>
-            </div>
-          </div>
+  if (loading) {
+    return (
+      <div className="contenedor">
+        <EditHeader onBack={() => navigate('/home')} />
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <p>Cargando datos del usuario...</p>
         </div>
       </div>
-    </>
- 
-  )
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="contenedor">
+        <EditHeader onBack={() => navigate('/home')} />
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <p style={{ color: '#e74c3c' }}>{error}</p>
+          <button onClick={() => navigate('/home')} className="btn-opcion">
+            Volver al inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="contenedor">
+      <EditHeader onBack={() => navigate('/home')} />
+      
+      <div className="contenido">
+        <EditProfile 
+          user={user} 
+          onUpdateUser={handleUpdateUser}
+        />
+        
+        <EditOptions 
+          onLogout={handleLogout}
+          onUpdateUser={handleUpdateUser}
+        />
+      </div>
+    </div>
+  );
 }
 

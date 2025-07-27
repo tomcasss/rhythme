@@ -24,6 +24,7 @@ export const API_ENDPOINTS = {
   LIKE_POST: (id) => `${BASE_URL}/posts/like-post/${id}`,
   GET_POST: (id) => `${BASE_URL}/posts/get-post/${id}`,
   GET_TIMELINE_POSTS: (userId) => `${BASE_URL}/posts/get-timeline-posts/${userId}`,
+  GET_USER_POSTS: (userId) => `${BASE_URL}/posts/get-user-posts/${userId}`,
   
   // Comment endpoints
   COMMENT_POST: (id) => `${BASE_URL}/posts/comment-post/${id}`,

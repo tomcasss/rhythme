@@ -1,5 +1,5 @@
 // src/components/Profile/ProfileHeader.jsx
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faBell } from '@fortawesome/free-solid-svg-icons';
@@ -13,7 +13,7 @@ export default function ProfileHeader() {
     const [userMenuOpen, setUserMenuOpen] = useState(false);
 
 
-    
+
     // Cerrar menú de usuario al hacer clic fuera
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -23,8 +23,7 @@ export default function ProfileHeader() {
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
+    }, [userMenuOpen]);
 
     /**
      * Cerrar sesión del usuario
@@ -37,13 +36,11 @@ export default function ProfileHeader() {
     return (
         <div className="contenedor">
             <header className="navbar">
-                <div className="logo-area">
+                <div className="logo-area" style={{ cursor: "pointer" }} onClick={() => navigate("/home")}>
                     <img src={logo} alt="RhythMe logo" className="logo1" />
                 </div>
 
                 <div className="iconos-header">
-
-
 
                     {/* Menú de usuario */}
                     <span className="icon user" style={{ position: 'relative' }}>
@@ -70,6 +67,13 @@ export default function ProfileHeader() {
                                     zIndex: 10
                                 }}
                             >
+                                <button
+                                    className="action-btn"
+                                    style={{ width: '100%', textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #eee' }}
+                                    onClick={() => navigate('/edit-profile')}
+                                >
+                                    Editar perfil
+                                </button>
                                 <button
                                     className="action-btn"
                                     style={{ width: '100%', textAlign: 'left', color: '#e82c0b' }}

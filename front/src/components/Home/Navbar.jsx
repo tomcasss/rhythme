@@ -2,8 +2,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import logo from '../../assets/logoR.png';
-import userImg from '../../assets/user.png';
+import logo from "../../assets/logoR.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faBell } from "@fortawesome/free-solid-svg-icons";
+import userImg from "../../assets/user.png";
 import { API_ENDPOINTS } from "../../config/api.js";
 
 /**
@@ -16,19 +18,19 @@ import { API_ENDPOINTS } from "../../config/api.js";
  * @param {Function} props.onUnfollowUser - Función para dejar de seguir usuario
  * @param {Function} props.isFollowing - Función para verificar si sigue a un usuario
  */
-export default function Navbar({ 
-  user, 
-  followLoading, 
-  onFollowUser, 
+export default function Navbar({
+  user,
+  followLoading,
+  onFollowUser,
   onUnfollowUser,
-  isFollowing
+  isFollowing,
 }) {
   const navigate = useNavigate();
-  
+
   // Estados para el menú de usuario
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef();
-  
+
   // Estados para búsqueda de usuarios
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -76,7 +78,7 @@ export default function Navbar({
    * Buscar usuarios en la base de datos
    */
   const handleSearchUsers = async (query) => {
-    if (!query || query.trim() === '') {
+    if (!query || query.trim() === "") {
       setSearchResults([]);
       setShowSearchResults(false);
       return;
@@ -112,15 +114,15 @@ export default function Navbar({
    */
   const handleFollowFromSearch = async (targetUserId, e) => {
     e.stopPropagation();
-    
+
     // Verificar si ya está siguiendo al usuario usando la función isFollowing
     if (isFollowing(targetUserId)) {
       console.log("Ya sigues a este usuario");
       return;
     }
-    
+
     const success = await onFollowUser(targetUserId);
-    
+
     // Solo recargar resultados si la operación fue exitosa
     if (success && searchQuery.trim()) {
       setTimeout(() => {
@@ -134,15 +136,15 @@ export default function Navbar({
    */
   const handleUnfollowFromSearch = async (targetUserId, e) => {
     e.stopPropagation();
-    
+
     // Verificar si realmente sigue al usuario usando la función isFollowing
     if (!isFollowing(targetUserId)) {
       console.log("No sigues a este usuario");
       return;
     }
-    
+
     const success = await onUnfollowUser(targetUserId);
-    
+
     // Solo recargar resultados si la operación fue exitosa
     if (success && searchQuery.trim()) {
       setTimeout(() => {
@@ -163,7 +165,7 @@ export default function Navbar({
    * Limpiar búsqueda
    */
   const clearSearch = () => {
-    setSearchQuery('');
+    setSearchQuery("");
     setSearchResults([]);
     setShowSearchResults(false);
   };
@@ -171,13 +173,21 @@ export default function Navbar({
   return (
     <header className="navbar">
       {/* Logo */}
-      <div className="logo-area">
+      <div
+        className="logo-area"
+        style={{ cursor: "pointer" }}
+        onClick={() => navigate("/home")}
+      >
         <img src={logo} alt="RhythMe logo" className="logo1" />
       </div>
-      
+
       {/* Barra de búsqueda */}
-      <div className="search-container" style={{position: 'relative', flex: 1, maxWidth: '500px'}} ref={searchRef}>
-        <div style={{position: 'relative'}}>
+      <div
+        className="search-container"
+        style={{ position: "relative", flex: 1, maxWidth: "500px" }}
+        ref={searchRef}
+      >
+        <div style={{ position: "relative" }}>
           <input
             type="text"
             placeholder="Buscar usuarios..."
@@ -185,24 +195,24 @@ export default function Navbar({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => searchQuery.trim() && setShowSearchResults(true)}
-            style={{paddingRight: searchQuery ? '2.5rem' : '1rem'}}
+            style={{ paddingRight: searchQuery ? "2.5rem" : "1rem" }}
           />
-          
+
           {/* Botón limpiar búsqueda */}
           {searchQuery && (
             <button
               onClick={clearSearch}
               style={{
-                position: 'absolute',
-                right: '0.5rem',
-                top: '35%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                color: '#999',
-                padding: '0.25rem'
+                position: "absolute",
+                right: "0.5rem",
+                top: "35%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                fontSize: "1.2rem",
+                cursor: "pointer",
+                color: "#999",
+                padding: "0.25rem",
               }}
               title="Limpiar búsqueda"
             >
@@ -210,86 +220,127 @@ export default function Navbar({
             </button>
           )}
         </div>
-        
+
         {/* Resultados de búsqueda */}
         {showSearchResults && (
           <div className="search-results">
             {searchLoading ? (
-              <div style={{padding: '1rem', textAlign: 'center', color: '#666'}}>
+              <div
+                style={{ padding: "1rem", textAlign: "center", color: "#666" }}
+              >
                 Buscando usuarios...
               </div>
             ) : searchResults.length > 0 ? (
               <>
-                <div style={{padding: '0.5rem 1rem', background: '#f8f9fa', borderBottom: '1px solid #eee', fontSize: '0.9rem', color: '#666'}}>
-                  {searchResults.length} usuario{searchResults.length !== 1 ? 's' : ''} encontrado{searchResults.length !== 1 ? 's' : ''}
+                <div
+                  style={{
+                    padding: "0.5rem 1rem",
+                    background: "#f8f9fa",
+                    borderBottom: "1px solid #eee",
+                    fontSize: "0.9rem",
+                    color: "#666",
+                  }}
+                >
+                  {searchResults.length} usuario
+                  {searchResults.length !== 1 ? "s" : ""} encontrado
+                  {searchResults.length !== 1 ? "s" : ""}
                 </div>
                 {searchResults.map((searchUser) => (
-                  <div 
-                    key={searchUser._id} 
+                  <div
+                    key={searchUser._id}
                     className="search-result-item"
                     onClick={() => handleSelectUser(searchUser)}
                   >
-                    <img 
-                      src={searchUser.profilePicture || userImg} 
-                      alt="avatar" 
+                    <img
+                      src={searchUser.profilePicture || userImg}
+                      alt="avatar"
                       style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        objectFit: 'cover'
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
                       }}
                     />
-                    <div style={{flex: 1}}>
-                      <div style={{fontWeight: '600', color: '#333'}}>
-                        {searchUser.username || searchUser.name || 'Usuario'}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: "600", color: "#333" }}>
+                        {searchUser.username || searchUser.name || "Usuario"}
                       </div>
-                      <div style={{fontSize: '0.85rem', color: '#666'}}>
+                      <div style={{ fontSize: "0.85rem", color: "#666" }}>
                         {searchUser.email}
                       </div>
                       {searchUser.desc && (
-                        <div style={{fontSize: '0.8rem', color: '#999', marginTop: '0.25rem'}}>
-                          {searchUser.desc.length > 50 ? `${searchUser.desc.substring(0, 50)}...` : searchUser.desc}
+                        <div
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "#999",
+                            marginTop: "0.25rem",
+                          }}
+                        >
+                          {searchUser.desc.length > 50
+                            ? `${searchUser.desc.substring(0, 50)}...`
+                            : searchUser.desc}
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Botones de seguir/dejar de seguir */}
-                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
                       {searchUser._id === user?._id ? (
-                        <span style={{fontSize: '0.8rem', color: '#999', fontStyle: 'italic'}}>Tú</span>
-                      ) : isFollowing(searchUser._id) ? (
-                        <button
-                          onClick={(e) => handleUnfollowFromSearch(searchUser._id, e)}
-                          disabled={followLoading[searchUser._id]}
+                        <span
                           style={{
-                            background: '#dc3545',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '0.25rem 0.5rem',
-                            fontSize: '0.75rem',
-                            cursor: 'pointer',
-                            fontWeight: '500'
+                            fontSize: "0.8rem",
+                            color: "#999",
+                            fontStyle: "italic",
                           }}
                         >
-                          {followLoading[searchUser._id] ? '...' : 'Dejar de seguir'}
+                          Tú
+                        </span>
+                      ) : isFollowing(searchUser._id) ? (
+                        <button
+                          onClick={(e) =>
+                            handleUnfollowFromSearch(searchUser._id, e)
+                          }
+                          disabled={followLoading[searchUser._id]}
+                          style={{
+                            background: "#dc3545",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            padding: "0.25rem 0.5rem",
+                            fontSize: "0.75rem",
+                            cursor: "pointer",
+                            fontWeight: "500",
+                          }}
+                        >
+                          {followLoading[searchUser._id]
+                            ? "..."
+                            : "Dejar de seguir"}
                         </button>
                       ) : (
                         <button
-                          onClick={(e) => handleFollowFromSearch(searchUser._id, e)}
+                          onClick={(e) =>
+                            handleFollowFromSearch(searchUser._id, e)
+                          }
                           disabled={followLoading[searchUser._id]}
                           style={{
-                            background: 'linear-gradient(90deg, #fb7202, #e82c0b)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '0.25rem 0.5rem',
-                            fontSize: '0.75rem',
-                            cursor: 'pointer',
-                            fontWeight: '500'
+                            background:
+                              "linear-gradient(90deg, #fb7202, #e82c0b)",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            padding: "0.25rem 0.5rem",
+                            fontSize: "0.75rem",
+                            cursor: "pointer",
+                            fontWeight: "500",
                           }}
                         >
-                          {followLoading[searchUser._id] ? '...' : 'Seguir'}
+                          {followLoading[searchUser._id] ? "..." : "Seguir"}
                         </button>
                       )}
                     </div>
@@ -297,46 +348,67 @@ export default function Navbar({
                 ))}
               </>
             ) : searchQuery.trim() && !searchLoading ? (
-              <div style={{padding: '1rem', textAlign: 'center', color: '#666'}}>
+              <div
+                style={{ padding: "1rem", textAlign: "center", color: "#666" }}
+              >
                 No se encontraron usuarios para "{searchQuery}"
               </div>
             ) : null}
           </div>
         )}
       </div>
-      
+
       {/* Iconos de navegación */}
       <div className="navbar-icons">
-        <span className="icon notif">🔔</span>
-        
+        <span className="icon notif"><FontAwesomeIcon icon={faBell} /></span>
+
         {/* Menú de usuario */}
-        <span className="icon user" style={{position: 'relative'}}>
-          <button 
-            className="action-btn" 
-            style={{background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer'}} 
+        <span className="icon user" style={{ position: "relative" }}>
+          <button
+            className="action-btn"
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: "1.2rem",
+              cursor: "pointer",
+            }}
             onClick={() => setUserMenuOpen((v) => !v)}
           >
-            👤
+            <FontAwesomeIcon icon={faUser} style={{ marginRight: "1rem" }} />
           </button>
           {userMenuOpen && (
-            <div 
-              ref={userMenuRef} 
+            <div
+              ref={userMenuRef}
               style={{
-                position: 'absolute', 
-                top: 30, 
-                right: 0, 
-                background: '#fff', 
-                border: '1px solid #eee', 
-                borderRadius: 8, 
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-                padding: '0.5rem', 
-                minWidth: 120, 
-                zIndex: 10
+                position: "absolute",
+                top: 30,
+                right: 0,
+                background: "#fff",
+                border: "1px solid #eee",
+                borderRadius: 8,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                padding: "0.5rem",
+                minWidth: 120,
+                zIndex: 10,
               }}
             >
-              <button 
-                className="action-btn" 
-                style={{width: '100%', textAlign: 'left', color: '#e82c0b'}} 
+              <button
+                className="action-btn"
+                style={{ width: "100%", textAlign: "left", color: "#e82c0b", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" }}
+                onClick={() => navigate(`/profile/${user._id}`)}
+              >
+                Mi Perfil
+              </button>
+              <button
+                className="action-btn"
+                style={{ width: "100%", textAlign: "left", color: "#666", paddingBottom: "0.5rem", borderBottom: "1px solid #eee" }}
+                onClick={() => navigate('/edit-profile')}
+              >
+                Editar Perfil
+              </button>
+              <button
+                className="action-btn"
+                style={{ width: "100%", textAlign: "left", color: "#e82c0b" }}
                 onClick={handleLogout}
               >
                 Cerrar sesión

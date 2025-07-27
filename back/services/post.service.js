@@ -174,3 +174,22 @@ export const getPostComments = async (params) => {
         throw error;
     }
 };
+
+// Obtener posts de un usuario específico
+export const getUserPosts = async (params) => {
+    try {
+        // Validar que el ID del usuario sea válido
+        if (!mongoose.Types.ObjectId.isValid(params.userId)) {
+            throw new Error("Invalid user ID");
+        }
+
+        // Obtener todos los posts del usuario
+        const posts = await postModel.find({ userId: params.userId })
+            .populate('userId', 'username email profilePicture')
+            .sort({ createdAt: -1 }); // Ordenar por más recientes primero
+
+        return posts;
+    } catch (error) {
+        throw error;
+    }
+};

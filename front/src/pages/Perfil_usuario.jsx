@@ -113,7 +113,7 @@ export const Perfil_usuario = () => {
         followLoading={userFollowLoading}
       />
       
-      <ProfileContent />
+      <ProfileContent userId={userId} />
     </div>
   );
 };
