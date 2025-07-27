@@ -357,7 +357,6 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           </>
         );
 
-      case 'social-media':
       default:
         return (
           <>
