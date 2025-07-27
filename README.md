@@ -51,6 +51,13 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 - Actualización de rutas para soportar los nuevos endpoints de publicación (PUT /update-post/:id, DELETE /delete-post/:id, GET /get-timeline-posts, etc).
 - Mejoras internas en la agregación de timeline y validaciones de usuario para operaciones de post.
 - Actualización de dependencias y modularización de servicios.
+- Nuevo endpoint de backend: Ahora se puede obtener las publicaciones de un usuario específico mediante /get-user-posts/:userId.
+- Nuevas rutas frontend: Se añaden /profile/:userId y /edit-profile para ver y editar el perfil de usuario, respectivamente.
+- Nuevo componente: EditHeader para la página de edición de usuario.
+- Actualización visual: Mejora de estilos en App.css para consistencia visual en toda la aplicación.
+- Integración de FontAwesome: Para iconografía moderna en la interfaz.
+- Actualización de dependencias: Se incluyen mejoras de seguridad y estabilidad.
+- Limpieza de código: Eliminación de logs innecesarios en controladores backend.
 - [Ver más commits recientes](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc) (la lista puede estar incompleta).
 
 Referencia del pull request: https://github.com/emrls81/rhythme/pull/6 y últimos [commits](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc)
@@ -67,16 +74,20 @@ Referencia del pull request: https://github.com/emrls81/rhythme/pull/6 y último
 ```
 rhythme/
 │
-├── back/               # Código fuente del backend
-│   ├── controllers/    # Lógica de controladores (ej. auth)
+├── back/               # Backend
+│   ├── controllers/    # Lógica de controladores (auth, post, user, etc.)
 │   ├── dbConnect/      # Conexión a MongoDB
-│   ├── models/         # Modelos de datos (ej. usuario)
-│   ├── routes/         # Definición de rutas Express
+│   ├── models/         # Modelos de datos (usuario, post, comentario)
+│   ├── routes/         # Rutas Express (incluye rutas de usuario, post, comentarios)
 │   ├── services/       # Lógica de negocio/servicios
 │   └── server.js       # Entrada principal del backend
 │
-├── front/              # Código fuente del frontend
+├── front/              # Frontend
 │   ├── src/            # Componentes y páginas de React
+│   │   ├── components/         # Componentes reutilizables
+│   │   ├── pages/              # Páginas principales (Home, Editar_usuario, Perfil_usuario, etc.)
+│   │   ├── App.jsx             # Definición de rutas principales (ahora incluye /profile/:userId, /edit-profile)
+│   │   └── App.css             # Estilos globales
 │   ├── public/         # Archivos estáticos
 │   ├── index.html      # HTML principal
 │   └── vite.config.js  # Configuración de Vite
@@ -127,15 +138,19 @@ Accede al frontend normalmente en `http://localhost:5173` (o el puerto que indiq
 - **Eliminar usuario:** `DELETE /api/v1/users/:id`
 - **Seguir usuario:** `POST /api/v1/users/follow/:id`
 - **Dejar de seguir usuario:** `POST /api/v1/users/unfollow/:id`
+- **Buscar usuarios:** `GET /api/v1/users/search`
 - **Crear post:** `POST /api/v1/posts/`
 - **Actualizar usuario:** `PUT /api/v1/users/:id`
 - **Obtener todos los posts:** `GET /api/v1/posts/`
+- **Obtener publicaciones de usuario:** `GET /api/v1/posts/get-user-posts/:userId`
 - **Obtener post por ID:** `GET /api/v1/posts/:id`
 - **Eliminar post:** `DELETE /api/v1/posts/:id`
 - **Agregar comentario:** `POST /api/v1/comments/:postId`
 - **Obtener comentarios de un post:** `GET /api/v1/comments/:postId`
 - **Obtener stories:** `GET /api/v1/stories`
 - **Timeline de publicaciones:** `GET /api/v1/posts/timeline/:userId`
+- **Agregar comentario:** `POST /api/v1/posts/comment-post/:id`
+- **Obtener comentarios de un post:** `GET /api/v1/posts/get-comments/:id`
 
 (Agrega más rutas conforme crezcas el proyecto)
 
