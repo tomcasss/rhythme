@@ -184,7 +184,12 @@ export default function Navbar({
       {/* Barra de búsqueda */}
       <div
         className="search-container"
-        style={{ position: "relative", flex: 1, maxWidth: "500px" }}
+        style={{ 
+          position: "relative", 
+          flex: 1, 
+          maxWidth: "500px",
+          zIndex: 999 
+        }}
         ref={searchRef}
       >
         <div style={{ position: "relative" }}>
@@ -223,7 +228,23 @@ export default function Navbar({
 
         {/* Resultados de búsqueda */}
         {showSearchResults && (
-          <div className="search-results">
+          <div 
+            className="search-results"
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: '0',
+              right: '0',
+              background: 'white',
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              maxHeight: '400px',
+              overflowY: 'auto',
+              zIndex: 1000,
+              marginTop: '4px'
+            }}
+          >
             {searchLoading ? (
               <div
                 style={{ padding: "1rem", textAlign: "center", color: "#666" }}
@@ -250,6 +271,20 @@ export default function Navbar({
                     key={searchUser._id}
                     className="search-result-item"
                     onClick={() => handleSelectUser(searchUser)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      gap: '12px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #f0f0f0',
+                      transition: 'background-color 0.2s',
+                      ':hover': {
+                        backgroundColor: '#f8f9fa'
+                      }
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
                     <img
                       src={searchUser.profilePicture || userImg}
