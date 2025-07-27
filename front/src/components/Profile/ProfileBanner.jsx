@@ -57,7 +57,7 @@ export default function ProfileBanner({
 
         <div className="banner-musico" style={{
             position: 'relative',
-            marginTop: '200px', /* Eliminar margen superior */
+            marginTop: '0px', /* Eliminar margen superior */
             marginBottom: '2rem'
         }}>
             {/* Foto de portada/banner si existe */}
