@@ -1,10 +1,8 @@
 // src/components/Edit/EditProfile.jsx
 import React, { useState } from 'react';
 import perfil from '../../assets/perfil.png';
-import spotify from '../../assets/spotify.png';
-import soundcloud from '../../assets/soundcloud.png';
-import apple from '../../assets/apple.png';
-import youtube from '../../assets/youtube.png';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCamera, faUsers, faMusic } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Componente EditProfile - Muestra la información del perfil del usuario
@@ -35,18 +33,23 @@ export default function EditProfile({ user, onUpdateUser }) {
     
     if (newPhotoUrl !== null && newPhotoUrl !== user.profilePicture) {
       setUpdating(true);
-      setUpdateMessage("");
+      setUpdateMessage("📤 Subiendo nueva foto...");
       
       try {
-        const result = await onUpdateUser({ profilePicture: newPhotoUrl });
-        if (result?.success) {
+        const result = await onUpdateUser({ 
+          profilePicture: newPhotoUrl,
+          userId: user._id 
+        });
+        if (result?.success || result?.user) {
           setUpdateMessage("✅ Foto actualizada correctamente");
           setTimeout(() => setUpdateMessage(""), 3000);
         } else {
           setUpdateMessage("❌ Error al actualizar la foto");
+          setTimeout(() => setUpdateMessage(""), 3000);
         }
       } catch {
         setUpdateMessage("❌ Error al actualizar la foto");
+        setTimeout(() => setUpdateMessage(""), 3000);
       } finally {
         setUpdating(false);
       }
@@ -61,9 +64,12 @@ export default function EditProfile({ user, onUpdateUser }) {
     setUpdateMessage("🔄 Actualizando datos...");
     
     try {
-      // Utilizar onUpdateUser para forzar una actualización de datos
-      const result = await onUpdateUser({});
-      if (result?.success) {
+      // Forzar actualización solicitando datos del servidor
+      const result = await onUpdateUser({ 
+        userId: user._id,
+        refresh: true 
+      });
+      if (result?.success || result?.user) {
         setUpdateMessage("✅ Datos actualizados");
       } else {
         setUpdateMessage("✅ Datos refrescados");
@@ -143,74 +149,51 @@ export default function EditProfile({ user, onUpdateUser }) {
             }}
             title="Cambiar foto rápidamente"
           >
-            📷
+            <FontAwesomeIcon icon={faCamera} />
           </button>
         </div>
         <div className="info-usuario">
-          <h3>{user.username || user.nombre || user.email}</h3>
-          <p className="rol">{user.rol || "Usuario"}</p>
-          <p>{user.location || "Ubicación no especificada"}</p>
+          <h3>{user.username || user.email}</h3>
+          <p className="rol">{user.isAdmin ? "Administrador" : "Usuario"}</p>
+          <p>{user.from || "Ubicación no especificada"}</p>
           <p>{user.email}</p>
-          <p>{user.phone || "(sin número)"}</p>
+          {user.desc && <p className="descripcion">{user.desc}</p>}
+          <p className="relacion">
+            {user.relationship === 1 && "Soltero/a"}
+            {user.relationship === 2 && "En una relación"}
+            {user.relationship === 3 && "Casado/a"}
+          </p>
         </div>
       </div>
 
-      {/* Géneros musicales */}
-      {user.generos && user.generos.length > 0 && (
-        <div className="generos">
-          <h4>Géneros favoritos:</h4>
-          {user.generos.map((genero, index) => (
-            <p key={index} className="genero-tag">{genero}</p>
-          ))}
+      {/* Foto de portada si existe */}
+      {user.coverPicture && (
+        <div className="portada" style={{ marginTop: '1rem', width: '30%' }}>
+          <h4>Foto de portada:</h4>
+          <img 
+            src={user.coverPicture} 
+            alt="Portada" 
+            style={{ 
+              width: '100%', 
+              height: '150px', 
+              objectFit: 'cover', 
+              borderRadius: '10px',
+              border: '1px solid #ddd'
+            }} 
+          />
         </div>
       )}
-
-      {/* Redes sociales */}
-      <div className="redes">
-        <h4>Redes sociales:</h4>
-        <div className="redes-iconos">
-          {user.spotify ? (
-            <a href={user.spotify} target="_blank" rel="noopener noreferrer">
-              <img src={spotify} alt="Spotify" />
-            </a>
-          ) : (
-            <img src={spotify} alt="Spotify" style={{ opacity: 0.3 }} />
-          )}
-          
-          {user.soundcloud ? (
-            <a href={user.soundcloud} target="_blank" rel="noopener noreferrer">
-              <img src={soundcloud} alt="SoundCloud" />
-            </a>
-          ) : (
-            <img src={soundcloud} alt="SoundCloud" style={{ opacity: 0.3 }} />
-          )}
-          
-          {user.applemusic ? (
-            <a href={user.applemusic} target="_blank" rel="noopener noreferrer">
-              <img src={apple} alt="Apple Music" />
-            </a>
-          ) : (
-            <img src={apple} alt="Apple Music" style={{ opacity: 0.3 }} />
-          )}
-          
-          {user.youtube ? (
-            <a href={user.youtube} target="_blank" rel="noopener noreferrer">
-              <img src={youtube} alt="YouTube" />
-            </a>
-          ) : (
-            <img src={youtube} alt="YouTube" style={{ opacity: 0.3 }} />
-          )}
-        </div>
-      </div>
 
       {/* Estadísticas del usuario */}
       <div className="estadisticas-usuario" style={{ marginTop: '1rem' }}>
         <h4>Estadísticas:</h4>
         <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem', color: '#6c757d' }}>
-          <span>👥 {user.followers?.length || 0} seguidores</span>
-          <span>🎵 {user.following?.length || 0} siguiendo</span>
+          <span><FontAwesomeIcon icon={faUsers} /> {user.followers?.length || 0} seguidores</span>
+          <span><FontAwesomeIcon icon={faMusic} /> {user.following?.length || 0} siguiendo</span>
         </div>
       </div>
+
+     
     </div>
   );
 }

@@ -401,7 +401,7 @@ export default function Navbar({
               </button>
               <button
                 className="action-btn"
-                style={{ width: "100%", textAlign: "left", color: "#666", paddingBottom: "0.5rem", borderBottom: "1px solid #eee" }}
+                style={{ width: "100%", textAlign: "left", color: "#e82c0b", paddingBottom: "0.5rem", borderBottom: "1px solid #eee" }}
                 onClick={() => navigate('/edit-profile')}
               >
                 Editar Perfil

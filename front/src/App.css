@@ -3,8 +3,30 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  background-color: #df8939;
 }
 
+body, html {
+  background-color: #eaaf77;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Aplicar fondo a toda la aplicación */
+.App {
+  background-color: #eaa86a;
+  min-height: 100vh;
+}
+
+/* Asegurar que todos los contenedores principales tengan el fondo */
+.container, .contenido {
+  background-color: #df8939;
+}
+
+.body {
+  background-color: #eaaf77;
+}
 .logo {
   height: 6em;
   padding: 1.5em;

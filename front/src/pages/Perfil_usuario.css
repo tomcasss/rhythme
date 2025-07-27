@@ -1,14 +1,40 @@
 .banner-musico {
   width: 100%;
-  height: 200px;
+  height: 100px;
   background: linear-gradient(to right, #141414c7, #3a3a3ad2);
-  position: relative;
+  position: absolute;
+  position: top;
+  padding-bottom: 20px; /* Mantener solo padding inferior */
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
   display: flex;
   justify-content: flex-start;
   align-items: flex-end;
-  padding-bottom: 20px;
+  flex-shrink: 0; /* No permitir que se encoja */
+}
+
+
+
+/* Forzar que toda la página esté alineada al top */
+body, html, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+}
+
+/* Contenedor principal de la aplicación */
+.App {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .perfil-banner {
@@ -193,6 +219,9 @@
 .contenido {
   display: flex;
   flex: 1;
-  padding: 40px 60px;
-  gap: 80px;
+  flex-direction: column; /* Cambiar a columna para controlar el layout */
+  padding: 0 60px 40px 60px;
+  gap: 0; /* Eliminar gap que puede causar espaciado */
+  align-items: stretch; /* Estirar elementos al ancho completo */
+  justify-content: flex-start; /* Siempre alinear al inicio, no al centro */
 }

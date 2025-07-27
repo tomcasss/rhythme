@@ -19,13 +19,11 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    phone: '',
-    location: '',
     profilePicture: '',
-    spotify: '',
-    soundcloud: '',
-    applemusic: '',
-    youtube: ''
+    coverPicture: '',
+    desc: '',
+    from: '',
+    relationship: 1
   });
 
   /**
@@ -42,13 +40,11 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
       setFormData({
         username: currentUser.username || '',
         email: currentUser.email || '',
-        phone: currentUser.phone || '',
-        location: currentUser.location || '',
         profilePicture: currentUser.profilePicture || '',
-        spotify: currentUser.spotify || '',
-        soundcloud: currentUser.soundcloud || '',
-        applemusic: currentUser.applemusic || '',
-        youtube: currentUser.youtube || ''
+        coverPicture: currentUser.coverPicture || '',
+        desc: currentUser.desc || '',
+        from: currentUser.from || '',
+        relationship: currentUser.relationship || 1
       });
     }
   };
@@ -82,25 +78,26 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
       // Preparar datos según el tipo de edición
       switch (modalType) {
         case 'name':
-          updateData = { username: formData.username };
+          updateData = { username: formData.username, userId: currentUser._id };
           break;
         case 'contact':
           updateData = { 
             email: formData.email,
-            phone: formData.phone,
-            location: formData.location
+            from: formData.from,
+            userId: currentUser._id
           };
           break;
         case 'profile-picture':
-          updateData = { profilePicture: formData.profilePicture };
+          updateData = { profilePicture: formData.profilePicture, userId: currentUser._id };
           break;
-        case 'social-media':
-          updateData = {
-            spotify: formData.spotify,
-            soundcloud: formData.soundcloud,
-            applemusic: formData.applemusic,
-            youtube: formData.youtube
-          };
+        case 'cover-picture':
+          updateData = { coverPicture: formData.coverPicture, userId: currentUser._id };
+          break;
+        case 'bio':
+          updateData = { desc: formData.desc, userId: currentUser._id };
+          break;
+        case 'relationship':
+          updateData = { relationship: parseInt(formData.relationship), userId: currentUser._id };
           break;
         default:
           setError("Tipo de edición no válido");
@@ -110,19 +107,21 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
       // Llamar al backend
       const response = await axios.put(API_ENDPOINTS.UPDATE_USER(currentUser._id), updateData);
       
-      if (response.data) {
-        // Actualizar localStorage
-        const updatedUser = { ...currentUser, ...updateData };
+      if (response.data && response.data.user) {
+        // Actualizar localStorage con los datos del usuario completo del backend
+        const updatedUser = { ...currentUser, ...response.data.user };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         
         // Llamar callback del componente padre
         if (onUpdateUser) {
-          await onUpdateUser(updateData);
+          await onUpdateUser(response.data.user);
         }
         
         // Cerrar modal
         setShowModal(false);
         alert("¡Perfil actualizado exitosamente!");
+      } else {
+        setError("Error: Respuesta inválida del servidor");
       }
     } catch (error) {
       console.error("Error al actualizar perfil:", error);
@@ -142,7 +141,9 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
       border: '1px solid #ddd',
       borderRadius: '5px',
       fontSize: '1rem',
-      marginBottom: '1rem'
+      marginBottom: '1rem',
+      color: '#333',
+      backgroundColor: '#fff'
     };
 
     const buttonStyle = {
@@ -165,6 +166,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
       case 'profile-picture':
         return (
           <>
+
             <h3>Editar Foto de Perfil</h3>
             {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
             <div>
@@ -240,23 +242,109 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
                 style={inputStyle}
               />
               
-              <label>Teléfono:</label>
-              <input
-                type="tel"
-                placeholder="+1234567890"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                style={inputStyle}
-              />
-              
-              <label>Ubicación:</label>
+              <label>Ubicación (from):</label>
               <input
                 type="text"
                 placeholder="Ciudad, País"
-                value={formData.location}
-                onChange={(e) => handleInputChange('location', e.target.value)}
+                value={formData.from}
+                onChange={(e) => handleInputChange('from', e.target.value)}
                 style={inputStyle}
               />
+            </div>
+            <div style={{ marginTop: '1.5rem' }}>
+              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+                {loading ? 'Guardando...' : 'Guardar'}
+              </button>
+              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+                Cancelar
+              </button>
+            </div>
+          </>
+        );
+
+      case 'cover-picture':
+        return (
+          <>
+            <h3>Editar Foto de Portada</h3>
+            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            <div>
+              <label>URL de la imagen de portada:</label>
+              <input
+                type="url"
+                placeholder="https://ejemplo.com/mi-portada.jpg"
+                value={formData.coverPicture}
+                onChange={(e) => handleInputChange('coverPicture', e.target.value)}
+                style={inputStyle}
+              />
+              {formData.coverPicture && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <p>Vista previa:</p>
+                  <img 
+                    src={formData.coverPicture} 
+                    alt="Preview" 
+                    style={{ width: '200px', height: '100px', objectFit: 'cover', borderRadius: '10px' }}
+                    onError={() => setError('URL de imagen no válida')}
+                  />
+                </div>
+              )}
+            </div>
+            <div style={{ marginTop: '1.5rem' }}>
+              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+                {loading ? 'Guardando...' : 'Guardar'}
+              </button>
+              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+                Cancelar
+              </button>
+            </div>
+          </>
+        );
+
+      case 'bio':
+        return (
+          <>
+            <h3>Editar Biografía</h3>
+            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            <div>
+              <label>Descripción (máximo 250 caracteres):</label>
+              <textarea
+                placeholder="Cuéntanos sobre ti..."
+                value={formData.desc}
+                onChange={(e) => handleInputChange('desc', e.target.value)}
+                maxLength={250}
+                rows={4}
+                style={{...inputStyle, resize: 'vertical'}}
+              />
+              <small style={{color: '#6c757d'}}>
+                {formData.desc.length}/250 caracteres
+              </small>
+            </div>
+            <div style={{ marginTop: '1.5rem' }}>
+              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+                {loading ? 'Guardando...' : 'Guardar'}
+              </button>
+              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+                Cancelar
+              </button>
+            </div>
+          </>
+        );
+
+      case 'relationship':
+        return (
+          <>
+            <h3>Editar Estado de Relación</h3>
+            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            <div>
+              <label>Estado de relación:</label>
+              <select
+                value={formData.relationship}
+                onChange={(e) => handleInputChange('relationship', e.target.value)}
+                style={inputStyle}
+              >
+                <option value={1}>Soltero/a</option>
+                <option value={2}>En una relación</option>
+                <option value={3}>Casado/a</option>
+              </select>
             </div>
             <div style={{ marginTop: '1.5rem' }}>
               <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
@@ -270,58 +358,6 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         );
 
       case 'social-media':
-        return (
-          <>
-            <h3>Editar Redes Sociales</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
-            <div>
-              <label>Spotify:</label>
-              <input
-                type="url"
-                placeholder="https://open.spotify.com/user/..."
-                value={formData.spotify}
-                onChange={(e) => handleInputChange('spotify', e.target.value)}
-                style={inputStyle}
-              />
-              
-              <label>SoundCloud:</label>
-              <input
-                type="url"
-                placeholder="https://soundcloud.com/..."
-                value={formData.soundcloud}
-                onChange={(e) => handleInputChange('soundcloud', e.target.value)}
-                style={inputStyle}
-              />
-              
-              <label>Apple Music:</label>
-              <input
-                type="url"
-                placeholder="https://music.apple.com/..."
-                value={formData.applemusic}
-                onChange={(e) => handleInputChange('applemusic', e.target.value)}
-                style={inputStyle}
-              />
-              
-              <label>YouTube:</label>
-              <input
-                type="url"
-                placeholder="https://youtube.com/..."
-                value={formData.youtube}
-                onChange={(e) => handleInputChange('youtube', e.target.value)}
-                style={inputStyle}
-              />
-            </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
-                {loading ? 'Guardando...' : 'Guardar'}
-              </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
-                Cancelar
-              </button>
-            </div>
-          </>
-        );
-
       default:
         return (
           <>
@@ -358,6 +394,13 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         
         <button 
           className="btn-opcion"
+          onClick={() => handleEditOption('cover-picture')}
+        >
+          Editar foto de portada
+        </button>
+        
+        <button 
+          className="btn-opcion"
           onClick={() => handleEditOption('name')}
         >
           Editar mi nombre
@@ -372,9 +415,16 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         
         <button 
           className="btn-opcion"
-          onClick={() => handleEditOption('social-media')}
+          onClick={() => handleEditOption('bio')}
         >
-          Editar redes sociales
+          Editar biografía
+        </button>
+        
+        <button 
+          className="btn-opcion"
+          onClick={() => handleEditOption('relationship')}
+        >
+          Estado de relación
         </button>
         
         <hr />

@@ -69,7 +69,7 @@ export default function ProfileHeader() {
                             >
                                 <button
                                     className="action-btn"
-                                    style={{ width: '100%', textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #eee' }}
+                                    style={{ width: '100%', textAlign: 'left', padding: '0.5rem', color: '#e82c0b', borderBottom: '1px solid #eee' }}
                                     onClick={() => navigate('/edit-profile')}
                                 >
                                     Editar perfil

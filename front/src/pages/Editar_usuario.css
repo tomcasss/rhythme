@@ -3,7 +3,7 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background-color: #eeeeee;
+  background-color: #f1c8a1;
 }
 
 .contenedor {
@@ -26,15 +26,16 @@ body {
   font-weight: bold;
 }
 
-.contenido {
+.contenido-editar {
   display: flex;
   flex: 1;
-  padding: 40px 60px;
-  gap: 80px;
+  padding: 30px 60px;
+  gap: 20px;
 }
 
 .columna-izquierda {
-  flex: 1;
+  flex: 2;
+  width: 70%;
 }
 
 .columna-izquierda h2 {
@@ -53,7 +54,7 @@ body {
   height: 120px;
   border-radius: 100%;
   object-fit: cover;
-  border: 4px solid #000;
+  border: 1px solid #000;
 }
 
 .info-usuario h3 {
@@ -82,7 +83,8 @@ body {
 }
 
 .columna-derecha {
-  width: 300px;
+  flex: 1;
+  width: 100%;
 }
 
 .opciones {
@@ -138,11 +140,12 @@ body {
   width: 100%;
   background-color: transparent;
   border: none;
-  text-align: left;
+  text-align: center;
   font-size: 16px;
   font-weight: bold;
   color: #333;
   padding: 10px 0;
+  margin: 5px 0;
   cursor: pointer;
   transition: color 0.3s ease;
 }

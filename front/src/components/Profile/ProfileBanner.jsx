@@ -1,8 +1,4 @@
 // src/components/Profile/ProfileBanner.jsx
-import spotify from '../../assets/spotify.png';
-import soundcloud from '../../assets/soundcloud.png';
-import apple from '../../assets/apple.png';
-import youtube from '../../assets/youtube.png';
 import perfil from '../../assets/perfil.png';
 
 /**
@@ -58,88 +54,220 @@ export default function ProfileBanner({
     }
 
     return (
-        <div className="container">
-            <div className="banner-musico">
-                <div className="perfil-banner">
-                    <img
-                        src={profileUser.profilePicture || perfil}
-                        className="foto-perfil-grande"
-                        alt="Perfil"
-                    />
-                    <div className="info-banner">
-                        <h2>{profileUser.username || profileUser.name || "Usuario"}</h2>
-                        <p>{profileUser.desc || profileUser.descripcion || "Sin descripción"}</p>
 
-                        {/* Botones de acción */}
-                        {!isOwnProfile && (
-                            <div className="botones-banner">
-                                {isFollowing(profileUser._id) ? (
-                                    <button
-                                        className="btn-red"
-                                        onClick={handleUnfollow}
-                                        disabled={followLoading}
-                                        style={{
-                                            background: '#dc3545',
-                                            opacity: followLoading ? 0.7 : 1
-                                        }}
-                                    >
-                                        {followLoading ? 'Cargando...' : 'Dejar de seguir'}
-                                    </button>
-                                ) : (
-                                    <button
-                                        className="btn-red"
-                                        onClick={handleFollow}
-                                        disabled={followLoading}
-                                        style={{
-                                            opacity: followLoading ? 0.7 : 1
-                                        }}
-                                    >
-                                        {followLoading ? 'Cargando...' : 'Seguir'}
-                                    </button>
-                                )}
-                                <button className="btn-mensaje">Enviar un mensaje</button>
-                            </div>
+        <div className="banner-musico" style={{
+            position: 'relative',
+            marginTop: '200px', /* Eliminar margen superior */
+            marginBottom: '2rem'
+        }}>
+            {/* Foto de portada/banner si existe */}
+            {profileUser.coverPicture ? (
+                <div className="cover-banner" style={{
+                    width: '100%',
+                    height: '300px',
+                    backgroundImage: `url(${profileUser.coverPicture})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    borderRadius: '10px',
+                    position: 'relative'
+                }}>
+                    {/* Overlay oscuro para mejor legibilidad */}
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%)',
+                        borderRadius: '10px'
+                    }}></div>
+                </div>
+            ) : (
+                // Cuando no hay cover picture, crear un fondo simple
+                <div className="cover-banner" style={{
+                    width: '100%',
+                    height: '300px',
+                    background: 'linear-gradient(135deg, #ff7a00 0%, #ff9500 100%)',
+                    borderRadius: '10px',
+                    position: 'relative'
+                }}>
+                    {/* Overlay sutil */}
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.1)',
+                        borderRadius: '10px'
+                    }}></div>
+                </div>
+            )}
+
+            <div className="perfil-banner" style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '20px',
+                right: '20px',
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'end',
+                gap: '1rem'
+            }}>
+                <img
+                    src={profileUser.profilePicture || perfil}
+                    className="foto-perfil-grande"
+                    alt="Perfil"
+                    style={{
+                        width: '120px',
+                        height: '120px',
+                        borderRadius: '50%',
+                        border: '4px solid white',
+                        boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+                    }}
+                />
+                <div className="info-banner" style={{
+                    color: 'white',
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+                    flex: 1
+                }}>
+                    <h2 style={{
+                        margin: '0 0 0.5rem 0',
+                        fontSize: '2rem',
+                        fontWeight: 'bold'
+                    }}>
+                        {profileUser.username || profileUser.name || "Usuario"}
+                    </h2>
+                    <p style={{
+                        margin: '0 0 1rem 0',
+                        fontSize: '1.1rem',
+                        opacity: 0.9
+                    }}>
+                        {profileUser.desc || profileUser.descripcion || "Sin descripción"}
+                    </p>
+
+                    {/* Información adicional del perfil */}
+                    <div className="profile-info" style={{
+                        marginBottom: '1rem',
+                        fontSize: '0.9rem',
+                        color: 'rgba(255,255,255,0.9)',
+                        display: 'flex',
+                        gap: '1rem',
+                        flexWrap: 'wrap'
+                    }}>
+                        {profileUser.from && <span>📍 {profileUser.from}</span>}
+                        {profileUser.relationship && (
+                            <span>💝 {
+                                profileUser.relationship === 1 ? "Soltero/a" :
+                                    profileUser.relationship === 2 ? "En una relación" :
+                                        profileUser.relationship === 3 ? "Casado/a" : ""
+                            }</span>
                         )}
+                    </div>
 
-                        {/* Redes sociales */}
-                        <div className="redes-banner">
-                            {profileUser.spotify && (
-                                <a href={profileUser.spotify} target="_blank" rel="noopener noreferrer">
-                                    <img src={spotify} alt="Spotify" />
-                                </a>
-                            )}
-                            {profileUser.soundcloud && (
-                                <a href={profileUser.soundcloud} target="_blank" rel="noopener noreferrer">
-                                    <img src={soundcloud} alt="SoundCloud" />
-                                </a>
-                            )}
-                            {profileUser.applemusic && (
-                                <a href={profileUser.applemusic} target="_blank" rel="noopener noreferrer">
-                                    <img src={apple} alt="Apple Music" />
-                                </a>
-                            )}
-                            {profileUser.youtube && (
-                                <a href={profileUser.youtube} target="_blank" rel="noopener noreferrer">
-                                    <img src={youtube} alt="YouTube" />
-                                </a>
-                            )}
+                    {/* Estadísticas */}
+                    <div className="profile-stats" style={{
+                        display: 'flex',
+                        gap: '2rem',
+                        marginBottom: '1rem'
+                    }}>
+                        <div className="stat">
+                            <span className="stat-number" style={{
+                                fontSize: '1.5rem',
+                                fontWeight: 'bold',
+                                color: 'white'
+                            }}>
+                                {profileUser.followers?.length || 0}
+                            </span>
+                            <span className="stat-label" style={{
+                                marginLeft: '0.5rem',
+                                color: 'rgba(255,255,255,0.8)'
+                            }}>
+                                Seguidores
+                            </span>
                         </div>
-
-                        {/* Estadísticas */}
-                        <div className="profile-stats">
-                            <div className="stat">
-                                <span className="stat-number">{profileUser.followers?.length || 0}</span>
-                                <span className="stat-label"> Seguidores</span>
-                            </div>
-                            <div className="stat">
-                                <span className="stat-number">{profileUser.following?.length || 0}</span>
-                                <span className="stat-label"> Siguiendo</span>
-                            </div>
+                        <div className="stat">
+                            <span className="stat-number" style={{
+                                fontSize: '1.5rem',
+                                fontWeight: 'bold',
+                                color: 'white'
+                            }}>
+                                {profileUser.following?.length || 0}
+                            </span>
+                            <span className="stat-label" style={{
+                                marginLeft: '0.5rem',
+                                color: 'rgba(255,255,255,0.8)'
+                            }}>
+                                Siguiendo
+                            </span>
                         </div>
                     </div>
+
+                    {/* Botones de acción */}
+                    {!isOwnProfile && (
+                        <div className="botones-banner" style={{
+                            display: 'flex',
+                            gap: '1rem'
+                        }}>
+                            {isFollowing(profileUser._id) ? (
+                                <button
+                                    className="btn-red"
+                                    onClick={handleUnfollow}
+                                    disabled={followLoading}
+                                    style={{
+                                        background: '#dc3545',
+                                        opacity: followLoading ? 0.7 : 1,
+                                        padding: '0.5rem 1rem',
+                                        borderRadius: '5px',
+                                        border: 'none',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        fontSize: '0.9rem'
+                                    }}
+                                >
+                                    {followLoading ? 'Cargando...' : 'Dejar de seguir'}
+                                </button>
+                            ) : (
+                                <button
+                                    className="btn-red"
+                                    onClick={handleFollow}
+                                    disabled={followLoading}
+                                    style={{
+                                        background: '#ff7a00',
+                                        opacity: followLoading ? 0.7 : 1,
+                                        padding: '0.5rem 1rem',
+                                        borderRadius: '5px',
+                                        border: 'none',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        fontSize: '0.9rem'
+                                    }}
+                                >
+                                    {followLoading ? 'Cargando...' : 'Seguir'}
+                                </button>
+                            )}
+                            <button
+                                className="btn-mensaje"
+                                style={{
+                                    background: 'rgba(255,255,255,0.2)',
+                                    border: '2px solid rgba(255,255,255,0.5)',
+                                    color: 'white',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.9rem',
+                                    backdropFilter: 'blur(10px)'
+                                }}
+                            >
+                                Enviar un mensaje
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
+
 
     );
 }

@@ -48,7 +48,7 @@ export default function ProfileContent({ userId }) {
     };
 
     return (
-        <div className="container">
+        
             <div className="contenido-musico">
                 <div className="profile-buttons-grid" style={{
                     display: 'grid',
@@ -241,7 +241,6 @@ export default function ProfileContent({ userId }) {
                     )}
                 </div>
             </div>
-        </div>
 
     );
 }

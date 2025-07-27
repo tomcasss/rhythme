@@ -11,7 +11,7 @@ import EditOptions from "../components/Edit/EditOptions";
 
 export const Editar_usuario = () => {
   const navigate = useNavigate();
-  
+
   const [user, setUser] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +24,7 @@ export const Editar_usuario = () => {
       navigate("/");
       return;
     }
-    
+
     setCurrentUser(userData);
     fetchUserData(userData._id);
   }, [navigate]);
@@ -33,7 +33,7 @@ export const Editar_usuario = () => {
   const fetchUserData = async (userId) => {
     setLoading(true);
     setError("");
-    
+
     try {
       const response = await axios.get(API_ENDPOINTS.GET_USER(userId));
       setUser(response.data.user);
@@ -48,26 +48,39 @@ export const Editar_usuario = () => {
 
   // Manejar actualización de usuario
   const handleUpdateUser = async (updatedData) => {
-    if (!currentUser?._id) return;
-    
+    if (!currentUser?._id) return { success: false, message: "Usuario no encontrado" };
+
     try {
+      // Si es solo un refresh (datos vacíos o con flag refresh), solo recargar datos
+      if (!updatedData || Object.keys(updatedData).length === 0 || updatedData.refresh) {
+        await fetchUserData(currentUser._id);
+        return { success: true, message: "Datos actualizados correctamente" };
+      }
+
+      // Si hay datos reales para actualizar
       const response = await axios.put(API_ENDPOINTS.UPDATE_USER(currentUser._id), updatedData);
-      setUser(response.data.user);
-      
-      // Actualizar localStorage si es necesario
-      if (updatedData.username || updatedData.email) {
-        const updatedUserData = { ...currentUser, ...updatedData };
+
+      if (response.data && response.data.user) {
+        setUser(response.data.user);
+
+        // Actualizar localStorage con los datos completos del usuario
+        const updatedUserData = { ...currentUser, ...response.data.user };
         localStorage.setItem("user", JSON.stringify(updatedUserData));
         setCurrentUser(updatedUserData);
+
+        // Recargar datos del usuario desde el backend para asegurar sincronización
+        await fetchUserData(currentUser._id);
+
+        return { success: true, user: response.data.user, message: "Usuario actualizado correctamente" };
+      } else {
+        return { success: false, message: "Respuesta inválida del servidor" };
       }
-      
-      // Recargar datos del usuario desde el backend
-      await fetchUserData(currentUser._id);
-      
-      return { success: true, message: "Usuario actualizado correctamente" };
     } catch (error) {
       console.error("Error al actualizar usuario:", error);
-      return { success: false, message: "Error al actualizar el usuario" };
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error al actualizar el usuario"
+      };
     }
   };
 
@@ -106,19 +119,26 @@ export const Editar_usuario = () => {
   return (
     <div className="contenedor">
       <EditHeader onBack={() => navigate('/home')} />
-      
-      <div className="contenido">
-        <EditProfile 
-          user={user} 
-          onUpdateUser={handleUpdateUser}
-        />
-        
-        <EditOptions 
-          onLogout={handleLogout}
-          onUpdateUser={handleUpdateUser}
-        />
+
+      <div className="contenido-editar">
+        <div className='columna-izquierda'>
+          <EditProfile
+            user={user}
+            onUpdateUser={handleUpdateUser}
+          />
+        </div>
+
+
+
+        <div className='columna-derecha'>
+          <EditOptions
+            onLogout={handleLogout}
+            onUpdateUser={handleUpdateUser}
+          />
+        </div>
       </div>
     </div>
+
   );
 }
 
