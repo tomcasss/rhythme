@@ -3,7 +3,6 @@
   height: 100px;
   background: linear-gradient(to right, #141414c7, #3a3a3ad2);
   position: absolute;
-  position: top;
   padding-bottom: 20px; /* Mantener solo padding inferior */
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
