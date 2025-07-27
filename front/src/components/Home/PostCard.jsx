@@ -1,5 +1,6 @@
 // src/components/Home/PostCard.jsx
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import userImg from '../../assets/user.png';
 import CommentsSection from './CommentsSection';
 
@@ -28,6 +29,8 @@ export default function PostCard({
   onUnfollow,
   isFollowing 
 }) {
+  const navigate = useNavigate();
+  
   // Estados para menú de opciones
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef();
@@ -134,13 +137,32 @@ export default function PostCard({
     setShowComments(!showComments);
   };
 
+  /**
+   * Navegar al perfil del usuario del post
+   */
+  const goToProfile = () => {
+    const postUserId = getPostUserId();
+    if (postUserId) {
+      navigate(`/profile/${postUserId}`);
+    }
+  };
+
   return (
     <div className="post-card" style={{position: 'relative'}}>
       {/* Header del post */}
       <div className="post-header">
-        <img src={userImg} alt="user" className="avatar" />
+        <img 
+          src={userImg} 
+          alt="user" 
+          className="avatar" 
+          onClick={goToProfile}
+          style={{ cursor: 'pointer' }}
+        />
         <div className="post-user">
-          <strong>
+          <strong 
+            onClick={goToProfile}
+            style={{ cursor: 'pointer', color: '#fb7202' }}
+          >
             {post.userId && typeof post.userId === 'object'
               ? (post.userId.username || post.userId.email || `ID: ${post.userId._id?.slice(0, 6)}...`)
               : (post.username || (post.userId ? `ID: ${post.userId.slice(0, 6)}...` : "Usuario"))
