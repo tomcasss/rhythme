@@ -7,4 +7,10 @@
 
 body {
   margin: 0;
+  background-color: #eaaf77;
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
 }

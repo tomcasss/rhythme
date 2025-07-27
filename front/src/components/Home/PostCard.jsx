@@ -1,6 +1,9 @@
 // src/components/Home/PostCard.jsx
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import userImg from '../../assets/user.png';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faPencil } from "@fortawesome/free-solid-svg-icons";
 import CommentsSection from './CommentsSection';
 
 /**
@@ -28,6 +31,8 @@ export default function PostCard({
   onUnfollow,
   isFollowing 
 }) {
+  const navigate = useNavigate();
+  
   // Estados para menú de opciones
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef();
@@ -134,13 +139,32 @@ export default function PostCard({
     setShowComments(!showComments);
   };
 
+  /**
+   * Navegar al perfil del usuario del post
+   */
+  const goToProfile = () => {
+    const postUserId = getPostUserId();
+    if (postUserId) {
+      navigate(`/profile/${postUserId}`);
+    }
+  };
+
   return (
     <div className="post-card" style={{position: 'relative'}}>
       {/* Header del post */}
       <div className="post-header">
-        <img src={userImg} alt="user" className="avatar" />
+        <img 
+          src={userImg} 
+          alt="user" 
+          className="avatar" 
+          onClick={goToProfile}
+          style={{ cursor: 'pointer' }}
+        />
         <div className="post-user">
-          <strong>
+          <strong 
+            onClick={goToProfile}
+            style={{ cursor: 'pointer', color: '#fb7202' }}
+          >
             {post.userId && typeof post.userId === 'object'
               ? (post.userId.username || post.userId.email || `ID: ${post.userId._id?.slice(0, 6)}...`)
               : (post.username || (post.userId ? `ID: ${post.userId.slice(0, 6)}...` : "Usuario"))
@@ -234,9 +258,9 @@ export default function PostCard({
                   background: '#fff', 
                   border: '1px solid #eee', 
                   borderRadius: 8, 
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+                  boxShadow: '1px 2px 8px rgba(0,0,0,0.08)', 
                   padding: '0.5rem', 
-                  minWidth: 100
+                  minWidth: 150
                 }}
               >
                 <button 
@@ -244,14 +268,14 @@ export default function PostCard({
                   style={{width: '100%', textAlign: 'left', color: '#e82c0b'}} 
                   onClick={handleDelete}
                 >
-                  🗑️ Eliminar
+                  <FontAwesomeIcon icon={faTrash} /> Eliminar
                 </button>
                 <button 
                   className="action-btn" 
-                  style={{width: '100%', textAlign: 'left'}} 
+                  style={{width: '100%', textAlign: 'left', color: '#e82c0b'}} 
                   onClick={startEdit}
                 >
-                  ✏️ Editar
+                  <FontAwesomeIcon icon={faPencil} /> Editar
                 </button>
               </div>
             )}

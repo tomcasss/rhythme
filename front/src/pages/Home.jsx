@@ -8,7 +8,6 @@ import { useFollowSystem } from "../hooks/useFollowSystem.js";
 
 // Componentes
 import Navbar from "../components/Home/Navbar";
-import Stories from "../components/Home/Stories";
 import CreatePostForm from "../components/Home/CreatePostForm";
 import PostsList from "../components/Home/PostsList";
 
@@ -138,10 +137,7 @@ export default function Home() {
         onUnfollowUser={unfollowUser}
         isFollowing={isFollowing}
       />
-      
-      {/* Stories */}
-      <Stories />
-      
+
       {/* Feed principal */}
       <main className="feed">
         {/* Formulario para crear posts */}

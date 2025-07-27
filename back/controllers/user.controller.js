@@ -29,8 +29,6 @@ export const deleteUserController = async (req, res) => {
       console.log(error);
       res.status(500).json(error);
     }
-    console.log(error);
-    res.status(500).json(error);
   } else {
     res.status(500).json("You can only delete your own account!");
   }

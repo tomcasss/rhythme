@@ -1,6 +1,6 @@
 
 .home-container {
-  background-color: rgb(237, 237, 237);
+  background-color: #f1c8a1;
   min-height: 100vh;
   width: 100%; 
   font-family: 'Segoe UI', sans-serif;
@@ -45,76 +45,18 @@
   position: sticky;
   top: 0;
   z-index: 1000;
+  height: 70px; /* Altura fija para evitar expansión */
+  min-height: 70px;
+  max-height: 70px;
 }
 
 .search-bar {
-  width: 40%;
+  width: 100%;
   padding: 0.6rem 1rem;
   border-radius: 20px;
   border: 1px solid #ccc;
   outline: none;
   font-size: 1rem;
-}
-
-/* Estilos para el contenedor y resultados de búsqueda */
-.search-container {
-  position: relative;
-  flex: 1;
-  max-width: 500px;
-}
-
-.search-container .search-bar {
-  width: 100%;
-}
-
-.search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  max-height: 400px;
-  overflow-y: auto;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.search-result-item {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  transition: background-color 0.2s;
-}
-
-.search-result-item:hover {
-  background-color: #f8f9fa;
-}
-
-.search-result-item:last-child {
-  border-bottom: none;
-}
-
-/* Botones dentro de los resultados de búsqueda */
-.search-result-item button {
-  transition: all 0.2s ease;
-}
-
-.search-result-item button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.search-result-item button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 .navbar-icons {
@@ -219,14 +161,14 @@
 .action-btn {
   background: none;
   border: none;
-  font-size: 1.2rem;
+  font-size: 0.8rem;
   cursor: pointer;
   color: #777;
   transition: color 0.3s ease;
 }
 
 .action-btn:hover {
-  color: orange;
+  color: rgb(255, 47, 0);
 }
 
 .logo1 {
@@ -238,156 +180,41 @@
   z-index: 10;
 }
 
-/* Estilos para comentarios */
-.comments-section {
-  margin-top: 1rem;
-  border-top: 1px solid #eee;
-  padding-top: 1rem;
+/* Estilos para los resultados de búsqueda */
+.search-results {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: white !important;
+  border: 1px solid #ddd !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  z-index: 1001 !important;
+  margin-top: 4px !important;
 }
 
-.comment-form {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+.search-result-item {
+  display: flex !important;
+  align-items: center !important;
+  padding: 12px 16px !important;
+  gap: 12px !important;
+  cursor: pointer !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  transition: background-color 0.2s !important;
 }
 
-.comment-input {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  transition: border-color 0.2s;
+.search-result-item:hover {
+  background-color: #f8f9fa !important;
 }
 
-.comment-input:focus {
-  outline: none;
-  border-color: #fb7202;
+.search-result-item:last-child {
+  border-bottom: none !important;
 }
 
-.comment-submit-btn {
-  padding: 0.5rem 1rem;
-  background: linear-gradient(90deg, #fb7202, #e82c0b);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.comment-submit-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.comments-list {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.comment-item {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding: 0.5rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-}
-
-.comment-item:hover {
-  background: #f0f1f2;
-}
-
-.comment-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.comment-content {
-  flex: 1;
-}
-
-.comment-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.comment-author {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.comment-time {
-  font-size: 0.75rem;
-  color: #666;
-}
-
-.comment-text {
-  margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: #444;
-}
-
-.comments-empty {
-  text-align: center;
-  color: #666;
-  font-style: italic;
-  padding: 1rem;
-}
-
-.comments-loading {
-  text-align: center;
-  color: #666;
-  padding: 1rem;
-}
-
-/* Estilos para botones de seguir */
-.follow-btn {
-  background: linear-gradient(90deg, #fb7202, #e82c0b);
-  color: #fff;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-}
-
-.follow-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(251, 114, 2, 0.3);
-}
-
-.following-btn {
-  background: #e9ecef;
-  color: #6c757d;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-}
-
-.following-btn:hover:not(:disabled) {
-  background: #dc3545;
-  color: #fff;
-  border-color: #dc3545;
-}
-
-.follow-btn:disabled, .following-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+/* Asegurar que el contenedor de búsqueda tenga posición relativa */
+.search-container {
+  position: relative !important;
 }

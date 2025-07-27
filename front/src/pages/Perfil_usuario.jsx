@@ -1,149 +1,119 @@
-import React, { useEffect, useState } from 'react'
+// src/pages/Perfil_usuario.jsx
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import "./Perfil_usuario.css";
-import spotify from '../assets/spotify.png';
-import soundcloud from '../assets/soundcloud.png';
-import apple from '../assets/apple.png';
-import youtube from '../assets/youtube.png';
-import perfil from '../assets/perfil.png';
+import { API_ENDPOINTS } from "../config/api.js";
+import { useFollowSystem } from "../hooks/useFollowSystem.js";
 
+// Componentes
+import ProfileHeader from "../components/Profile/ProfileHeader";
+import ProfileBanner from "../components/Profile/ProfileBanner";
+import ProfileContent from "../components/Profile/ProfileContent";
 
+/**
+ * Componente Perfil_usuario - Página de perfil de usuario
+ */
 export const Perfil_usuario = () => {
+  const { userId } = useParams(); // ID del usuario del perfil a mostrar
+  const navigate = useNavigate();
   
-const [user, setUser] = useState(null);
-const [loading, setLoading] = useState(true); 
+  // Estados
+  const [profileUser, setProfileUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-const userId = "123"; //esta linea de codigo es importante, ya que es lo que enviara a buscar la id de la persona para cargar los datos, pero podriamos cambiarlo por algo más dinamico o un hook
+  // Sistema de seguimiento
+  const {
+    followLoading,
+    isFollowing,
+    followUser,
+    unfollowUser,
+    loadFollowingUsers
+  } = useFollowSystem(currentUser);
 
-useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const res = await axios.get(`http://localhost:3000/api/users/${userId}`);
-      setUser(res.data.data);
-    } catch (error) {
-      console.error("Error al obtener el usuario:", error);
-    } finally {
-      setLoading(false);
+  // Inicialización
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (!userData || !userData._id) {
+      navigate("/");
+      return;
     }
-  };
+    
+    setCurrentUser(userData);
+    loadFollowingUsers(userData._id);
+  }, [navigate, loadFollowingUsers]);
 
-  fetchUser();
-}, []);
+  // Cargar datos del usuario del perfil
+  useEffect(() => {
+    const fetchProfileUser = async () => {
+      if (!userId) return;
+      
+      setLoading(true);
+      setError("");
+      
+      try {
+        const res = await axios.get(API_ENDPOINTS.GET_USER(userId));
+        setProfileUser(res.data.user);
+      } catch (error) {
+        console.error("Error al obtener el usuario:", error);
+        setError("No se pudo cargar el perfil del usuario");
+        setProfileUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileUser();
+  }, [userId]);
+
+  // Verificar si es el propio perfil
+  const isOwnProfile = currentUser && profileUser && currentUser._id === profileUser._id;
+
+  // Estado de carga del seguimiento específico para este usuario
+  const userFollowLoading = profileUser ? followLoading[profileUser._id] || false : false;
+
+  if (loading) {
+    return (
+      <div className="contenedor">
+        <ProfileHeader />
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <p>Cargando perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="contenedor">
+        <ProfileHeader />
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <p style={{ color: '#e74c3c' }}>{error}</p>
+          <button onClick={() => navigate('/home')} className="btn-red">
+            Volver al inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-     <>
-      <div className="contenedor">
-        {/* Header */}
-        <header className="encabezado">
-          <div className="logo">Logo</div>
-          <div className="barra-busqueda"></div>
-          <div className="iconos-header">
-            <i className="fas fa-user"></i>
-            <i className="fas fa-bell"></i>
-          </div>
-        </header>
-
-        {loading ? (
-          <p>Cargando datos...</p>
-        ) : user ? (
-          <>
-           
-            <div className="banner-musico">
-              <div className="perfil-banner">
-                <img
-                  src={user.profilePicture || perfil}
-                  className="foto-perfil-grande"
-                  alt="Perfil"
-                />
-                <div className="info-banner">
-                  <h2>{user.nombre || "Juan Pérez Vargas"}</h2>
-                  <p>{user.descripcion || "Cantante / Compositor"}</p>
-                  <div className="botones-banner">
-                    <button className="btn-red">Añadir a mi red</button>
-                    <button className="btn-mensaje">Enviar un mensaje</button>
-                  </div>
-                  <div className="redes-banner">
-                    {user.spotify && <a href={user.spotify}><img src={spotify} alt="Spotify" /></a>}
-                    {user.soundcloud && <a href={user.soundcloud}><img src={soundcloud} alt="SoundCloud" /></a>}
-                    {user.applemusic && <a href={user.applemusic}><img src={apple} alt="Apple Music" /></a>}
-                    {user.youtube && <a href={user.youtube}><img src={youtube} alt="YouTube" /></a>}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            
-        <div className="contenido-musico">
-            <div className="galeria-musico">
-            <button className="tarjeta tarjeta-btn">
-            <h4>Albums</h4>
-            <img src={perfil} alt="Album" />
-            </button>
-
-            <button className="tarjeta tarjeta-btn">
-            <h4>Playlists</h4>
-            <img src={perfil} alt="Playlist" />
-            </button>
-
-            <button className="tarjeta tarjeta-btn">
-            <h4>Fotos</h4>
-            <img src={perfil} alt="Fotos" />
-            </button>
-        </div>
-
-            </div>
-          </>
-          //los parentesis de abajo es un if para que si no se encuentra la ID se carga el div de abajo
-        ) : ( 
-            /*Si la ID no existe saldra de esta manera */
-          <>
-            
-            <div className="banner-musico">
-              <div className="perfil-banner">
-                <img
-                  src={perfil}
-                  className="foto-perfil-grande"
-                  alt="Perfil"
-                />
-                <div className="info-banner">
-                  <h3>Nombre del usuario</h3>
-                  <p className="rol">Rol del usuario</p>
-                  <div className="botones-banner">
-                    <button className="btn-red">Añadir a mi red</button>
-                    <button className="btn-mensaje">Enviar un mensaje</button>
-                  </div>
-                  <div className="redes-banner">
-                    <img src={spotify} alt="Spotify" />
-                    <img src={soundcloud} alt="SoundCloud" />
-                    <img src={apple} alt="Apple Music" />
-                    <img src={youtube} alt="YouTube" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-           
-           <div className="contenido-musico">
-            <div className="galeria-musico">
-            <button className="tarjeta tarjeta-btn">
-            <h4>Albums</h4>
-            <img src={perfil} alt="Album" />
-            </button>
-
-            <button className="tarjeta tarjeta-btn">
-            <h4>Playlists</h4>
-            <img src={perfil} alt="Playlist" />
-            </button>
-
-            <button className="tarjeta tarjeta-btn">
-            <h4>Fotos</h4>
-            <img src={perfil} alt="Fotos" />
-            </button>
-        </div>
-            </div>
-          </>
-        )}
-      </div>
-    </>
+    <div className="contenedor">
+      <ProfileHeader />
+      
+      <ProfileBanner
+        profileUser={profileUser}
+        isOwnProfile={isOwnProfile}
+        onFollow={followUser}
+        onUnfollow={unfollowUser}
+        isFollowing={isFollowing}
+        followLoading={userFollowLoading}
+      />
+      
+      <ProfileContent userId={userId} />
+    </div>
   );
 };
