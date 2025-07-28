@@ -1,8 +1,10 @@
 /* SpotifyConnection.css */
 .spotify-connection {
-    background: #fff;
+    background: #1c1c1c;
+    width: 50%;
     border-radius: 12px;
     padding: 20px;
+    margin-top: 20px;
     margin-bottom: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     border: 1px solid #e9ecef;
@@ -50,7 +52,7 @@
 }
 
 .spotify-icon {
-    color: #1DB954;
+    color: #f8f8f8;
     font-size: 1.5rem;
 }
 

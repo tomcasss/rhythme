@@ -349,7 +349,7 @@ export default function PostCard({
       {!isEditing && (
         <div className="post-actions">
           <button className="action-btn" onClick={() => onLike(post._id)}>
-            {post.likes && post.likes.includes(user?._id) ? "💖" : "❤️"} {post.likes?.length || 0}
+            {post.likes && post.likes.includes(user?._id) ? "🎶" : "🎵"} {post.likes?.length || 0}
           </button>
           <button className="action-btn" onClick={toggleComments}>
             💬 {post.comments?.length || 0}

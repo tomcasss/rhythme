@@ -224,3 +224,49 @@ body, html, #root {
   align-items: stretch; /* Estirar elementos al ancho completo */
   justify-content: flex-start; /* Siempre alinear al inicio, no al centro */
 }
+
+/* Layout responsivo para el contenido del perfil */
+.profile-content-layout {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.spotify-section {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.profile-buttons-section {
+  flex: 2;
+  min-width: 300px;
+}
+
+/* Media queries para responsividad */
+@media (max-width: 1024px) {
+  .profile-content-layout {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .spotify-section,
+  .profile-buttons-section {
+    flex: none;
+    max-width: none;
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-content-layout {
+    gap: 1rem;
+  }
+  
+  .contenido {
+    padding: 0 20px 20px 20px;
+  }
+}

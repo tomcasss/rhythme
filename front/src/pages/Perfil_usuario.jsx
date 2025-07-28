@@ -115,14 +115,38 @@ export const Perfil_usuario = () => {
       />
       
       {/* Componente de conexión con Spotify */}
-      <div style={{ padding: '0 2rem' }}>
-        <SpotifyConnection 
-          userId={userId} 
-          isCurrentUser={isOwnProfile} 
-        />
+      <div style={{ padding: '0 2rem', flex: 1 }}>
+        {/* Contenedor principal con layout side-by-side */}
+        <div className="profile-content-layout" style={{
+          display: 'flex',
+          gap: '2rem',
+          alignItems: 'flex-start',
+          marginBottom: '2rem',
+          flexWrap: 'wrap'
+        }}>
+          {/* Spotify Connection - lado izquierdo */}
+          <div className="spotify-section" style={{ 
+            flex: '2',
+            minWidth: '300px',
+            maxWidth: '1000px'
+          }}>
+            <SpotifyConnection 
+              userId={userId} 
+              isCurrentUser={isOwnProfile} 
+            />
+          </div>
+          
+          {/* Profile Content buttons - lado derecho */}
+          <div className="profile-buttons-section" style={{ 
+            flex: '1',
+            minWidth: '200px'
+          }}>
+            <ProfileContent userId={userId} />
+          </div>
+        </div>
       </div>
       
-      <ProfileContent userId={userId} />
+      
     </div>
   );
 };

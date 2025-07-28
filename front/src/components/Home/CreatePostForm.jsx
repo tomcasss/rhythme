@@ -2,7 +2,8 @@
 import { useState } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMusic, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faSpotify } from "@fortawesome/free-brands-svg-icons";
 import { API_ENDPOINTS } from "../../config/api.js";
 import SpotifySearch from "./SpotifySearch.jsx";
 import SpotifyContent from "./SpotifyContent.jsx";
@@ -199,7 +200,7 @@ export default function CreatePostForm({ user, onPostCreated }) {
             }}
             title="Agregar contenido de Spotify"
           >
-            <FontAwesomeIcon icon={faMusic} />
+            <FontAwesomeIcon icon={faSpotify} />
             Spotify
           </button>
           

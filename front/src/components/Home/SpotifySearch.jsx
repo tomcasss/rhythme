@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faMusic, faUser, faListUl, faCompactDisc, faPlay, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faMusic, faUser, faListUl, faCompactDisc, faPlay, faTimes} from '@fortawesome/free-solid-svg-icons';
+import { faSpotify } from '@fortawesome/free-brands-svg-icons';
 import { API_ENDPOINTS } from '../../config/api.js';
 import './SpotifySearch.css';
 
@@ -28,7 +29,7 @@ export default function SpotifySearch({ onSelectContent, isOpen, onClose }) {
     const [userTab, setUserTab] = useState('playlists');
     const [error, setError] = useState('');
     const [spotifyConnected, setSpotifyConnected] = useState(false);
-    const [currentUser, setCurrentUser] = useState(null);
+    // const [currentUser, setCurrentUser] = useState(null);
 
     /**
      * Cargar contenido de Spotify del usuario
@@ -80,7 +81,7 @@ export default function SpotifySearch({ onSelectContent, isOpen, onClose }) {
         if (isOpen) {
             const userData = JSON.parse(localStorage.getItem("user"));
             if (userData) {
-                setCurrentUser(userData);
+                // setCurrentUser(userData);
                 checkSpotifyConnection(userData._id);
             }
         }
@@ -225,7 +226,7 @@ export default function SpotifySearch({ onSelectContent, isOpen, onClose }) {
             <div className="spotify-search-modal">
                 <div className="spotify-search-header">
                     <h3>
-                        <FontAwesomeIcon icon={faMusic} style={{ marginRight: '10px', color: '#1DB954' }} />
+                        <FontAwesomeIcon icon={faSpotify} style={{ marginRight: '10px', color: '#1DB954' }} />
                         Buscar en Spotify
                     </h3>
                     <button className="close-btn" onClick={onClose}>

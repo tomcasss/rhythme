@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMusic, faUser, faListUl, faCompactDisc, faPlay, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSpotify } from '@fortawesome/free-brands-svg-icons';
 import './SpotifyContent.css';
 
 /**
@@ -63,8 +64,8 @@ export default function SpotifyContent({ spotifyContent, size = 'normal' }) {
         <div className={`spotify-content ${size}`}>
             <div className="spotify-header">
                 <FontAwesomeIcon 
-                    icon={faMusic} 
-                    style={{ color: '#1DB954', marginRight: '8px' }} 
+                    icon={faSpotify} 
+                    style={{ color: '#000000ff', marginRight: '8px' }} 
                 />
                 <span className="spotify-label">Spotify • {getTypeLabel()}</span>
             </div>
