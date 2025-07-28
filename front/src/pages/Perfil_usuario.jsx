@@ -11,6 +11,7 @@ import { useFollowSystem } from "../hooks/useFollowSystem.js";
 import ProfileHeader from "../components/Profile/ProfileHeader";
 import ProfileBanner from "../components/Profile/ProfileBanner";
 import ProfileContent from "../components/Profile/ProfileContent";
+import SpotifyConnection from "../components/Profile/SpotifyConnection";
 
 /**
  * Componente Perfil_usuario - Página de perfil de usuario
@@ -112,6 +113,14 @@ export const Perfil_usuario = () => {
         isFollowing={isFollowing}
         followLoading={userFollowLoading}
       />
+      
+      {/* Componente de conexión con Spotify */}
+      <div style={{ padding: '0 2rem' }}>
+        <SpotifyConnection 
+          userId={userId} 
+          isCurrentUser={isOwnProfile} 
+        />
+      </div>
       
       <ProfileContent userId={userId} />
     </div>

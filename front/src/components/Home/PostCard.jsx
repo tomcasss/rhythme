@@ -5,6 +5,7 @@ import userImg from '../../assets/user.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPencil } from "@fortawesome/free-solid-svg-icons";
 import CommentsSection from './CommentsSection';
+import SpotifyContent from './SpotifyContent';
 
 /**
  * Componente PostCard - Tarjeta individual de post
@@ -339,6 +340,7 @@ export default function PostCard({
           <>
             <p className="post-text">{post.desc}</p>
             {post.img && <img src={post.img} alt="post content" className="post-image" />}
+            {post.spotifyContent && <SpotifyContent spotifyContent={post.spotifyContent} />}
           </>
         )}
       </div>

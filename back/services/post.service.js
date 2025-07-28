@@ -5,14 +5,21 @@ import mongoose from "mongoose";
 // Crear un nuevo post, asegurando que userId sea ObjectId
 export const createPost = async (body) => {
     try {
+        console.log('🏗️ Creating post in service with body:', body);
+        
         // Convertir userId a ObjectId si es string
         if (body.userId && typeof body.userId === "string") {
             body.userId = new mongoose.Types.ObjectId(body.userId);
         }
+        
+        console.log('📋 Final post data before save:', body);
         const newPost = new postModel(body);
         await newPost.save();
+        
+        console.log('💾 Post saved to database:', newPost);
         return newPost;
     } catch (error) {
+        console.error('❌ Error in createPost service:', error);
         throw error;
     }
 };
