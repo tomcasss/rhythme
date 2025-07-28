@@ -19,16 +19,19 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 
 ## Características Principales
 
-- Registro e inicio de sesión de usuarios con autenticación segura
-- Autenticación con Google OAuth: Permite a los usuarios iniciar sesión de manera rápida y segura usando su cuenta de Google.
-- Gestión de usuarios: Registro, actualización, eliminación, seguimiento y dejar de seguir a otros usuarios.
-- Gestión de publicaciones: Crear, obtener y eliminar posts relacionados con la música.
-- Base de datos MongoDB Atlas: Almacena de manera segura usuarios y publicaciones en la nube.
-- Publicaciones estilo "feed" y "stories" para compartir experiencias musicales
-- Interacción mediante likes, comentarios y seguimiento a usuarios
-- Interfaz de usuario moderna y responsiva usando React + Vite
-- Backend robusto con Express.js y MongoDB, siguiendo buenas prácticas de seguridad
-- Interfaz web responsiva: Utiliza HTML y CSS moderno para una experiencia de usuario óptima.
+- Registro e inicio de sesión de usuarios con autenticación segura (local y Google OAuth).
+- Integración completa con Spotify: conecta tu cuenta, comparte canciones, playlists, artistas o álbumes en tus publicaciones.
+- Gestión de usuarios: registro, edición, eliminación, búsqueda, seguir/dejar de seguir usuarios.
+- Feed de publicaciones y stories tipo Instagram.
+- Gestión de publicaciones: crear, editar, eliminar, dar like/unlike, comentar y compartir contenido musical.
+- Sistema de comentarios en posts.
+- Búsqueda avanzada de usuarios y contenido musical.
+- Seguimiento en tiempo real de estados de seguimiento (followers/following).
+- Interfaz moderna y responsiva con React + Vite.
+- Backend robusto con Node.js y Express, conexión segura a MongoDB Atlas.
+- Modularización avanzada de controladores, servicios y modelos.
+- Seguridad: JWT, Bcrypt, CORS, Helmet y control de permisos de usuario.
+- Integración visual con FontAwesome para iconografía moderna.
 
 ## Novedades
 
@@ -58,15 +61,19 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 - Integración de FontAwesome: Para iconografía moderna en la interfaz.
 - Actualización de dependencias: Se incluyen mejoras de seguridad y estabilidad.
 - Limpieza de código: Eliminación de logs innecesarios en controladores backend.
+- Integración de Spotify: permite a los usuarios buscar, compartir y reproducir canciones o playlists usando la API de Spotify desde la plataforma.
+- Nuevos componentes y servicios para conectar y manejar la autenticación, búsqueda y despliegue de contenido de Spotify.
+- Actualización de la interfaz para mostrar widgets y opciones de interacción con Spotify.
+- Mejoras y optimizaciones internas para soportar la integración de servicios externos.
 - [Ver más commits recientes](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc) (la lista puede estar incompleta).
 
-Referencia del pull request: https://github.com/emrls81/rhythme/pull/6 y últimos [commits](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc)
+Referencia del pull request: https://github.com/emrls81/rhythme/pull/27 y últimos [commits](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc)
 
 ## Tecnologías Utilizadas
 
 - **Frontend:** React, Vite, CSS
 - **Backend:** Node.js, Express.js, MongoDB, Mongoose
-- **Autenticación:** JWT, Bcrypt, Google OAuth 2.0
+- **Autenticación:** JWT, Bcrypt, Google OAuth 2.0, Spotify OAuth 2.0
 - **Herramientas Adicionales:** ESLint, Helmet, Morgan, CORS, dotenv
 
 ## Estructura del Proyecto
@@ -75,24 +82,24 @@ Referencia del pull request: https://github.com/emrls81/rhythme/pull/6 y último
 rhythme/
 │
 ├── back/               # Backend
-│   ├── controllers/    # Lógica de controladores (auth, post, user, etc.)
+│   ├── controllers/    # Lógica de controladores (auth, post, user, spotify, etc.)
 │   ├── dbConnect/      # Conexión a MongoDB
 │   ├── models/         # Modelos de datos (usuario, post, comentario)
-│   ├── routes/         # Rutas Express (incluye rutas de usuario, post, comentarios)
+│   ├── routes/         # Rutas Express (usuarios, posts, comentarios, spotify)
 │   ├── services/       # Lógica de negocio/servicios
+│   ├── utils/          # Utilidades y helpers
 │   └── server.js       # Entrada principal del backend
 │
 ├── front/              # Frontend
 │   ├── src/            # Componentes y páginas de React
-│   │   ├── components/         # Componentes reutilizables
-│   │   ├── pages/              # Páginas principales (Home, Editar_usuario, Perfil_usuario, etc.)
-│   │   ├── App.jsx             # Definición de rutas principales (ahora incluye /profile/:userId, /edit-profile)
-│   │   └── App.css             # Estilos globales
+│   │   ├── components/ # Componentes reutilizables (Navbar, Feed, Stories, SpotifyWidget, etc.)
+│   │   ├── pages/      # Páginas principales (Home, Perfil, Editar perfil, etc.)
+│   │   ├── App.jsx     # Definición de rutas principales
+│   │   └── App.css     # Estilos globales
 │   ├── public/         # Archivos estáticos
-│   ├── index.html      # HTML principal
 │   └── vite.config.js  # Configuración de Vite
 │
-└── README.md           # Este archivo
+└── README.md           # Documentación principal
 ```
 
 ## Instalación y Ejecución
@@ -115,8 +122,21 @@ npm start
 
 **Ejemplo de .env:**
 ```
-MONGO_URI=mongodb://localhost:27017/rhythme
-JWT_SECRET=tu_secreto
+# MongoDB
+MONGO_URI=mongodb+srv://<usuario>:<password>@cluster.mongodb.net/rhythme
+
+# JWT
+JWT_SECRET=tu_secreto_super_seguro
+
+# Google OAuth
+GOOGLE_CLIENT_ID=tu_google_client_id
+GOOGLE_CLIENT_SECRET=tu_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/v1/auth/google/callback
+
+# Spotify OAuth
+SPOTIFY_CLIENT_ID=tu_spotify_client_id
+SPOTIFY_CLIENT_SECRET=tu_spotify_client_secret
+SPOTIFY_REDIRECT_URI=http://localhost:5000/api/v1/spotify/callback
 ```
 
 ### 3. Configura el frontend
@@ -131,28 +151,34 @@ Accede al frontend normalmente en `http://localhost:5173` (o el puerto que indiq
 
 ## Rutas Principales (Backend)
 
-- **Registro:** `POST /api/v1/auth/register`
-- **Login:** `POST /api/v1/auth/login`
-- **Obtener usuario por ID:** `GET /api/v1/users/:id`
-- **Actualizar usuario:** `PUT /api/v1/users/:id`
-- **Eliminar usuario:** `DELETE /api/v1/users/:id`
-- **Seguir usuario:** `POST /api/v1/users/follow/:id`
-- **Dejar de seguir usuario:** `POST /api/v1/users/unfollow/:id`
-- **Buscar usuarios:** `GET /api/v1/users/search`
-- **Crear post:** `POST /api/v1/posts/`
-- **Actualizar usuario:** `PUT /api/v1/users/:id`
-- **Obtener todos los posts:** `GET /api/v1/posts/`
-- **Obtener publicaciones de usuario:** `GET /api/v1/posts/get-user-posts/:userId`
-- **Obtener post por ID:** `GET /api/v1/posts/:id`
-- **Eliminar post:** `DELETE /api/v1/posts/:id`
-- **Agregar comentario:** `POST /api/v1/comments/:postId`
-- **Obtener comentarios de un post:** `GET /api/v1/comments/:postId`
-- **Obtener stories:** `GET /api/v1/stories`
-- **Timeline de publicaciones:** `GET /api/v1/posts/timeline/:userId`
-- **Agregar comentario:** `POST /api/v1/posts/comment-post/:id`
-- **Obtener comentarios de un post:** `GET /api/v1/posts/get-comments/:id`
-
-(Agrega más rutas conforme crezcas el proyecto)
+- Usuarios:
+  - **Registro de usuario:** `POST /api/v1/auth/register`
+  - **Inicio de sesión local:** `POST /api/v1/auth/login`
+  - **Login con Google OAuth:** `GET /api/v1/auth/google`
+  - **Callback Google OAuth:** `GET /api/v1/auth/google/callback`
+  - **Obtener usuario por ID:** `GET /api/v1/users/:id`
+  - **Actualizar usuario:** `PUT /api/v1/users/:id`
+  - **Eliminar usuario:** `DELETE /api/v1/users/:id`
+  - **Seguir usuario:** `POST /api/v1/users/follow/:id`
+  - **Dejar de seguir usuario:** `POST /api/v1/users/unfollow/:id`
+  - **Buscar usuarios:** `GET /api/v1/users/search`
+- Posts y comentarios:
+  - **Crear post:** `POST /api/v1/posts/`
+  - **Editar post:** `PUT /api/v1/posts/:id`
+  - **Eliminar post:** `DELETE /api/v1/posts/:id`
+  - **Obtener todos los posts:** `GET /api/v1/posts/`
+  - **Posts de un usuario:** `GET /api/v1/posts/get-user-posts/:userId`
+  - **Obtener post por ID:** `GET /api/v1/posts/:id`
+  - **Agregar comentario a post:** `POST /api/v1/posts/comment-post/:id`
+  - **Obtener comentarios de un post:** `GET /api/v1/posts/get-comments/:id`
+  - **Like/unlike a un post:** `POST /api/v1/posts/like/:id`
+  - **Timeline de publicaciones de usuario:** `GET /api/v1/posts/timeline/:userId`
+  - **Obtener stories:** `GET /api/v1/stories`
+- Spotify:
+  - **Iniciar conexión con Spotify:** `GET /api/v1/spotify/login`
+  - **Callback de autenticación Spotify:** `GET /api/v1/spotify/callback`
+  - **Buscar canciones, playlists, artistas o álbumes:** `GET /api/v1/spotify/search`
+  - **Obtener datos del usuario de Spotify autenticado:** `GET /api/v1/spotify/me`
 
 ## Scripts Útiles
 
@@ -163,7 +189,7 @@ Accede al frontend normalmente en `http://localhost:5173` (o el puerto que indiq
 
 ## Licencia
 
-Actualmente este proyecto no tiene una licencia asignada.
+Este proyecto está licenciado bajo los términos de la licencia MIT. Consulta el archivo [LICENSE](./LICENSE) para más detalles.
 
 ---
 
@@ -172,5 +198,9 @@ Actualmente este proyecto no tiene una licencia asignada.
 https://github.com/emrls81
 
 https://github.com/jmunozc023
+
+https://github.com/tomcasss
+
+https://github.com/GreivinBadilla
 
 ---
