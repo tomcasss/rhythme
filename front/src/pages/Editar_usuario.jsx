@@ -8,6 +8,7 @@ import { API_ENDPOINTS } from "../config/api.js";
 import EditHeader from "../components/Edit/EditHeader";
 import EditProfile from "../components/Edit/EditProfile";
 import EditOptions from "../components/Edit/EditOptions";
+import SpotifyConnection from "../components/Profile/SpotifyConnection";
 
 export const Editar_usuario = () => {
   const navigate = useNavigate();
@@ -125,6 +126,12 @@ export const Editar_usuario = () => {
           <EditProfile
             user={user}
             onUpdateUser={handleUpdateUser}
+          />
+          
+          {/* Componente de conexión con Spotify */}
+          <SpotifyConnection 
+            userId={user._id} 
+            isCurrentUser={true} 
           />
         </div>
 

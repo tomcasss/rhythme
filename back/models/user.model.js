@@ -58,6 +58,38 @@ const userSchema = new Schema({
     enum: ['local', 'google'],
     default: 'local',
   },
+
+  // Integración con Spotify
+  spotifyAccount: {
+    isConnected: {
+      type: Boolean,
+      default: false,
+    },
+    spotifyId: {
+      type: String,
+      default: "",
+    },
+    displayName: {
+      type: String,
+      default: "",
+    },
+    accessToken: {
+      type: String,
+      default: "",
+    },
+    refreshToken: {
+      type: String,
+      default: "",
+    },
+    tokenExpiry: {
+      type: Date,
+      default: null,
+    },
+    lastConnected: {
+      type: Date,
+      default: null,
+    }
+  },
 });
 
 export default mongoose.model("User", userSchema);

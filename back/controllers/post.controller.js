@@ -2,13 +2,15 @@ import { createPost, deletePost, updatePost, likeAndUnlikePost, getPost, getTime
 
 export const createPostController = async (req, res) => {
     try {
+        console.log('📝 Creating new post with data:', req.body);
         const newPost = await createPost(req.body);
+        console.log('✅ Post created successfully:', newPost);
         res.status(200).json({
             newPost,
             message: "Post created successfully",
         });
     } catch (error) {
-        console.log(error);
+        console.error('❌ Error creating post:', error);
         res.status(500).json({
             message: "Post creation failed",
             error,

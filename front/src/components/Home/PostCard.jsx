@@ -5,6 +5,7 @@ import userImg from '../../assets/user.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPencil } from "@fortawesome/free-solid-svg-icons";
 import CommentsSection from './CommentsSection';
+import SpotifyContent from './SpotifyContent';
 
 /**
  * Componente PostCard - Tarjeta individual de post
@@ -339,6 +340,7 @@ export default function PostCard({
           <>
             <p className="post-text">{post.desc}</p>
             {post.img && <img src={post.img} alt="post content" className="post-image" />}
+            {post.spotifyContent && <SpotifyContent spotifyContent={post.spotifyContent} />}
           </>
         )}
       </div>
@@ -347,7 +349,7 @@ export default function PostCard({
       {!isEditing && (
         <div className="post-actions">
           <button className="action-btn" onClick={() => onLike(post._id)}>
-            {post.likes && post.likes.includes(user?._id) ? "💖" : "❤️"} {post.likes?.length || 0}
+            {post.likes && post.likes.includes(user?._id) ? "🎶" : "🎵"} {post.likes?.length || 0}
           </button>
           <button className="action-btn" onClick={toggleComments}>
             💬 {post.comments?.length || 0}

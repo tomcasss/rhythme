@@ -57,37 +57,7 @@ export default function ProfileContent({ userId }) {
                     marginBottom: '2rem',
                     width: '100%'
                 }}>
-                    <button
-                        className={`tarjeta tarjeta-btn ${selectedSection === 'albums' ? 'active' : ''}`}
-                        onClick={() => handleCardClick('albums')}
-                        style={{
-                            minHeight: '150px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '1rem'
-                        }}
-                    >
-                        <h4 style={{ margin: '0 0 0.5rem 0' }}>Albums</h4>
-                        <img src={perfil} alt="Album" style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
-                    </button>
 
-                    <button
-                        className={`tarjeta tarjeta-btn ${selectedSection === 'playlists' ? 'active' : ''}`}
-                        onClick={() => handleCardClick('playlists')}
-                        style={{
-                            minHeight: '150px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '1rem'
-                        }}
-                    >
-                        <h4 style={{ margin: '0 0 0.5rem 0' }}>Playlists</h4>
-                        <img src={perfil} alt="Playlist" style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
-                    </button>
 
                     <button
                         className={`tarjeta tarjeta-btn ${selectedSection === 'photos' ? 'active' : ''}`}
