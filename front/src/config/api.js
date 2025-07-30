@@ -36,6 +36,10 @@ export const API_ENDPOINTS = {
   COMMENT_POST: (id) => `${BASE_URL}/posts/comment-post/${id}`,
   GET_COMMENTS: (id) => `${BASE_URL}/posts/get-comments/${id}`,
 
+  //NOTIFICATION endpoints
+  GET_USER_NOTIFICATIONS: (userId) => `${BASE_URL}/notifications/user/${userId}`,
+  MARK_NOTIFICATION_AS_READ: (notifId) => `${BASE_URL}/notifications/${notifId}/read`,
+
   // Spotify endpoints
   SPOTIFY_SEARCH: (query, type, limit) => `${BASE_URL}/spotify/search?query=${encodeURIComponent(query)}&type=${type || 'track,artist,playlist,album'}&limit=${limit || 20}`,
   SPOTIFY_DETAILS: (type, id) => `${BASE_URL}/spotify/details/${type}/${id}`,

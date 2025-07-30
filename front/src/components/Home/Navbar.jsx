@@ -38,6 +38,42 @@ export default function Navbar({
   const [searchLoading, setSearchLoading] = useState(false);
   const searchRef = useRef();
 
+    // ---------------------- notificaciones
+  const [notifications, setNotifications] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+
+  // Cargar notificaciones al montar el componente
+useEffect(() => {
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get(API_ENDPOINTS.GET_USER_NOTIFICATIONS(user._id));
+      setNotifications(res.data);
+    } catch (err) {
+      console.error("Error al obtener notificaciones", err);
+    }
+  };
+
+  if (user?._id) fetchNotifications();
+}, [user]);
+
+const toggleDropdown = () => {
+  setShowDropdown(!showDropdown);
+};
+
+const markAsRead = async (notifId) => {
+  try {
+    await axios.put(API_ENDPOINTS.MARK_NOTIFICATION_AS_READ(notifId));
+    setNotifications((prev) =>
+      prev.map((n) => (n._id === notifId ? { ...n, isRead: true } : n))
+    );
+  } catch (err) {
+    console.error("Error al marcar notificación como leída", err);
+  }
+};
+
+const unreadCount = notifications.filter((n) => !n.isRead).length;
+
   // Cerrar menú de usuario al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -169,6 +205,8 @@ export default function Navbar({
     setSearchResults([]);
     setShowSearchResults(false);
   };
+
+  
 
   return (
     <header className="navbar">
@@ -395,7 +433,85 @@ export default function Navbar({
 
       {/* Iconos de navegación */}
       <div className="navbar-icons">
-        <span className="icon notif"><FontAwesomeIcon icon={faBell} /></span>
+        <span className="icon notif" style={{ position: "relative" }}>
+  <button
+    onClick={toggleDropdown}
+    style={{
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      position: "relative",
+    }}
+    title="Notificaciones"
+  >
+    <FontAwesomeIcon icon={faBell} size="lg" />
+    {unreadCount > 0 && (
+      <span
+        style={{
+          position: "absolute",
+          top: "-5px",
+          right: "-5px",
+          background: "#e82c0b",
+          color: "#fff",
+          borderRadius: "50%",
+          padding: "2px 6px",
+          fontSize: "0.7rem",
+        }}
+      >
+        {unreadCount}
+      </span>
+    )}
+  </button>
+
+  {showDropdown && (
+    <div
+      style={{
+        position: "absolute",
+        top: "110%",
+        right: 0,
+        background: "#fff",
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        width: "300px",
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          padding: "0.75rem",
+          borderBottom: "1px solid #eee",
+          fontWeight: "bold",
+          background: "#f7f7f7",
+        }}
+      >
+        Notificaciones
+      </div>
+      {notifications.length === 0 ? (
+        <div style={{ padding: "1rem", textAlign: "center", color: "#777" }}>
+          No tienes notificaciones.
+        </div>
+      ) : (
+        notifications.map((n) => (
+          <div
+            key={n._id}
+            onClick={() => markAsRead(n._id)}
+            style={{
+              padding: "0.75rem",
+              borderBottom: "1px solid #f0f0f0",
+              backgroundColor: n.isRead ? "#fff" : "#fef6f5",
+              cursor: "pointer",
+              fontSize: "0.9rem",
+            }}
+          >
+            {n.message}
+          </div>
+        ))
+      )}
+    </div>
+  )}
+</span>
+
 
         {/* Menú de usuario */}
         <span className="icon user" style={{ position: "relative" }}>

@@ -19,14 +19,21 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
     try {
       const res = await axios.post("http://localhost:5000/api/v1/auth/login", {
         email,
         password,
       });
-      localStorage.setItem("user", JSON.stringify(res.data.data));
-      setLoading(false);
+    const userData = res.data.data;
+    localStorage.setItem("user", JSON.stringify(userData));
+    setLoading(false);
+
+    if (userData.role === "admin") {
+      navigate("/admin");
+    } else {
       navigate("/home");
+    }
     } catch (err) {
       setLoading(false);
       setError(
