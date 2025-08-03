@@ -12,6 +12,7 @@ import ProfileHeader from "../components/Profile/ProfileHeader";
 import ProfileBanner from "../components/Profile/ProfileBanner";
 import ProfileContent from "../components/Profile/ProfileContent";
 import SpotifyConnection from "../components/Profile/SpotifyConnection";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 /**
  * Componente Perfil_usuario - Página de perfil de usuario
@@ -73,6 +74,16 @@ export const Perfil_usuario = () => {
   // Verificar si es el propio perfil
   const isOwnProfile = currentUser && profileUser && currentUser._id === profileUser._id;
 
+  // Debug: log de valores importantes
+  console.log('Perfil_usuario debug:', { 
+    userId, 
+    currentUser: currentUser?._id, 
+    profileUser: profileUser?._id, 
+    isOwnProfile,
+    loading,
+    error 
+  });
+
   // Estado de carga del seguimiento específico para este usuario
   const userFollowLoading = profileUser ? followLoading[profileUser._id] || false : false;
 
@@ -130,10 +141,12 @@ export const Perfil_usuario = () => {
             minWidth: '300px',
             maxWidth: '1000px'
           }}>
-            <SpotifyConnection 
-              userId={userId} 
-              isCurrentUser={isOwnProfile} 
-            />
+            <ErrorBoundary>
+              <SpotifyConnection 
+                userId={userId} 
+                isCurrentUser={isOwnProfile} 
+              />
+            </ErrorBoundary>
           </div>
           
           {/* Profile Content buttons - lado derecho */}

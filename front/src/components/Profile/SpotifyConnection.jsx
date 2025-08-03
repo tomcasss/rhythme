@@ -10,6 +10,9 @@ import './SpotifyConnection.css';
  * Componente para manejar la conexión con Spotify en el perfil del usuario
  */
 export default function SpotifyConnection({ userId, isCurrentUser = false }) {
+    // Debug: log de los props recibidos
+    console.log('SpotifyConnection props:', { userId, isCurrentUser });
+
     const [spotifyStatus, setSpotifyStatus] = useState({
         isConnected: false,
         spotifyProfile: null
@@ -28,11 +31,17 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
      * Cargar contenido personalizado del usuario de Spotify
      */
     const loadUserContent = useCallback(async () => {
+        // Validar userId antes de hacer llamadas
+        if (!userId) {
+            console.error('loadUserContent: userId is missing');
+            return;
+        }
+
         try {
             const [playlistsRes, topArtistsRes, topTracksRes] = await Promise.all([
-                axios.get(API_ENDPOINTS.SPOTIFY_USER_PLAYLISTS(userId, 10)),
-                axios.get(API_ENDPOINTS.SPOTIFY_USER_TOP_ARTISTS(userId, 10)),
-                axios.get(API_ENDPOINTS.SPOTIFY_USER_TOP_TRACKS(userId, 10))
+                axios.get(API_ENDPOINTS.SPOTIFY_USER_PLAYLISTS(userId, 50)).catch(() => ({ data: { success: false, data: [] } })),
+                axios.get(API_ENDPOINTS.SPOTIFY_USER_TOP_ARTISTS(userId, 50)).catch(() => ({ data: { success: false, data: [] } })),
+                axios.get(API_ENDPOINTS.SPOTIFY_USER_TOP_TRACKS(userId, 50)).catch(() => ({ data: { success: false, data: [] } }))
             ]);
 
             setUserContent({
@@ -42,6 +51,12 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
             });
         } catch (error) {
             console.error('Error loading user Spotify content:', error);
+            // En caso de error completo, asegurar que el contenido esté vacío
+            setUserContent({
+                playlists: [],
+                topArtists: [],
+                topTracks: []
+            });
         }
     }, [userId]);
 
@@ -49,6 +64,13 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
      * Verificar estado de conexión con Spotify
      */
     const checkSpotifyConnection = useCallback(async () => {
+        // Validar userId antes de hacer llamadas
+        if (!userId) {
+            console.error('checkSpotifyConnection: userId is missing');
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
             const response = await axios.get(API_ENDPOINTS.SPOTIFY_CONNECTION_STATUS(userId));
@@ -63,6 +85,9 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
                 if (response.data.isConnected) {
                     await loadUserContent();
                 }
+            } else {
+                // Si la respuesta indica fallo, resetear estado
+                setSpotifyStatus({ isConnected: false, spotifyProfile: null });
             }
         } catch (error) {
             console.error('Error checking Spotify connection:', error);
@@ -73,13 +98,26 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
     }, [userId, loadUserContent]);
 
     useEffect(() => {
+        // Solo ejecutar si tenemos userId
+        if (!userId) {
+            console.log('SpotifyConnection: No userId provided, skipping initialization');
+            setLoading(false);
+            return;
+        }
+        
+        console.log('SpotifyConnection: Initializing with userId:', userId);
         checkSpotifyConnection();
-    }, [checkSpotifyConnection]);
+    }, [checkSpotifyConnection, userId]);
 
     /**
      * Conectar con Spotify
      */
     const connectSpotify = async () => {
+        if (!userId) {
+            console.error('connectSpotify: userId is missing');
+            return;
+        }
+
         try {
             setConnecting(true);
             
@@ -99,6 +137,12 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
                     'spotify-auth',
                     'width=500,height=600,scrollbars=yes,resizable=yes'
                 );
+
+                if (!popup) {
+                    console.error('Failed to open popup window');
+                    setConnecting(false);
+                    return;
+                }
 
                 // Escuchar mensajes del popup
                 const handleMessage = (event) => {
@@ -129,6 +173,9 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
                         }, 1000);
                     }
                 }, 1000);
+            } else {
+                console.error('Failed to get Spotify auth URL:', response.data);
+                setConnecting(false);
             }
         } catch (error) {
             console.error('Error connecting to Spotify:', error);
@@ -140,6 +187,11 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
      * Desconectar de Spotify
      */
     const disconnectSpotify = async () => {
+        if (!userId) {
+            console.error('disconnectSpotify: userId is missing');
+            return;
+        }
+
         try {
             const response = await axios.delete(API_ENDPOINTS.SPOTIFY_DISCONNECT(userId));
             
@@ -147,6 +199,8 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
                 setSpotifyStatus({ isConnected: false, spotifyProfile: null });
                 setUserContent({ playlists: [], topArtists: [], topTracks: [] });
                 setShowContent(false);
+            } else {
+                console.error('Failed to disconnect Spotify:', response.data);
             }
         } catch (error) {
             console.error('Error disconnecting Spotify:', error);
@@ -157,23 +211,37 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
      * Renderizar elementos de contenido
      */
     const renderContentItems = (items, type) => {
-        return items.slice(0, 5).map((item) => (
-            <div key={item.spotifyId} className="content-item">
-                <div className="content-image">
-                    {item.image ? (
-                        <img src={item.image} alt={item.name} />
-                    ) : (
-                        <div className="placeholder-image">
-                            <FontAwesomeIcon icon={type === 'playlists' ? faListUl : type === 'artists' ? faUser : faMusic} />
-                        </div>
-                    )}
+        // Validar que items sea un array
+        if (!Array.isArray(items)) {
+            console.warn('renderContentItems: items is not an array', items);
+            return [];
+        }
+
+        return items.map((item) => {
+            // Validar que el item tenga las propiedades necesarias
+            if (!item || !item.spotifyId) {
+                console.warn('renderContentItems: invalid item', item);
+                return null;
+            }
+
+            return (
+                <div key={item.spotifyId} className="content-item">
+                    <div className="content-image">
+                        {item.image ? (
+                            <img src={item.image} alt={item.name || 'Spotify content'} />
+                        ) : (
+                            <div className="placeholder-image">
+                                <FontAwesomeIcon icon={type === 'playlists' ? faListUl : type === 'artists' ? faUser : faMusic} />
+                            </div>
+                        )}
+                    </div>
+                    <div className="content-info">
+                        <div className="content-name" title={item.name || 'Sin nombre'}>{item.name || 'Sin nombre'}</div>
+                        {item.artist && <div className="content-artist">{item.artist}</div>}
+                    </div>
                 </div>
-                <div className="content-info">
-                    <div className="content-name" title={item.name}>{item.name}</div>
-                    {item.artist && <div className="content-artist">{item.artist}</div>}
-                </div>
-            </div>
-        ));
+            );
+        }).filter(Boolean); // Filtrar items null
     };
 
     if (loading) {
@@ -181,6 +249,21 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
             <div className="spotify-connection loading">
                 <div className="loading-spinner"></div>
                 <span>Verificando conexión con Spotify...</span>
+            </div>
+        );
+    }
+
+    // Validación de userId después de cargar
+    if (!userId) {
+        return (
+            <div className="spotify-connection error">
+                <div className="spotify-header">
+                    <FontAwesomeIcon icon={faSpotify} className="spotify-icon" />
+                    <h3>Spotify</h3>
+                </div>
+                <div className="error-message">
+                    <p>Error: No se pudo cargar la información de Spotify para este usuario.</p>
+                </div>
             </div>
         );
     }
@@ -246,34 +329,42 @@ export default function SpotifyConnection({ userId, isCurrentUser = false }) {
                                     onClick={() => setActiveTab('playlists')}
                                 >
                                     <FontAwesomeIcon icon={faListUl} />
-                                    Playlists ({userContent.playlists.length})
+                                    Playlists ({(userContent.playlists || []).length})
                                 </button>
                                 <button 
                                     className={`tab ${activeTab === 'artists' ? 'active' : ''}`}
                                     onClick={() => setActiveTab('artists')}
                                 >
                                     <FontAwesomeIcon icon={faUser} />
-                                    Top Artistas ({userContent.topArtists.length})
+                                    Top Artistas ({(userContent.topArtists || []).length})
                                 </button>
                                 <button 
                                     className={`tab ${activeTab === 'tracks' ? 'active' : ''}`}
                                     onClick={() => setActiveTab('tracks')}
                                 >
                                     <FontAwesomeIcon icon={faMusic} />
-                                    Top Canciones ({userContent.topTracks.length})
+                                    Top Canciones ({(userContent.topTracks || []).length})
                                 </button>
                             </div>
 
                             <div className="content-list">
-                                {activeTab === 'playlists' && renderContentItems(userContent.playlists, 'playlists')}
-                                {activeTab === 'artists' && renderContentItems(userContent.topArtists, 'artists')}
-                                {activeTab === 'tracks' && renderContentItems(userContent.topTracks, 'tracks')}
+                                {activeTab === 'playlists' && renderContentItems(userContent.playlists || [], 'playlists')}
+                                {activeTab === 'artists' && renderContentItems(userContent.topArtists || [], 'artists')}
+                                {activeTab === 'tracks' && renderContentItems(userContent.topTracks || [], 'tracks')}
                                 
-                                {userContent[activeTab === 'artists' ? 'topArtists' : activeTab === 'tracks' ? 'topTracks' : 'playlists'].length === 0 && (
-                                    <div className="no-content">
-                                        No hay {activeTab === 'playlists' ? 'playlists' : activeTab === 'artists' ? 'artistas' : 'canciones'} disponibles
-                                    </div>
-                                )}
+                                {(() => {
+                                    const currentContent = activeTab === 'artists' ? 
+                                        (userContent.topArtists || []) : 
+                                        activeTab === 'tracks' ? 
+                                        (userContent.topTracks || []) : 
+                                        (userContent.playlists || []);
+                                    
+                                    return currentContent.length === 0 && (
+                                        <div className="no-content">
+                                            No hay {activeTab === 'playlists' ? 'playlists' : activeTab === 'artists' ? 'artistas' : 'canciones'} disponibles
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         </div>
                     )}
