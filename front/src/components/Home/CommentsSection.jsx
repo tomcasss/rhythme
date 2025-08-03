@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/api.js";
 import userImg from '../../assets/user.png';
+import Swal from "sweetalert2";
 
 /**
  * Componente CommentsSection - Sección de comentarios de un post
@@ -65,7 +66,11 @@ export default function CommentsSection({ postId, user }) {
       setCommentText("");
     } catch (error) {
       console.error("Error al agregar comentario:", error);
-      alert("Error al agregar comentario");
+      Swal.fire({
+        icon: "error",
+        title: "Error al agregar comentario",
+        text: "Intenta de nuevo más tarde.",
+      });
     } finally {
       setSubmitting(false);
     }

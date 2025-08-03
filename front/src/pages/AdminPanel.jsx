@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../AdminPanel.css";
+import Swal from "sweetalert2";
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -49,10 +50,18 @@ export default function AdminPanel() {
       });
 
       setUsers((prev) => prev.filter((u) => u._id !== id));
-      alert("Usuario eliminado correctamente");
+      Swal.fire({
+        icon: "success",
+        title: "Usuario eliminado",
+        text: "El usuario ha sido eliminado correctamente.",
+      });
     } catch (err) {
       console.error("Error eliminando usuario:", err);
-      alert("Error al eliminar el usuario");
+      Swal.fire({
+        icon: "error",
+        title: "Error al eliminar usuario",
+        text: "Intenta de nuevo más tarde.",
+      });
     }
   };
 
@@ -69,10 +78,18 @@ export default function AdminPanel() {
         `http://localhost:5000/api/v1/posts/delete-post/${postId}/${userId}`
       );
       setPosts((prev) => prev.filter((p) => p._id !== postId));
-      alert("Post eliminado correctamente");
+      Swal.fire({
+        icon: "success",
+        title: "Post eliminado",
+        text: "El post ha sido eliminado correctamente.",
+      });
     } catch (err) {
       console.error("Error eliminando post:", err);
-      alert("Error al eliminar el post");
+      Swal.fire({
+        icon: "error",
+        title: "Error al eliminar post",
+        text: "Intenta de nuevo más tarde.",
+      });
     }
   };
 
@@ -80,7 +97,11 @@ const handleNotifyPost = async (postId) => {
   try {
     const post = posts.find((p) => p._id === postId);
     if (!post || !post.userId?._id) {
-      alert("No se encontró el usuario del post.");
+      Swal.fire({
+        icon: "error",
+        title: "Error al notificar usuario",
+        text: "No se encontró el usuario del post.",
+      });
       return;
     }
 
@@ -89,11 +110,18 @@ const handleNotifyPost = async (postId) => {
       postId: postId,
       message: "Tu post ha sido reportado por infringir las normas.",
     });
-
-    alert("Notificación enviada al usuario.");
+    Swal.fire({
+      icon: "success",
+      title: "Notificación enviada",
+      text: "La notificación ha sido enviada al usuario.",
+    });
   } catch (err) {
     console.error("Error notificando al usuario:", err);
-    alert("Error al notificar al usuario.");
+    Swal.fire({
+      icon: "error",
+      title: "Error al notificar usuario",
+      text: "Intenta de nuevo más tarde.",
+    });
   }
 };
 

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
+import Swal from 'sweetalert2';
 
 /**
  * Componente EditOptions - Opciones de edición y configuración del usuario
@@ -119,7 +120,11 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         
         // Cerrar modal
         setShowModal(false);
-        alert("¡Perfil actualizado exitosamente!");
+        Swal.fire({
+          icon: 'success',
+          title: 'Perfil actualizado',
+          text: '¡Perfil actualizado exitosamente!',
+        });
       } else {
         setError("Error: Respuesta inválida del servidor");
       }

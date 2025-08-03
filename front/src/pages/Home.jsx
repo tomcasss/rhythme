@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/api.js";
 import { useFollowSystem } from "../hooks/useFollowSystem.js";
+import Swal from "sweetalert2";
 
 // Componentes
 import Navbar from "../components/Home/Navbar";
@@ -93,7 +94,11 @@ export default function Home() {
         return post;
       }));
     } catch {
-      alert("Error al dar like. Intenta de nuevo.");
+      Swal.fire({
+        icon: "error",
+        title: "Error al dar like",
+        text: "Intenta de nuevo más tarde."
+      });
     }
   };
 
@@ -107,7 +112,11 @@ export default function Home() {
       await axios.delete(API_ENDPOINTS.DELETE_POST(postId, user._id));
       setPosts((prev) => prev.filter(post => post._id !== postId));
     } catch {
-      alert("Error al eliminar el post. Intenta de nuevo.");
+      Swal.fire({
+        icon: "error",
+        title: "Error al eliminar el post",
+        text: "Intenta de nuevo más tarde."
+      });
     }
   };
 
