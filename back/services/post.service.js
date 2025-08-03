@@ -35,6 +35,8 @@ export const updatePost = async (params, body) => {
                 { $set: body }
             );
             return updatedPost;
+        } else if (!updatedPost) {
+            throw new Error("Post not found");
         } else {
             throw new Error("You can only update your own posts!");
         }
@@ -51,6 +53,8 @@ export const deletePost = async (params, body) => {
         if (deletedPost.userId.toString() === body.userId.toString()) {
             await postModel.deleteOne({ _id: params.id });
             return deletedPost;
+        } else if (!deletedPost) {
+            throw new Error("Post not found");
         } else {
             throw new Error("You can only delete your own posts!");
         }
