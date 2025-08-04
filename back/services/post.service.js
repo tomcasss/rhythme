@@ -35,8 +35,6 @@ export const updatePost = async (params, body) => {
                 { $set: body }
             );
             return updatedPost;
-        } else if (!updatedPost) {
-            throw new Error("Post not found");
         } else {
             throw new Error("You can only update your own posts!");
         }
