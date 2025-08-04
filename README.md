@@ -32,8 +32,20 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 - Modularización avanzada de controladores, servicios y modelos.
 - Seguridad: JWT, Bcrypt, CORS, Helmet y control de permisos de usuario.
 - Integración visual con FontAwesome para iconografía moderna.
+- Sistema de notificaciones para likes y comentarios.
+- Panel de administracion para los moderadores y admins de la red.
 
 ## Novedades
+
+**Julio-Agosto 2025:**
+- Se añadieron pruebas unitarias y de integración usando Jest para backend y frontend.
+- Incremento en el límite de elementos mostrados en componentes de Spotify (de 20 a 50).
+- Mejoras en el manejo de errores en servicios y controladores de posts y comentarios.
+- Implementación de notificaciones para likes y comentarios.
+- Integración de SweetAlert2 para notificaciones visuales en frontend.
+- Panel de administración añadido.
+- Limpieza de código y eliminación de componentes y hooks no usados.
+- Corrección de bugs menores y optimización de rendimiento.
 
 **Novedades (julio 2025 y posteriores):**
 - Implementación del sistema de comentarios en publicaciones: ahora los usuarios pueden comentar y ver comentarios en los posts.
@@ -67,14 +79,15 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 - Mejoras y optimizaciones internas para soportar la integración de servicios externos.
 - [Ver más commits recientes](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc) (la lista puede estar incompleta).
 
-Referencia del pull request: https://github.com/emrls81/rhythme/pull/27 y últimos [commits](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc)
+Referencia del pull request: https://github.com/emrls81/rhythme/pull/28 y últimos [commits](https://github.com/emrls81/rhythme/commits?sort=committer-date&direction=desc)
 
 ## Tecnologías Utilizadas
 
 - **Frontend:** React, Vite, CSS
 - **Backend:** Node.js, Express.js, MongoDB, Mongoose
 - **Autenticación:** JWT, Bcrypt, Google OAuth 2.0, Spotify OAuth 2.0
-- **Herramientas Adicionales:** ESLint, Helmet, Morgan, CORS, dotenv
+- **Testing** Jest (backend y frontend)
+- **Herramientas Adicionales:** ESLint, Helmet, Morgan, CORS, dotenv, FontAwesome
 
 ## Estructura del Proyecto
 
@@ -87,6 +100,7 @@ rhythme/
 │   ├── models/         # Modelos de datos (usuario, post, comentario)
 │   ├── routes/         # Rutas Express (usuarios, posts, comentarios, spotify)
 │   ├── services/       # Lógica de negocio/servicios
+│   ├── tests/          # Pruebas unitarias e integración (nuevo)
 │   ├── utils/          # Utilidades y helpers
 │   └── server.js       # Entrada principal del backend
 │
@@ -97,6 +111,7 @@ rhythme/
 │   │   ├── App.jsx     # Definición de rutas principales
 │   │   └── App.css     # Estilos globales
 │   ├── public/         # Archivos estáticos
+│   ├── tests/          # Pruebas frontend (nuevo)
 │   └── vite.config.js  # Configuración de Vite
 │
 └── README.md           # Documentación principal
