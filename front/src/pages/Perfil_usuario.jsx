@@ -74,16 +74,6 @@ export const Perfil_usuario = () => {
   // Verificar si es el propio perfil
   const isOwnProfile = currentUser && profileUser && currentUser._id === profileUser._id;
 
-  // Debug: log de valores importantes
-  console.log('Perfil_usuario debug:', { 
-    userId, 
-    currentUser: currentUser?._id, 
-    profileUser: profileUser?._id, 
-    isOwnProfile,
-    loading,
-    error 
-  });
-
   // Estado de carga del seguimiento específico para este usuario
   const userFollowLoading = profileUser ? followLoading[profileUser._id] || false : false;
 
