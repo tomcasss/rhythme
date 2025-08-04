@@ -11,7 +11,6 @@ import './SpotifyConnection.css';
  */
 export default function SpotifyConnection({ userId, isCurrentUser = false }) {
     // Debug: log de los props recibidos
-    console.log('SpotifyConnection props:', { userId, isCurrentUser });
 
     const [spotifyStatus, setSpotifyStatus] = useState({
         isConnected: false,
