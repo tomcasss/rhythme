@@ -12,6 +12,7 @@ import ProfileHeader from "../components/Profile/ProfileHeader";
 import ProfileBanner from "../components/Profile/ProfileBanner";
 import ProfileContent from "../components/Profile/ProfileContent";
 import SpotifyConnection from "../components/Profile/SpotifyConnection";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 /**
  * Componente Perfil_usuario - Página de perfil de usuario
@@ -130,10 +131,12 @@ export const Perfil_usuario = () => {
             minWidth: '300px',
             maxWidth: '1000px'
           }}>
-            <SpotifyConnection 
-              userId={userId} 
-              isCurrentUser={isOwnProfile} 
-            />
+            <ErrorBoundary>
+              <SpotifyConnection 
+                userId={userId} 
+                isCurrentUser={isOwnProfile} 
+              />
+            </ErrorBoundary>
           </div>
           
           {/* Profile Content buttons - lado derecho */}

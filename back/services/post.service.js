@@ -48,7 +48,9 @@ export const deletePost = async (params, body) => {
     try {
         const deletedPost = await postModel.findById(params.id);
         // Solo el autor puede eliminar
-        if (deletedPost.userId.toString() === body.userId.toString()) {
+        if (!deletedPost) {
+            throw new Error("Post not found");
+        } else if (deletedPost.userId.toString() === body.userId.toString()) {
             await postModel.deleteOne({ _id: params.id });
             return deletedPost;
         } else {
