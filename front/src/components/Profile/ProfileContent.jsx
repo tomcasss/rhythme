@@ -46,6 +46,9 @@ export default function ProfileContent({ userId }) {
         if (type === 'posts') {
             fetchUserPosts();
         }
+        if (type === 'photos') {
+            fetchUserPosts();
+        }
     };
 
     return (
@@ -160,14 +163,50 @@ export default function ProfileContent({ userId }) {
                         </div>
                     )}
 
-                    {selectedSection === 'photos' && (
-                        <div className="photos-section">
-                            <h3>Fotos del usuario</h3>
-                            <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
-                                <p>Funcionalidad de fotos próximamente...</p>
-                            </div>
-                        </div>
-                    )}
+                                        {selectedSection === 'photos' && (
+                                                <div className="photos-section">
+                                                        <h3>Fotos del usuario</h3>
+                                                        {!postsLoading && !postsError && (
+                                                            <div className="photos-grid" style={{
+                                                                display: 'grid',
+                                                                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                                                gap: '10px'
+                                                            }}>
+                                                                {userPosts.filter(p => !!p.img).length === 0 && (
+                                                                    <div className="posts-section-empty">
+                                                                        <p>Este usuario no ha subido fotos aún.</p>
+                                                                    </div>
+                                                                )}
+                                                                {userPosts.filter(p => !!p.img).map(p => (
+                                                                    <div key={p._id} className="photo-item" style={{
+                                                                        width: '100%',
+                                                                        aspectRatio: '1 / 1',
+                                                                        overflow: 'hidden',
+                                                                        borderRadius: 8,
+                                                                        background: '#fff',
+                                                                        border: '1px solid #eee'
+                                                                    }}>
+                                                                        <img src={p.img} alt="Foto" style={{
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            objectFit: 'cover'
+                                                                        }} />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        {postsLoading && (
+                                                            <div className="posts-section-loading">
+                                                                <p>Cargando fotos...</p>
+                                                            </div>
+                                                        )}
+                                                        {postsError && (
+                                                            <div className="posts-section-error">
+                                                                <p>{postsError}</p>
+                                                            </div>
+                                                        )}
+                                                </div>
+                                        )}
                 </div>
             </div>
 
