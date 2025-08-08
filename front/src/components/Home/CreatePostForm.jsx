@@ -87,14 +87,7 @@ export default function CreatePostForm({ user, onPostCreated }) {
   };
 
   const handleFileToDataUrl = async (file) => {
-    if (!file.type.startsWith('image/')) {
-      setCreateError('Solo se permiten imágenes');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setCreateError('La imagen debe ser menor a 5MB');
-      return;
-    }
+    if (!validateImageFile(file, setCreateError)) return;
     try {
       const toDataUrl = (f) => new Promise((resolve, reject) => {
         const reader = new FileReader();
