@@ -2,9 +2,10 @@
 // src/components/Profile/ProfileContent.jsx
 import { useState } from 'react';
 import axios from 'axios';
-import perfil from '../../assets/perfil.png';
 import { API_ENDPOINTS } from '../../config/api.js';
 import './ProfileContent.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClipboard, faImage } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Componente ProfileContent - Contenido principal del perfil
@@ -52,163 +53,161 @@ export default function ProfileContent({ userId }) {
     };
 
     return (
-        
-            <div className="contenido-musico">
-                <div className="profile-buttons-grid">
 
+        <div className="contenido-musico">
+            <div className="profile-buttons-grid">
+                <button
+                    className={`tarjeta tarjeta-btn ${selectedSection === 'photos' ? 'active' : ''}`}
+                    onClick={() => handleCardClick('photos')}
+                >
+                    <div className="tarjeta-btn-content">
+                        <h4 style={{ margin: '0 0 0.5rem 0' }}>Fotos</h4>
+                        <FontAwesomeIcon icon={faImage} style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
+                    </div>
+                </button>
 
-                                        <button
-                        className={`tarjeta tarjeta-btn ${selectedSection === 'photos' ? 'active' : ''}`}
-                        onClick={() => handleCardClick('photos')}
-                    >
-                                                <div className="tarjeta-btn-content">
-                                                    <h4 style={{ margin: '0 0 0.5rem 0' }}>Fotos</h4>
-                                                    <img src={perfil} alt="Fotos" style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
-                                                </div>
-                    </button>
-
-                                        <button
-                        className={`tarjeta tarjeta-btn ${selectedSection === 'posts' ? 'active' : ''}`}
-                        onClick={() => handleCardClick('posts')}
-                    >
-                                                <div className="tarjeta-btn-content">
-                                                    <h4 style={{ margin: '0 0 0.5rem 0' }}>Posts</h4>
-                                                    <img src={perfil} alt="Posts" style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
-                                                </div>
-                    </button>
-                </div>
-
-                {/* Contenido que se muestra debajo de todos los botones */}
-                <div className="profile-content-sections" style={{ width: '100%', clear: 'both' }}>
-                    {selectedSection === 'posts' && (
-                        <div className="posts-section">
-                            <h3>Posts del usuario</h3>
-
-                            {postsLoading && (
-                                <div className="posts-section-loading">
-                                    <p>Cargando posts...</p>
-                                </div>
-                            )}
-
-                            {postsError && (
-                                <div className="posts-section-error">
-                                    <p>{postsError}</p>
-                                </div>
-                            )}
-
-                            {!postsLoading && !postsError && userPosts.length === 0 && (
-                                <div className="posts-section-empty">
-                                    <p>Este usuario no tiene posts aún.</p>
-                                </div>
-                            )}
-
-                            {!postsLoading && !postsError && userPosts.length > 0 && (
-                                <div className="posts-grid">
-                                    {userPosts.map(post => (
-                                        <div key={post._id} className="post-card post-card-item">
-                                            <div className="post-header post-header-row">
-                                                <strong style={{ color: '#fb7202' }}>
-                                                    {post.userId?.username || post.userId?.email || 'Usuario'}
-                                                </strong>
-                                                <span className="post-header-date">
-                                                    {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}
-                                                </span>
-                                            </div>
-
-                                            {post.desc && (
-                                                <p style={{ margin: '0.5rem 0' }}>{post.desc}</p>
-                                            )}
-
-                                            {post.img && (
-                                                <img
-                                                    src={post.img}
-                                                    alt="Post content"
-                                                    className="post-image"
-                                                />
-                                            )}
-
-                                            <div className="post-stats post-stats-row">
-                                                {post.likes?.length > 0 && (
-                                                    <span>❤️ {post.likes.length} likes</span>
-                                                )}
-                                                {post.comments?.length > 0 && (
-                                                    <span style={{ marginLeft: '1rem' }}>
-                                                        💬 {post.comments.length} comentarios
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Placeholder para otras secciones */}
-                    {selectedSection === 'albums' && (
-                        <div className="albums-section">
-                            <h3>Albums del usuario</h3>
-                            <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
-                                <p>Funcionalidad de albums próximamente...</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {selectedSection === 'playlists' && (
-                        <div className="playlists-section">
-                            <h3>Playlists del usuario</h3>
-                            <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
-                                <p>Funcionalidad de playlists próximamente...</p>
-                            </div>
-                        </div>
-                    )}
-
-                                        {selectedSection === 'photos' && (
-                                                <div className="photos-section">
-                                                        <h3>Fotos del usuario</h3>
-                                                        {!postsLoading && !postsError && (
-                                                            <div className="photos-grid" style={{
-                                                                display: 'grid',
-                                                                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                                                gap: '10px'
-                                                            }}>
-                                                                {userPosts.filter(p => !!p.img).length === 0 && (
-                                                                    <div className="posts-section-empty">
-                                                                        <p>Este usuario no ha subido fotos aún.</p>
-                                                                    </div>
-                                                                )}
-                                                                {userPosts.filter(p => !!p.img).map(p => (
-                                                                    <div key={p._id} className="photo-item" style={{
-                                                                        width: '100%',
-                                                                        aspectRatio: '1 / 1',
-                                                                        overflow: 'hidden',
-                                                                        borderRadius: 8,
-                                                                        background: '#fff',
-                                                                        border: '1px solid #eee'
-                                                                    }}>
-                                                                        <img src={p.img} alt="Foto" style={{
-                                                                            width: '100%',
-                                                                            height: '100%',
-                                                                            objectFit: 'cover'
-                                                                        }} />
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        {postsLoading && (
-                                                            <div className="posts-section-loading">
-                                                                <p>Cargando fotos...</p>
-                                                            </div>
-                                                        )}
-                                                        {postsError && (
-                                                            <div className="posts-section-error">
-                                                                <p>{postsError}</p>
-                                                            </div>
-                                                        )}
-                                                </div>
-                                        )}
-                </div>
+                <button
+                    className={`tarjeta tarjeta-btn ${selectedSection === 'posts' ? 'active' : ''}`}
+                    onClick={() => handleCardClick('posts')}
+                >
+                    <div className="tarjeta-btn-content">
+                        <h4 style={{ margin: '0 0 0.5rem 0' }}>Posts</h4>
+                        <FontAwesomeIcon icon={faClipboard} style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
+                    </div>
+                </button>
             </div>
+
+            {/* Contenido que se muestra debajo de todos los botones */}
+            <div className="profile-content-sections" style={{ width: '100%', clear: 'both' }}>
+                {selectedSection === 'posts' && (
+                    <div className="posts-section">
+                        <h3>Posts del usuario</h3>
+
+                        {postsLoading && (
+                            <div className="posts-section-loading">
+                                <p>Cargando posts...</p>
+                            </div>
+                        )}
+
+                        {postsError && (
+                            <div className="posts-section-error">
+                                <p>{postsError}</p>
+                            </div>
+                        )}
+
+                        {!postsLoading && !postsError && userPosts.length === 0 && (
+                            <div className="posts-section-empty">
+                                <p>Este usuario no tiene posts aún.</p>
+                            </div>
+                        )}
+
+                        {!postsLoading && !postsError && userPosts.length > 0 && (
+                            <div className="posts-grid">
+                                {userPosts.map(post => (
+                                    <div key={post._id} className="post-card post-card-item">
+                                        <div className="post-header post-header-row">
+                                            <strong style={{ color: '#fb7202' }}>
+                                                {post.userId?.username || post.userId?.email || 'Usuario'}
+                                            </strong>
+                                            <span className="post-header-date">
+                                                {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}
+                                            </span>
+                                        </div>
+
+                                        {post.desc && (
+                                            <p style={{ margin: '0.5rem 0' }}>{post.desc}</p>
+                                        )}
+
+                                        {post.img && (
+                                            <img
+                                                src={post.img}
+                                                alt="Post content"
+                                                className="post-image"
+                                            />
+                                        )}
+
+                                        <div className="post-stats post-stats-row">
+                                            {post.likes?.length > 0 && (
+                                                <span>❤️ {post.likes.length} likes</span>
+                                            )}
+                                            {post.comments?.length > 0 && (
+                                                <span style={{ marginLeft: '1rem' }}>
+                                                    💬 {post.comments.length} comentarios
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Placeholder para otras secciones */}
+                {selectedSection === 'albums' && (
+                    <div className="albums-section">
+                        <h3>Albums del usuario</h3>
+                        <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
+                            <p>Funcionalidad de albums próximamente...</p>
+                        </div>
+                    </div>
+                )}
+
+                {selectedSection === 'playlists' && (
+                    <div className="playlists-section">
+                        <h3>Playlists del usuario</h3>
+                        <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
+                            <p>Funcionalidad de playlists próximamente...</p>
+                        </div>
+                    </div>
+                )}
+
+                {selectedSection === 'photos' && (
+                    <div className="photos-section">
+                        <h3>Fotos del usuario</h3>
+                        {!postsLoading && !postsError && (
+                            <div className="photos-grid" style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                gap: '10px'
+                            }}>
+                                {userPosts.filter(p => !!p.img).length === 0 && (
+                                    <div className="posts-section-empty">
+                                        <p>Este usuario no ha subido fotos aún.</p>
+                                    </div>
+                                )}
+                                {userPosts.filter(p => !!p.img).map(p => (
+                                    <div key={p._id} className="photo-item" style={{
+                                        width: '100%',
+                                        aspectRatio: '1 / 1',
+                                        overflow: 'hidden',
+                                        borderRadius: 8,
+                                        background: '#fff',
+                                        border: '1px solid #eee'
+                                    }}>
+                                        <img src={p.img} alt="Foto" style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }} />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {postsLoading && (
+                            <div className="posts-section-loading">
+                                <p>Cargando fotos...</p>
+                            </div>
+                        )}
+                        {postsError && (
+                            <div className="posts-section-error">
+                                <p>{postsError}</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
 
     );
 }

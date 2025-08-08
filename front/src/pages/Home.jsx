@@ -56,8 +56,10 @@ export default function Home() {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.get(API_ENDPOINTS.GET_TIMELINE_POSTS(userId));
-      setPosts(res.data.timeLinePosts || []);
+  const res = await axios.get(API_ENDPOINTS.GET_TIMELINE_POSTS(userId));
+  const list = Array.isArray(res.data.timeLinePosts) ? [...res.data.timeLinePosts] : [];
+  list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  setPosts(list);
     } catch {
       setError("Error al cargar los posts. Intenta de nuevo.");
     } finally {

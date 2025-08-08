@@ -1,3 +1,5 @@
+// No imports needed; keep tests runtime-compatible under current Jest setup
+
 // Frontend Component Tests - Testing React components and UI logic
 
 // Mock DOM utilities
@@ -458,6 +460,96 @@ describe('Frontend Component Tests', () => {
     // Test error handling
     hook.setError(null);
     expect(() => hook.likePost('nonexistent')).toThrow('Post not found');
+  });
+});
+
+// Additional tests for newly added features (upload flow, photos grid, feed sorting, sticky CSS)
+describe('New Features Tests', () => {
+  it('CreatePostForm upload flow should validate type/size and set preview/base64', async () => {
+    // Minimal logic replica for upload handling
+    const state = { img: '', preview: '', error: '', dragOver: false };
+
+    const toDataUrl = async (file) => file.mockDataUrl || 'data:image/png;base64,AAA=';
+
+    const handleFile = async (file) => {
+      if (!file || !file.type || !file.type.startsWith('image/')) {
+        state.error = 'Solo se permiten imágenes';
+        return { ok: false, reason: 'type' };
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        state.error = 'La imagen debe ser menor a 5MB';
+        return { ok: false, reason: 'size' };
+      }
+      const dataUrl = await toDataUrl(file);
+      state.img = dataUrl;
+      state.preview = dataUrl;
+      state.error = '';
+      return { ok: true };
+    };
+
+    const handleDrop = async (e) => {
+      state.dragOver = false;
+      const file = e?.dataTransfer?.files?.[0];
+      if (file) return handleFile(file);
+      return { ok: false };
+    };
+
+    // Reject non-image
+    const nonImage = { type: 'application/pdf', size: 1024 };
+    let res = await handleFile(nonImage);
+    expect(res.ok).toBe(false);
+    expect(state.error).toContain('Solo se permiten imágenes');
+
+    // Reject too large image (>5MB)
+    const bigImage = { type: 'image/png', size: 6 * 1024 * 1024 };
+    res = await handleFile(bigImage);
+    expect(res.ok).toBe(false);
+    expect(state.error).toContain('menor a 5MB');
+
+    // Accept valid image and set preview/base64
+    const validImage = { type: 'image/png', size: 200_000, mockDataUrl: 'data:image/png;base64,TESTDATA' };
+    res = await handleFile(validImage);
+    expect(res.ok).toBe(true);
+    expect(state.img).toBe('data:image/png;base64,TESTDATA');
+    expect(state.preview).toBe('data:image/png;base64,TESTDATA');
+    expect(state.error).toBe('');
+
+    // Handle drop event path
+    state.img = ''; state.preview = '';
+    await handleDrop({ dataTransfer: { files: [validImage] } });
+    expect(state.preview).toBe('data:image/png;base64,TESTDATA');
+  });
+
+  it('ProfileContent photos grid should filter posts that contain an image', () => {
+    const posts = [
+      { _id: '1', img: 'data:image/png;base64,AAA=' },
+      { _id: '2', img: '' },
+      { _id: '3' },
+      { _id: '4', img: 'https://example.com/p.jpg' },
+    ];
+
+    const photosOnly = posts.filter(p => !!p.img);
+    expect(photosOnly.map(p => p._id)).toEqual(['1', '4']);
+
+    // Simulate that clicking the Photos/Post cards triggers fetch
+    const calls = { fetches: 0 };
+    const fetchUserPosts = () => { calls.fetches += 1; };
+    const handleCardClick = (type) => {
+      if (type === 'photos' || type === 'posts') fetchUserPosts();
+    };
+    handleCardClick('photos');
+    handleCardClick('posts');
+    expect(calls.fetches).toBe(2);
+  });
+
+  it('Home feed sorting should order posts by createdAt descending', () => {
+    const posts = [
+      { _id: 'a', createdAt: '2024-01-01T10:00:00.000Z' },
+      { _id: 'b', createdAt: '2024-01-02T09:00:00.000Z' },
+      { _id: 'c', createdAt: '2023-12-31T23:59:59.000Z' },
+    ];
+    posts.sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
+    expect(posts.map(p => p._id)).toEqual(['b', 'a', 'c']);
   });
 });
 

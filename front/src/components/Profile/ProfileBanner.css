@@ -1,6 +1,8 @@
 .profile-banner-container {
-  position: relative;
-  margin-top: 0;
+  position: sticky;
+  top: 70px; /* keep below sticky navbar (70px) */
+  z-index: 900; /* below navbar (1000), above content */
+  margin-top: 219px;
   margin-bottom: 2rem;
 }
 

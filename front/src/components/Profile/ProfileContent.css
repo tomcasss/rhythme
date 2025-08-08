@@ -1,6 +1,6 @@
 .profile-buttons-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
   width: 100%;
@@ -60,5 +60,5 @@
 }
 
 .right-panel-narrow { flex: 1; min-width: 200px; }
-.left-panel-wide { flex: 2; min-width: 300px; max-width: 1000px; }
+.left-panel-wide { flex: 1; min-width: 300px; max-width: 600px; }
 .profile-content-layout { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; }

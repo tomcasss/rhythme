@@ -168,7 +168,7 @@ export default function CreatePostForm({ user, onPostCreated }) {
       setDesc("");
       setImg("");
       setSpotifyContent(null);
-  setLocalImagePreview("");
+      setLocalImagePreview("");
       setCreating(false);
     } catch (error) {
       console.error("❌ Error creando post:", error);
@@ -193,14 +193,6 @@ export default function CreatePostForm({ user, onPostCreated }) {
           disabled={creating}
         />
 
-        <input
-          type="text"
-          placeholder="URL de imagen (opcional)"
-          value={img.startsWith('data:') ? '' : img}
-          onChange={e => setImg(e.target.value)}
-          disabled={creating}
-          className="create-image-input"
-        />
 
         {/* Cargar imagen local (MVP) */}
         <div className="create-file-input">
