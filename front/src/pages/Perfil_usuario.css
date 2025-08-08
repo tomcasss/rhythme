@@ -191,8 +191,8 @@ body, html, #root {
 /* Anular estilos existentes para el contenido del perfil */
 .contenido-musico {
   display: block !important;
-  width: 95% !important;
-  padding: 15px 30px !important;
+  width: 100% !important;
+  padding: 5px 5px !important;
 }
 
 /* Asegurar que la galeria no use flex */

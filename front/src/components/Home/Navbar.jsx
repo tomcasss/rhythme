@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faBell } from "@fortawesome/free-solid-svg-icons";
 import userImg from "../../assets/user.png";
 import { API_ENDPOINTS } from "../../config/api.js";
+import "./Navbar.css";
 
 /**
  * Componente Navbar - Barra de navegación con búsqueda de usuarios
@@ -211,54 +212,25 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
   return (
     <header className="navbar">
       {/* Logo */}
-      <div
-        className="logo-area"
-        style={{ cursor: "pointer" }}
-        onClick={() => navigate("/home")}
-      >
+  <div className="logo-area" onClick={() => navigate("/home")}> 
         <img src={logo} alt="RhythMe logo" className="logo1" />
       </div>
 
       {/* Barra de búsqueda */}
-      <div
-        className="search-container"
-        style={{ 
-          position: "relative", 
-          flex: 1, 
-          maxWidth: "500px",
-          zIndex: 999 
-        }}
-        ref={searchRef}
-      >
-        <div style={{ position: "relative" }}>
+      <div className="search-container" ref={searchRef}>
+  <div className="search-input-wrapper" style={{ position: "relative" }}>
           <input
             type="text"
             placeholder="Buscar usuarios..."
-            className="search-bar"
+            className={`search-bar ${searchQuery ? 'has-clear' : ''}`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => searchQuery.trim() && setShowSearchResults(true)}
-            style={{ paddingRight: searchQuery ? "2.5rem" : "1rem" }}
           />
 
           {/* Botón limpiar búsqueda */}
           {searchQuery && (
-            <button
-              onClick={clearSearch}
-              style={{
-                position: "absolute",
-                right: "0.5rem",
-                top: "35%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                fontSize: "1.2rem",
-                cursor: "pointer",
-                color: "#999",
-                padding: "0.25rem",
-              }}
-              title="Limpiar búsqueda"
-            >
+            <button onClick={clearSearch} className="clear-search-btn" title="Limpiar búsqueda">
               ✕
             </button>
           )}
@@ -266,40 +238,14 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
 
         {/* Resultados de búsqueda */}
         {showSearchResults && (
-          <div 
-            className="search-results"
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: '0',
-              right: '0',
-              background: 'white',
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              maxHeight: '400px',
-              overflowY: 'auto',
-              zIndex: 1000,
-              marginTop: '4px'
-            }}
-          >
+          <div className="search-results-panel">
             {searchLoading ? (
-              <div
-                style={{ padding: "1rem", textAlign: "center", color: "#666" }}
-              >
+              <div className="search-panel-loading" style={{ padding: "1rem", textAlign: "center", color: "#666" }}>
                 Buscando usuarios...
               </div>
             ) : searchResults.length > 0 ? (
               <>
-                <div
-                  style={{
-                    padding: "0.5rem 1rem",
-                    background: "#f8f9fa",
-                    borderBottom: "1px solid #eee",
-                    fontSize: "0.9rem",
-                    color: "#666",
-                  }}
-                >
+                <div className="search-panel-header">
                   {searchResults.length} usuario
                   {searchResults.length !== 1 ? "s" : ""} encontrado
                   {searchResults.length !== 1 ? "s" : ""}
@@ -309,46 +255,21 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
                     key={searchUser._id}
                     className="search-result-item"
                     onClick={() => handleSelectUser(searchUser)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '12px 16px',
-                      gap: '12px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #f0f0f0',
-                      transition: 'background-color 0.2s',
-                      ':hover': {
-                        backgroundColor: '#f8f9fa'
-                      }
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
                     <img
                       src={searchUser.profilePicture || userImg}
                       alt="avatar"
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                      }}
+                      className="search-result-avatar"
                     />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: "600", color: "#333" }}>
+                    <div className="search-result-main">
+                      <div className="search-result-name">
                         {searchUser.username || searchUser.name || "Usuario"}
                       </div>
-                      <div style={{ fontSize: "0.85rem", color: "#666" }}>
+                      <div className="search-result-email">
                         {searchUser.email}
                       </div>
                       {searchUser.desc && (
-                        <div
-                          style={{
-                            fontSize: "0.8rem",
-                            color: "#999",
-                            marginTop: "0.25rem",
-                          }}
-                        >
+                        <div className="search-result-desc">
                           {searchUser.desc.length > 50
                             ? `${searchUser.desc.substring(0, 50)}...`
                             : searchUser.desc}
@@ -357,21 +278,9 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
                     </div>
 
                     {/* Botones de seguir/dejar de seguir */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                      }}
-                    >
+                    <div className="search-result-actions">
                       {searchUser._id === user?._id ? (
-                        <span
-                          style={{
-                            fontSize: "0.8rem",
-                            color: "#999",
-                            fontStyle: "italic",
-                          }}
-                        >
+                        <span className="search-self-pill" style={{ fontSize: "0.8rem", color: "#999", fontStyle: "italic" }}>
                           Tú
                         </span>
                       ) : isFollowing(searchUser._id) ? (
@@ -380,16 +289,7 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
                             handleUnfollowFromSearch(searchUser._id, e)
                           }
                           disabled={followLoading[searchUser._id]}
-                          style={{
-                            background: "#dc3545",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "6px",
-                            padding: "0.25rem 0.5rem",
-                            fontSize: "0.75rem",
-                            cursor: "pointer",
-                            fontWeight: "500",
-                          }}
+                          className="btn-unfollow"
                         >
                           {followLoading[searchUser._id]
                             ? "..."
@@ -401,17 +301,7 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
                             handleFollowFromSearch(searchUser._id, e)
                           }
                           disabled={followLoading[searchUser._id]}
-                          style={{
-                            background:
-                              "linear-gradient(90deg, #fb7202, #e82c0b)",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "6px",
-                            padding: "0.25rem 0.5rem",
-                            fontSize: "0.75rem",
-                            cursor: "pointer",
-                            fontWeight: "500",
-                          }}
+                          className="btn-follow"
                         >
                           {followLoading[searchUser._id] ? "..." : "Seguir"}
                         </button>
@@ -421,9 +311,7 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
                 ))}
               </>
             ) : searchQuery.trim() && !searchLoading ? (
-              <div
-                style={{ padding: "1rem", textAlign: "center", color: "#666" }}
-              >
+              <div className="search-panel-empty" style={{ padding: "1rem", textAlign: "center", color: "#666" }}>
                 No se encontraron usuarios para "{searchQuery}"
               </div>
             ) : null}
@@ -433,62 +321,27 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
 
       {/* Iconos de navegación */}
       <div className="navbar-icons">
-        <span className="icon notif" style={{ position: "relative" }}>
+        <span className="icon notif notif-wrapper">
   <button
     onClick={toggleDropdown}
-    style={{
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      position: "relative",
-    }}
+    className="notif-button"
     title="Notificaciones"
   >
     <FontAwesomeIcon icon={faBell} size="lg" />
     {unreadCount > 0 && (
-      <span
-        style={{
-          position: "absolute",
-          top: "-5px",
-          right: "-5px",
-          background: "#e82c0b",
-          color: "#fff",
-          borderRadius: "50%",
-          padding: "2px 6px",
-          fontSize: "0.7rem",
-        }}
-      >
+      <span className="notif-badge">
         {unreadCount}
       </span>
     )}
   </button>
 
   {showDropdown && (
-    <div
-      style={{
-        position: "absolute",
-        top: "110%",
-        right: 0,
-        background: "#fff",
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        width: "300px",
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          padding: "0.75rem",
-          borderBottom: "1px solid #eee",
-          fontWeight: "bold",
-          background: "#f7f7f7",
-        }}
-      >
+    <div className="notif-dropdown">
+      <div className="notif-title">
         Notificaciones
       </div>
       {notifications.length === 0 ? (
-        <div style={{ padding: "1rem", textAlign: "center", color: "#777" }}>
+        <div className="notif-empty">
           No tienes notificaciones.
         </div>
       ) : (
@@ -496,13 +349,7 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
           <div
             key={n._id}
             onClick={() => markAsRead(n._id)}
-            style={{
-              padding: "0.75rem",
-              borderBottom: "1px solid #f0f0f0",
-              backgroundColor: n.isRead ? "#fff" : "#fef6f5",
-              cursor: "pointer",
-              fontSize: "0.9rem",
-            }}
+            className={`notif-item ${n.isRead ? '' : 'notif-item-unread'}`}
           >
             {n.message}
           </div>
@@ -514,52 +361,29 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
 
 
         {/* Menú de usuario */}
-        <span className="icon user" style={{ position: "relative" }}>
+    <span className="icon user user-menu-wrapper">
           <button
-            className="action-btn"
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: "1.2rem",
-              cursor: "pointer",
-            }}
+      className="action-btn user-menu-button"
             onClick={() => setUserMenuOpen((v) => !v)}
           >
-            <FontAwesomeIcon icon={faUser} style={{ marginRight: "1rem" }} />
+            <FontAwesomeIcon icon={faUser} className="user-menu-icon" />
           </button>
           {userMenuOpen && (
-            <div
-              ref={userMenuRef}
-              style={{
-                position: "absolute",
-                top: 30,
-                right: 0,
-                background: "#fff",
-                border: "1px solid #eee",
-                borderRadius: 8,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                padding: "0.5rem",
-                minWidth: 120,
-                zIndex: 10,
-              }}
-            >
+      <div ref={userMenuRef} className="user-menu-panel">
               <button
-                className="action-btn"
-                style={{ width: "100%", textAlign: "left", color: "#e82c0b", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" }}
+        className="action-btn user-menu-item"
                 onClick={() => navigate(`/profile/${user._id}`)}
               >
                 Mi Perfil
               </button>
               <button
-                className="action-btn"
-                style={{ width: "100%", textAlign: "left", color: "#e82c0b", paddingBottom: "0.5rem", borderBottom: "1px solid #eee" }}
+        className="action-btn user-menu-item"
                 onClick={() => navigate('/edit-profile')}
               >
                 Editar Perfil
               </button>
               <button
-                className="action-btn"
-                style={{ width: "100%", textAlign: "left", color: "#e82c0b" }}
+        className="action-btn user-menu-item"
                 onClick={handleLogout}
               >
                 Cerrar sesión

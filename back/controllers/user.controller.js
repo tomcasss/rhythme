@@ -1,4 +1,4 @@
-import { deleteUser, getUser, updateUser, followUser, unFollowUser, searchUsers } from "../services/user.service.js";
+import { deleteUser, getUser, updateUser, followUser, unFollowUser, searchUsers, getFriendRecommendations } from "../services/user.service.js";
 
 export const updateUserController = async (req, res) => {
   if (req.body.userId === req.params.id || req.body.isAdmin) {
@@ -114,5 +114,17 @@ export const searchUsersController = async (req, res) => {
       message: "Error searching users",
       error,
     });
+  }
+};
+
+export const getFriendRecommendationsController = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { limit } = req.query;
+    const suggestions = await getFriendRecommendations(userId, limit ? Number(limit) : 10);
+    res.status(200).json({ suggestions, message: 'Friend recommendations fetched successfully' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Failed to fetch friend recommendations', error: error.message || error });
   }
 };

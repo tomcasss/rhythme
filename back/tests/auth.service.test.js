@@ -1,58 +1,4 @@
-// Simple unit tests for auth.service focusing on core logic validation
-
-// Simple manual test framework for ES modules
-const describe = (name, fn) => {
-  console.log(`\n📝 ${name}`);
-  fn();
-};
-
-const it = (name, fn) => {
-  try {
-    const result = fn();
-    if (result && typeof result.then === 'function') {
-      // Handle async test
-      result
-        .then(() => console.log(`  ✅ ${name}`))
-        .catch(error => console.log(`  ❌ ${name}: ${error.message}`));
-    } else {
-      console.log(`  ✅ ${name}`);
-    }
-  } catch (error) {
-    console.log(`  ❌ ${name}: ${error.message}`);
-  }
-};
-
-const expect = (actual) => ({
-  toBe: (expected) => {
-    if (actual !== expected) {
-      throw new Error(`Expected ${expected}, but got ${actual}`);
-    }
-  },
-  toEqual: (expected) => {
-    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-      throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
-    }
-  },
-  toHaveProperty: (prop, value) => {
-    if (!(prop in actual)) {
-      throw new Error(`Expected object to have property ${prop}`);
-    }
-    if (value !== undefined && actual[prop] !== value) {
-      throw new Error(`Expected property ${prop} to be ${value}, but got ${actual[prop]}`);
-    }
-  },
-  toMatch: (pattern) => {
-    if (typeof pattern === 'string') {
-      if (!actual.includes(pattern)) {
-        throw new Error(`Expected "${actual}" to include "${pattern}"`);
-      }
-    } else if (pattern instanceof RegExp) {
-      if (!pattern.test(actual)) {
-        throw new Error(`Expected "${actual}" to match pattern ${pattern}`);
-      }
-    }
-  }
-});
+// Jest-based unit tests for auth.service focusing on core logic validation
 
 // Test auth service core logic validation
 describe('Auth Service Logic Tests', () => {
@@ -390,4 +336,7 @@ describe('Auth Service Logic Tests', () => {
   });
 });
 
-console.log('\n🏁 Auth service logic validation tests completed');
+afterAll(() => {
+  // eslint-disable-next-line no-console
+  console.log('\n🏁 Auth service logic validation tests completed');
+});

@@ -8,6 +8,7 @@ import {
   commentPost,
   getPostComments,
   getUserPosts,
+  getRecommendedPosts,
 } from "../services/post.service.js";
 import { createNotification } from "../services/notification.service.js";
 import User from "../models/user.model.js";
@@ -245,5 +246,17 @@ export const getUserPostsController = async (req, res) => {
       message: "Failed to fetch user posts",
       error: error.message,
     });
+  }
+};
+
+export const getRecommendedPostsController = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { limit } = req.query;
+    const posts = await getRecommendedPosts(userId, { limit: limit ? Number(limit) : 20 });
+    res.status(200).json({ posts, message: 'Recommended posts fetched successfully' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Failed to fetch recommended posts', error: error.message || error });
   }
 };

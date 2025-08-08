@@ -1,46 +1,4 @@
-// Route Integration Tests - Testing API endpoints and routing
-
-// Simple manual test framework for ES modules
-const describe = (name, fn) => {
-  console.log(`\n📝 ${name}`);
-  fn();
-};
-
-const it = (name, fn) => {
-  try {
-    const result = fn();
-    if (result && typeof result.then === 'function') {
-      result
-        .then(() => console.log(`  ✅ ${name}`))
-        .catch(error => console.log(`  ❌ ${name}: ${error.message}`));
-    } else {
-      console.log(`  ✅ ${name}`);
-    }
-  } catch (error) {
-    console.log(`  ❌ ${name}: ${error.message}`);
-  }
-};
-
-const expect = (actual) => ({
-  toBe: (expected) => {
-    if (actual !== expected) {
-      throw new Error(`Expected ${expected}, but got ${actual}`);
-    }
-  },
-  toContain: (expected) => {
-    if (!actual.includes(expected)) {
-      throw new Error(`Expected "${actual}" to contain "${expected}"`);
-    }
-  },
-  toHaveProperty: (prop, value) => {
-    if (!(prop in actual)) {
-      throw new Error(`Expected object to have property ${prop}`);
-    }
-    if (value !== undefined && actual[prop] !== value) {
-      throw new Error(`Expected property ${prop} to be ${value}, but got ${actual[prop]}`);
-    }
-  }
-});
+// Route Integration Tests - Testing API endpoints and routing (Jest)
 
 describe('API Routes Integration Tests', () => {
 
@@ -69,11 +27,12 @@ describe('API Routes Integration Tests', () => {
     router.get("/get-user-posts/:userId", () => {});
     router.post("/comment-post/:id", () => {});
     router.get("/get-comments/:id", () => {});
-    router.get('/', () => {});
+  router.get('/', () => {});
+  router.get('/recommended/:userId', () => {});
     
     const routes = router.getRoutes();
     
-    expect(Object.keys(routes).length).toBe(10);
+  expect(Object.keys(routes).length).toBe(11);
     expect(routes).toHaveProperty('POST /create-post');
     expect(routes).toHaveProperty('PUT /update-post/:id');
     expect(routes).toHaveProperty('DELETE /delete-post/:id/:userId');
@@ -86,6 +45,7 @@ describe('API Routes Integration Tests', () => {
     
     // Simulate user routes registration
     router.get('/search', () => {});
+  router.get('/:userId/recommendations/friends', () => {});
     router.put('/:id', () => {});
     router.delete('/:id', () => {});
     router.get('/:id', () => {});
@@ -95,8 +55,9 @@ describe('API Routes Integration Tests', () => {
     
     const routes = router.getRoutes();
     
-    expect(Object.keys(routes).length).toBe(7);
+  expect(Object.keys(routes).length).toBe(8);
     expect(routes).toHaveProperty('GET /search');
+  expect(routes).toHaveProperty('GET /:userId/recommendations/friends');
     expect(routes).toHaveProperty('PUT /follow/:id');
     expect(routes).toHaveProperty('PUT /unfollow/:id');
   });
@@ -234,4 +195,7 @@ describe('API Routes Integration Tests', () => {
   });
 });
 
-console.log('\n🏁 Route integration tests completed');
+afterAll(() => {
+  // eslint-disable-next-line no-console
+  console.log('\n🏁 Route integration tests completed');
+});

@@ -1,0 +1,71 @@
+/* Styles for SuggestedFriends component */
+.suggested-section {
+  margin-top: 1.5rem;
+}
+
+.suggested-title {
+  margin: 0 0 0.5rem 0;
+}
+
+.suggested-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.suggested-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.suggested-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.suggested-info {
+  flex: 1;
+}
+
+.suggested-name {
+  font-weight: 600;
+}
+
+.suggested-email {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.suggested-self {
+  font-size: 0.8rem;
+  color: #999;
+  font-style: italic;
+}
+
+.suggested-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  color: #fff;
+  cursor: pointer;
+}
+
+.suggested-btn.following {
+  background: #dc3545;
+}
+
+.suggested-btn.follow {
+  background: linear-gradient(90deg, #fb7202, #e82c0b);
+}
+
+.suggested-error {
+  color: #ff3333;
+}

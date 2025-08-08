@@ -30,4 +30,18 @@ export default [
       ],
     },
   },
+  // Jest test files override
+  {
+    files: ['**/*.test.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.jest,
+      },
+    },
+    rules: {
+      // Tests often have unused vars in examples/mocks; relax slightly
+      'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]' }],
+    },
+  },
 ]

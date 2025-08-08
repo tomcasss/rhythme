@@ -11,6 +11,7 @@ import { useFollowSystem } from "../hooks/useFollowSystem.js";
 import ProfileHeader from "../components/Profile/ProfileHeader";
 import ProfileBanner from "../components/Profile/ProfileBanner";
 import ProfileContent from "../components/Profile/ProfileContent";
+import "../components/Profile/ProfileContent.css";
 import SpotifyConnection from "../components/Profile/SpotifyConnection";
 import ErrorBoundary from "../components/ErrorBoundary";
 
@@ -116,21 +117,11 @@ export const Perfil_usuario = () => {
       />
       
       {/* Componente de conexión con Spotify */}
-      <div style={{ padding: '0 2rem', flex: 1 }}>
+  <div style={{ padding: '0 2rem', flex: 1 }}>
         {/* Contenedor principal con layout side-by-side */}
-        <div className="profile-content-layout" style={{
-          display: 'flex',
-          gap: '2rem',
-          alignItems: 'flex-start',
-          marginBottom: '2rem',
-          flexWrap: 'wrap'
-        }}>
+  <div className="profile-content-layout">
           {/* Spotify Connection - lado izquierdo */}
-          <div className="spotify-section" style={{ 
-            flex: '2',
-            minWidth: '300px',
-            maxWidth: '1000px'
-          }}>
+          <div className="spotify-section left-panel-wide">
             <ErrorBoundary>
               <SpotifyConnection 
                 userId={userId} 
@@ -140,10 +131,7 @@ export const Perfil_usuario = () => {
           </div>
           
           {/* Profile Content buttons - lado derecho */}
-          <div className="profile-buttons-section" style={{ 
-            flex: '1',
-            minWidth: '200px'
-          }}>
+          <div className="profile-buttons-section right-panel-narrow">
             <ProfileContent userId={userId} />
           </div>
         </div>

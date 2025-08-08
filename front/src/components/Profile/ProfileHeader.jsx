@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faBell } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/logoR.png';
+import './ProfileHeader.css';
 
 /**
  * Componente ProfileHeader - Header de la página de perfil
@@ -37,47 +38,31 @@ export default function ProfileHeader() {
     return (
         <div className="contenedor">
             <header className="navbar">
-                <div className="logo-area" style={{ cursor: "pointer" }} onClick={() => navigate("/home")}>
+                <div className="logo-area logo-clickable" onClick={() => navigate("/home")}>
                     <img src={logo} alt="RhythMe logo" className="logo1" />
                 </div>
 
                 <div className="iconos-header">
 
                     {/* Menú de usuario */}
-                    <span className="icon user" style={{ position: 'relative' }}>
-                        <FontAwesomeIcon icon={faBell} style={{ marginRight: "1rem" }} />
+                    <span className="icon user user-menu-trigger">
+                        <FontAwesomeIcon icon={faBell} className="icon-gap" />
                         <button
-                            className="action-btn"
-                            style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}
+                            className="action-btn icon-btn"
                             onClick={() => setUserMenuOpen((v) => !v)}
                         >
-                            <FontAwesomeIcon icon={faUser} style={{ marginRight: "1rem" }} />
+                            <FontAwesomeIcon icon={faUser} className="icon-gap" />
                         </button>
                         {userMenuOpen && (
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    top: 30,
-                                    right: 0,
-                                    background: '#fff',
-                                    border: '1px solid #eee',
-                                    borderRadius: 8,
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                    padding: '0.5rem',
-                                    minWidth: 120,
-                                    zIndex: 10
-                                }}
-                            >
+                            <div className="user-menu">
                                 <button
                                     className="action-btn"
-                                    style={{ width: '100%', textAlign: 'left', padding: '0.5rem', color: '#e82c0b', borderBottom: '1px solid #eee' }}
                                     onClick={() => navigate('/edit-profile')}
                                 >
                                     Editar perfil
                                 </button>
                                 <button
                                     className="action-btn"
-                                    style={{ width: '100%', textAlign: 'left', color: '#e82c0b' }}
                                     onClick={handleLogout}
                                 >
                                     Cerrar sesión

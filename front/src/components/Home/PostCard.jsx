@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPencil } from "@fortawesome/free-solid-svg-icons";
 import CommentsSection from './CommentsSection';
 import SpotifyContent from './SpotifyContent';
+import "./PostCard.css";
 
 /**
  * Componente PostCard - Tarjeta individual de post
@@ -151,63 +152,38 @@ export default function PostCard({
   };
 
   return (
-    <div className="post-card" style={{position: 'relative'}}>
+    <div className="post-card">
       {/* Header del post */}
       <div className="post-header">
-        <img 
+  <img 
           src={userImg} 
           alt="user" 
-          className="avatar" 
+      className="avatar avatar-clickable" 
           onClick={goToProfile}
-          style={{ cursor: 'pointer' }}
         />
         <div className="post-user">
-          <strong 
-            onClick={goToProfile}
-            style={{ cursor: 'pointer', color: '#fb7202' }}
-          >
+      <strong onClick={goToProfile} className="post-user-name">
             {post.userId && typeof post.userId === 'object'
               ? (post.userId.username || post.userId.email || `ID: ${post.userId._id?.slice(0, 6)}...`)
               : (post.username || (post.userId ? `ID: ${post.userId.slice(0, 6)}...` : "Usuario"))
             }
           </strong>
-          <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+          <div className="post-user-row">
             <span className="time">
               {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
             </span>
             
             {/* Indicador de tipo de post */}
             {isOwnPost() ? (
-              <span style={{
-                background: '#fb7202',
-                color: 'white',
-                fontSize: '0.7rem',
-                padding: '0.2rem 0.4rem',
-                borderRadius: '10px',
-                fontWeight: '600'
-              }}>
+        <span className="post-user-status own">
                 Tu post
               </span>
             ) : isFollowingUser() ? (
-              <span style={{
-                background: '#28a745',
-                color: 'white',
-                fontSize: '0.7rem',
-                padding: '0.2rem 0.4rem',
-                borderRadius: '10px',
-                fontWeight: '600'
-              }}>
+        <span className="post-user-status following">
                 Siguiendo
               </span>
             ) : (
-              <span style={{
-                background: '#6c757d',
-                color: 'white',
-                fontSize: '0.7rem',
-                padding: '0.2rem 0.4rem',
-                borderRadius: '10px',
-                fontWeight: '600'
-              }}>
+        <span className="post-user-status">
                 No sigues
               </span>
             )}
@@ -216,7 +192,7 @@ export default function PostCard({
         
         {/* Botón de seguir/dejar de seguir */}
         {!isOwnPost() && (
-          <div style={{marginLeft: 'auto', marginRight: '3rem'}}>
+      <div className="post-follow-wrapper">
             {isFollowingUser() ? (
               <button 
                 className="following-btn"
@@ -241,7 +217,7 @@ export default function PostCard({
 
         {/* Menú de opciones para posts propios */}
         {isOwnPost() && (
-          <div style={{position: 'absolute', top: 10, right: 10, zIndex: 2}}>
+      <div className="post-options-wrapper">
             <button 
               className="action-btn" 
               onClick={() => setOpenMenu(!openMenu)} 
@@ -250,30 +226,15 @@ export default function PostCard({
               ⋮
             </button>
             {openMenu && (
-              <div 
-                ref={menuRef} 
-                style={{
-                  position: 'absolute', 
-                  top: 30, 
-                  right: 0, 
-                  background: '#fff', 
-                  border: '1px solid #eee', 
-                  borderRadius: 8, 
-                  boxShadow: '1px 2px 8px rgba(0,0,0,0.08)', 
-                  padding: '0.5rem', 
-                  minWidth: 150
-                }}
-              >
+        <div ref={menuRef} className="post-options-panel">
                 <button 
-                  className="action-btn" 
-                  style={{width: '100%', textAlign: 'left', color: '#e82c0b'}} 
+          className="action-btn post-options-item" 
                   onClick={handleDelete}
                 >
                   <FontAwesomeIcon icon={faTrash} /> Eliminar
                 </button>
                 <button 
-                  className="action-btn" 
-                  style={{width: '100%', textAlign: 'left', color: '#e82c0b'}} 
+          className="action-btn post-options-item" 
                   onClick={startEdit}
                 >
                   <FontAwesomeIcon icon={faPencil} /> Editar
@@ -287,13 +248,13 @@ export default function PostCard({
       {/* Contenido del post */}
       <div className="post-content">
         {isEditing ? (
-          <form onSubmit={handleEditSubmit} style={{display: 'flex', flexDirection: 'column', gap: 8}}>
+          <form onSubmit={handleEditSubmit} className="post-edit-form">
             <textarea
               value={editDesc}
               onChange={e => setEditDesc(e.target.value)}
               required
               rows={2}
-              style={{resize: 'none', borderRadius: 8, padding: 8, border: '1px solid #eee'}}
+              className="post-edit-textarea"
               disabled={editLoading}
             />
             <input
@@ -302,39 +263,25 @@ export default function PostCard({
               value={editImg}
               onChange={e => setEditImg(e.target.value)}
               disabled={editLoading}
-              style={{borderRadius: 8, padding: 8, border: '1px solid #eee'}}
+              className="post-edit-input"
             />
-            <div style={{display: 'flex', gap: 8}}>
+            <div className="post-edit-actions">
               <button 
                 type="submit" 
                 disabled={editLoading || !editDesc} 
-                style={{
-                  borderRadius: 8, 
-                  padding: 8, 
-                  background: 'linear-gradient(90deg, #fb7202, #e82c0b)', 
-                  color: '#fff', 
-                  border: 'none', 
-                  cursor: 'pointer'
-                }}
+                className="btn-save"
               >
                 {editLoading ? 'Guardando...' : 'Guardar'}
               </button>
               <button 
                 type="button" 
                 onClick={cancelEdit} 
-                style={{
-                  borderRadius: 8, 
-                  padding: 8, 
-                  background: '#eee', 
-                  color: '#333', 
-                  border: 'none', 
-                  cursor: 'pointer'
-                }}
+                className="btn-cancel"
               >
                 Cancelar
               </button>
             </div>
-            {editError && <span style={{color: '#ff3333'}}>{editError}</span>}
+            {editError && <span className="edit-error">{editError}</span>}
           </form>
         ) : (
           <>
