@@ -1,5 +1,6 @@
 // src/components/Profile/ProfileBanner.jsx
 import perfil from '../../assets/perfil.png';
+import './ProfileBanner.css';
 
 /**
  * Componente ProfileBanner - Banner principal del perfil de usuario
@@ -55,107 +56,37 @@ export default function ProfileBanner({
 
     return (
 
-        <div className="banner-musico" style={{
-            position: 'relative',
-            marginTop: '0px', /* Eliminar margen superior */
-            marginBottom: '2rem'
-        }}>
+        <div className="banner-musico profile-banner-container">
             {/* Foto de portada/banner si existe */}
             {profileUser.coverPicture ? (
-                <div className="cover-banner" style={{
-                    width: '100%',
-                    height: '300px',
-                    backgroundImage: `url(${profileUser.coverPicture})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    borderRadius: '10px',
-                    position: 'relative'
-                }}>
+                <div className="cover-banner has-image" style={{ backgroundImage: `url(${profileUser.coverPicture})` }}>
                     {/* Overlay oscuro para mejor legibilidad */}
-                    <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%)',
-                        borderRadius: '10px'
-                    }}></div>
+                    <div className="cover-overlay" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%)' }}></div>
                 </div>
             ) : (
                 // Cuando no hay cover picture, crear un fondo simple
-                <div className="cover-banner" style={{
-                    width: '100%',
-                    height: '300px',
-                    background: 'linear-gradient(135deg, #ff7a00 0%, #ff9500 100%)',
-                    borderRadius: '10px',
-                    position: 'relative'
-                }}>
+                <div className="cover-banner">
                     {/* Overlay sutil */}
-                    <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0,0,0,0.1)',
-                        borderRadius: '10px'
-                    }}></div>
+                    <div className="cover-overlay"></div>
                 </div>
             )}
 
-            <div className="perfil-banner" style={{
-                position: 'absolute',
-                bottom: '20px',
-                left: '20px',
-                right: '20px',
-                zIndex: 2,
-                display: 'flex',
-                alignItems: 'end',
-                gap: '1rem'
-            }}>
+            <div className="perfil-banner">
                 <img
                     src={profileUser.profilePicture || perfil}
                     className="foto-perfil-grande"
                     alt="Perfil"
-                    style={{
-                        width: '120px',
-                        height: '120px',
-                        borderRadius: '50%',
-                        border: '4px solid white',
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-                    }}
                 />
-                <div className="info-banner" style={{
-                    color: 'white',
-                    textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-                    flex: 1
-                }}>
-                    <h2 style={{
-                        margin: '0 0 0.5rem 0',
-                        fontSize: '2rem',
-                        fontWeight: 'bold'
-                    }}>
+                <div className="info-banner">
+                    <h2>
                         {profileUser.username || profileUser.name || "Usuario"}
                     </h2>
-                    <p style={{
-                        margin: '0 0 1rem 0',
-                        fontSize: '1.1rem',
-                        opacity: 0.9
-                    }}>
+                    <p>
                         {profileUser.desc || profileUser.descripcion || "Sin descripción"}
                     </p>
 
                     {/* Información adicional del perfil */}
-                    <div className="profile-info" style={{
-                        marginBottom: '1rem',
-                        fontSize: '0.9rem',
-                        color: 'rgba(255,255,255,0.9)',
-                        display: 'flex',
-                        gap: '1rem',
-                        flexWrap: 'wrap'
-                    }}>
+                                        <div className="profile-info">
                         {profileUser.from && <span>📍 {profileUser.from}</span>}
                         {profileUser.relationship && (
                             <span>💝 {
@@ -164,102 +95,60 @@ export default function ProfileBanner({
                                         profileUser.relationship === 3 ? "Casado/a" : ""
                             }</span>
                         )}
+                                                {Array.isArray(profileUser.musicPreferences) && profileUser.musicPreferences.length > 0 && (
+                                                    <span className="genre-chips">
+                                                        🎵
+                                                        {profileUser.musicPreferences.slice(0, 6).map((g) => (
+                                                            <span key={g} className="genre-chip">{g}</span>
+                                                        ))}
+                                                        {profileUser.musicPreferences.length > 6 && (
+                                                            <span style={{ opacity: 0.9 }}>+{profileUser.musicPreferences.length - 6}</span>
+                                                        )}
+                                                    </span>
+                                                )}
                     </div>
 
                     {/* Estadísticas */}
-                    <div className="profile-stats" style={{
-                        display: 'flex',
-                        gap: '2rem',
-                        marginBottom: '1rem'
-                    }}>
+            <div className="profile-stats">
                         <div className="stat">
-                            <span className="stat-number" style={{
-                                fontSize: '1.5rem',
-                                fontWeight: 'bold',
-                                color: 'white'
-                            }}>
+                <span className="stat-number">
                                 {profileUser.followers?.length || 0}
                             </span>
-                            <span className="stat-label" style={{
-                                marginLeft: '0.5rem',
-                                color: 'rgba(255,255,255,0.8)'
-                            }}>
+                <span className="stat-label">
                                 Seguidores
                             </span>
                         </div>
                         <div className="stat">
-                            <span className="stat-number" style={{
-                                fontSize: '1.5rem',
-                                fontWeight: 'bold',
-                                color: 'white'
-                            }}>
+                <span className="stat-number">
                                 {profileUser.following?.length || 0}
                             </span>
-                            <span className="stat-label" style={{
-                                marginLeft: '0.5rem',
-                                color: 'rgba(255,255,255,0.8)'
-                            }}>
+                <span className="stat-label">
                                 Siguiendo
                             </span>
                         </div>
                     </div>
 
                     {/* Botones de acción */}
-                    {!isOwnProfile && (
-                        <div className="botones-banner" style={{
-                            display: 'flex',
-                            gap: '1rem'
-                        }}>
+            {!isOwnProfile && (
+            <div className="botones-banner">
                             {isFollowing(profileUser._id) ? (
                                 <button
-                                    className="btn-red"
+                    className="btn-red btn-unfollow"
                                     onClick={handleUnfollow}
                                     disabled={followLoading}
-                                    style={{
-                                        background: '#dc3545',
-                                        opacity: followLoading ? 0.7 : 1,
-                                        padding: '0.5rem 1rem',
-                                        borderRadius: '5px',
-                                        border: 'none',
-                                        color: 'white',
-                                        cursor: 'pointer',
-                                        fontSize: '0.9rem'
-                                    }}
                                 >
                                     {followLoading ? 'Cargando...' : 'Dejar de seguir'}
                                 </button>
                             ) : (
                                 <button
-                                    className="btn-red"
+                    className="btn-red btn-follow"
                                     onClick={handleFollow}
                                     disabled={followLoading}
-                                    style={{
-                                        background: '#ff7a00',
-                                        opacity: followLoading ? 0.7 : 1,
-                                        padding: '0.5rem 1rem',
-                                        borderRadius: '5px',
-                                        border: 'none',
-                                        color: 'white',
-                                        cursor: 'pointer',
-                                        fontSize: '0.9rem'
-                                    }}
                                 >
                                     {followLoading ? 'Cargando...' : 'Seguir'}
                                 </button>
                             )}
-                            <button
-                                className="btn-mensaje"
-                                style={{
-                                    background: 'rgba(255,255,255,0.2)',
-                                    border: '2px solid rgba(255,255,255,0.5)',
-                                    color: 'white',
-                                    padding: '0.5rem 1rem',
-                                    borderRadius: '5px',
-                                    cursor: 'pointer',
-                                    fontSize: '0.9rem',
-                                    backdropFilter: 'blur(10px)'
-                                }}
-                            >
+                <button className="btn-mensaje">
                                 Enviar un mensaje
                             </button>
                         </div>

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import perfil from '../../assets/perfil.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera, faUsers, faMusic } from '@fortawesome/free-solid-svg-icons';
+import './EditProfile.css';
 
 /**
  * Componente EditProfile - Muestra la información del perfil del usuario
@@ -85,21 +86,12 @@ export default function EditProfile({ user, onUpdateUser }) {
 
   return (
     <div className="columna-izquierda">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+    <div className="edit-actions-row">
         <h2>Mi Cuenta</h2>
         <button 
           onClick={handleRefreshData}
           disabled={updating}
-          style={{
-            background: '#ff7a00',
-            color: 'white',
-            border: 'none',
-            padding: '0.5rem 1rem',
-            borderRadius: '5px',
-            cursor: updating ? 'not-allowed' : 'pointer',
-            fontSize: '0.9rem',
-            opacity: updating ? 0.6 : 1
-          }}
+      className="btn-primary"
         >
           {updating ? '🔄' : '↻'} Actualizar
         </button>
@@ -107,20 +99,13 @@ export default function EditProfile({ user, onUpdateUser }) {
 
       {/* Mensaje de actualización */}
       {updateMessage && (
-        <div style={{
-          padding: '0.5rem 1rem',
-          marginBottom: '1rem',
-          borderRadius: '5px',
-          backgroundColor: updateMessage.includes('✅') ? '#d4edda' : updateMessage.includes('❌') ? '#f8d7da' : '#d1ecf1',
-          color: updateMessage.includes('✅') ? '#155724' : updateMessage.includes('❌') ? '#721c24' : '#0c5460',
-          fontSize: '0.9rem'
-        }}>
+        <div className={`update-msg ${updateMessage.includes('✅') ? 'update-ok' : updateMessage.includes('❌') ? 'update-err' : 'update-warn'}`}>
           {updateMessage}
         </div>
       )}
       
       <div className="perfil">
-        <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div className="photo-wrapper">
           <img
             src={user.profilePicture || perfil}
             alt="Foto de perfil"
@@ -129,24 +114,7 @@ export default function EditProfile({ user, onUpdateUser }) {
           <button
             onClick={handleQuickPhotoUpdate}
             disabled={updating}
-            style={{
-              position: 'absolute',
-              bottom: '5px',
-              right: '5px',
-              background: '#ff7a00',
-              color: 'white',
-              border: 'none',
-              borderRadius: '50%',
-              width: '30px',
-              height: '30px',
-              cursor: updating ? 'not-allowed' : 'pointer',
-              fontSize: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: updating ? 0.6 : 1,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-            }}
+      className="quick-photo-btn"
             title="Cambiar foto rápidamente"
           >
             <FontAwesomeIcon icon={faCamera} />
@@ -168,26 +136,20 @@ export default function EditProfile({ user, onUpdateUser }) {
 
       {/* Foto de portada si existe */}
       {user.coverPicture && (
-        <div className="portada" style={{ marginTop: '1rem', width: '30%' }}>
+        <div className="portada cover-wrapper">
           <h4>Foto de portada:</h4>
           <img 
             src={user.coverPicture} 
             alt="Portada" 
-            style={{ 
-              width: '100%', 
-              height: '150px', 
-              objectFit: 'cover', 
-              borderRadius: '10px',
-              border: '1px solid #ddd'
-            }} 
+            className="cover-image"
           />
         </div>
       )}
 
       {/* Estadísticas del usuario */}
-      <div className="estadisticas-usuario" style={{ marginTop: '1rem' }}>
+      <div className="estadisticas-usuario user-stats">
         <h4>Estadísticas:</h4>
-        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem', color: '#6c757d' }}>
+        <div className="user-stats-row">
           <span><FontAwesomeIcon icon={faUsers} /> {user.followers?.length || 0} seguidores</span>
           <span><FontAwesomeIcon icon={faMusic} /> {user.following?.length || 0} siguiendo</span>
         </div>

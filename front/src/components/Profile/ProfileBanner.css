@@ -1,0 +1,138 @@
+.profile-banner-container {
+  position: relative;
+  margin-top: 0;
+  margin-bottom: 2rem;
+}
+
+.cover-banner {
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(135deg, #ff7a00 0%, #ff9500 100%);
+  border-radius: 10px;
+  position: relative;
+}
+
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
+.cover-banner.has-image {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.perfil-banner {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  z-index: 2;
+  display: flex;
+  align-items: end;
+  gap: 1rem;
+}
+
+.foto-perfil-grande {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.info-banner {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  flex: 1;
+}
+
+.info-banner h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.info-banner p {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.profile-info {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.9);
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.genre-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.genre-chip {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.6);
+  background: rgba(0,0,0,0.2);
+  font-size: 0.8rem;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.stat-label {
+  margin-left: 0.5rem;
+  color: rgba(255,255,255,0.8);
+}
+
+.botones-banner {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-mensaje {
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.5);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+}
+
+.btn-follow {
+  background: #ff7a00;
+}
+
+.btn-unfollow {
+  background: #dc3545;
+}
+
+.btn-follow,
+.btn-unfollow {
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+}

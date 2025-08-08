@@ -1,0 +1,16 @@
+.logo-clickable { cursor: pointer; }
+.user-menu-trigger { position: relative; }
+.icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
+.user-menu {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 0.5rem;
+  min-width: 120px;
+  z-index: 10;
+}
+.icon-gap { margin-right: 1rem; }

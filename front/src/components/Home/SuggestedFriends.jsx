@@ -6,7 +6,7 @@ import { API_ENDPOINTS } from '../../config/api.js';
 import './SuggestedFriends.css';
 import './Sidebar.css';
 
-export default function SuggestedFriends({ user, limit = 8, onFollow, onUnfollow, isFollowing, followLoading }) {
+export default function SuggestedFriends({ user, limit = 5, onFollow, onUnfollow, isFollowing, followLoading }) {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,30 +36,30 @@ export default function SuggestedFriends({ user, limit = 8, onFollow, onUnfollow
     <section className="suggested-section sidebar-box">
       <h3 className="suggested-title sidebar-title">Personas que quizá conozcas</h3>
       <div className="suggested-grid">
-        {suggestions.map(u => (
-          <div key={u._id} className="suggested-card">
-            <img src={u.profilePicture || userImg} alt={u.username || 'usuario'} className="suggested-avatar" />
+        {suggestions.map(friendSuggestion => (
+          <div key={friendSuggestion._id} className="suggested-card">
+            <img src={friendSuggestion.profilePicture || userImg} alt={friendSuggestion.username || 'usuario'} className="suggested-avatar" />
             <div className="suggested-info">
-              <div className="suggested-name">{u.username || 'Usuario'}</div>
-              <div className="suggested-email">{u.email}</div>
+              <div className="suggested-name">{friendSuggestion.username || 'Usuario'}</div>
+              <div className="suggested-email">{friendSuggestion.email}</div>
             </div>
-            {u._id === user._id ? (
+            {friendSuggestion._id === user._id ? (
               <span className="suggested-self">Tú</span>
-            ) : isFollowing(u._id) ? (
+            ) : isFollowing(friendSuggestion._id) ? (
               <button
-                onClick={() => onUnfollow(u._id)}
-                disabled={followLoading[u._id]}
+                onClick={() => onUnfollow(friendSuggestion._id)}
+                disabled={followLoading[friendSuggestion._id]}
                 className="suggested-btn following"
               >
-                {followLoading[u._id] ? '...' : 'Siguiendo'}
+                {followLoading[friendSuggestion._id] ? '...' : 'Siguiendo'}
               </button>
             ) : (
               <button
-                onClick={() => onFollow(u._id)}
-                disabled={followLoading[u._id]}
+                onClick={() => onFollow(friendSuggestion._id)}
+                disabled={followLoading[friendSuggestion._id]}
                 className="suggested-btn follow"
               >
-                {followLoading[u._id] ? '...' : 'Seguir'}
+                {followLoading[friendSuggestion._id] ? '...' : 'Seguir'}
               </button>
             )}
           </div>

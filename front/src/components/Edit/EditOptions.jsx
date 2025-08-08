@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
 import Swal from 'sweetalert2';
+import './EditOptions.css';
 
 /**
  * Componente EditOptions - Opciones de edición y configuración del usuario
@@ -15,7 +16,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
   const [modalType, setModalType] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   // Estados para los formularios
   const [formData, setFormData] = useState({
     username: '',
@@ -24,8 +25,16 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     coverPicture: '',
     desc: '',
     from: '',
-    relationship: 1
+    relationship: 1,
+    musicPreferences: []
   });
+
+  const ALL_GENRES = [
+    'Rock', 'Pop', 'Metal', 'Hip-Hop', 'Rap', 'R&B', 'Reggaeton', 'Trap', 'Salsa', 'Cumbia',
+    'Bachata', 'Jazz', 'Blues', 'Country', 'Funk', 'Soul', 'Disco', 'House', 'Techno', 'Trance',
+    'EDM', 'Dubstep', 'Drum & Bass', 'Indie', 'Alternative', 'K-Pop', 'J-Pop', 'Lo-Fi', 'Classical',
+    'Opera', 'Soundtrack', 'Latin', 'Flamenco', 'Folk', 'Punk', 'Hardcore', 'Ska', 'Gospel', 'Ambient'
+  ];
 
   /**
    * Mostrar modal de edición
@@ -34,7 +43,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     setModalType(type);
     setShowModal(true);
     setError('');
-    
+
     // Obtener datos actuales del usuario desde localStorage
     const currentUser = JSON.parse(localStorage.getItem("user"));
     if (currentUser) {
@@ -45,7 +54,8 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         coverPicture: currentUser.coverPicture || '',
         desc: currentUser.desc || '',
         from: currentUser.from || '',
-        relationship: currentUser.relationship || 1
+        relationship: currentUser.relationship || 1,
+        musicPreferences: currentUser.musicPreferences || []
       });
     }
   };
@@ -75,14 +85,14 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
 
     try {
       let updateData = {};
-      
+
       // Preparar datos según el tipo de edición
       switch (modalType) {
         case 'name':
           updateData = { username: formData.username, userId: currentUser._id };
           break;
         case 'contact':
-          updateData = { 
+          updateData = {
             email: formData.email,
             from: formData.from,
             userId: currentUser._id
@@ -100,6 +110,9 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         case 'relationship':
           updateData = { relationship: parseInt(formData.relationship), userId: currentUser._id };
           break;
+        case 'preferences':
+          updateData = { musicPreferences: formData.musicPreferences, userId: currentUser._id };
+          break;
         default:
           setError("Tipo de edición no válido");
           return;
@@ -107,17 +120,17 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
 
       // Llamar al backend
       const response = await axios.put(API_ENDPOINTS.UPDATE_USER(currentUser._id), updateData);
-      
+
       if (response.data && response.data.user) {
         // Actualizar localStorage con los datos del usuario completo del backend
         const updatedUser = { ...currentUser, ...response.data.user };
         localStorage.setItem("user", JSON.stringify(updatedUser));
-        
+
         // Llamar callback del componente padre
         if (onUpdateUser) {
           await onUpdateUser(response.data.user);
         }
-        
+
         // Cerrar modal
         setShowModal(false);
         Swal.fire({
@@ -129,8 +142,11 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         setError("Error: Respuesta inválida del servidor");
       }
     } catch (error) {
-      console.error("Error al actualizar perfil:", error);
-      setError(error.response?.data?.message || "Error al actualizar el perfil");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar perfil',
+        text: error.response?.data?.message || "Error al actualizar el perfil",
+      });
     } finally {
       setLoading(false);
     }
@@ -140,32 +156,16 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
    * Renderizar contenido del modal según el tipo
    */
   const renderModalContent = () => {
-    const inputStyle = {
-      width: '100%',
-      padding: '0.75rem',
-      border: '1px solid #ddd',
-      borderRadius: '5px',
-      fontSize: '1rem',
-      marginBottom: '1rem',
-      color: '#333',
-      backgroundColor: '#fff'
-    };
-
-    const buttonStyle = {
-      background: '#ff7a00',
-      color: 'white',
-      border: 'none',
-      padding: '0.75rem 1.5rem',
-      borderRadius: '5px',
-      cursor: 'pointer',
-      fontSize: '1rem',
-      marginRight: '0.5rem'
-    };
-
-    const cancelButtonStyle = {
-      ...buttonStyle,
-      background: '#6c757d'
-    };
+    const chip = (label, selected, onClick) => (
+      <button
+        key={label}
+        type="button"
+        onClick={onClick}
+        className={`chip ${selected ? 'chip-selected' : ''}`}
+      >
+        {label}
+      </button>
+    );
 
     switch (modalType) {
       case 'profile-picture':
@@ -173,7 +173,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           <>
 
             <h3>Editar Foto de Perfil</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>URL de la imagen:</label>
               <input
@@ -181,25 +181,25 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
                 placeholder="https://ejemplo.com/mi-foto.jpg"
                 value={formData.profilePicture}
                 onChange={(e) => handleInputChange('profilePicture', e.target.value)}
-                style={inputStyle}
+                className="modal-input"
               />
               {formData.profilePicture && (
-                <div style={{ marginBottom: '1rem' }}>
+                <div className="preview-block">
                   <p>Vista previa:</p>
-                  <img 
-                    src={formData.profilePicture} 
-                    alt="Preview" 
-                    style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%' }}
+                  <img
+                    src={formData.profilePicture}
+                    alt="Preview"
+                    className="preview-image profile"
                     onError={() => setError('URL de imagen no válida')}
                   />
                 </div>
               )}
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -210,7 +210,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Nombre</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>Nombre de usuario:</label>
               <input
@@ -218,14 +218,14 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
                 placeholder="Tu nombre de usuario"
                 value={formData.username}
                 onChange={(e) => handleInputChange('username', e.target.value)}
-                style={inputStyle}
+                className="modal-input"
               />
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -236,7 +236,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Información de Contacto</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>Email:</label>
               <input
@@ -244,23 +244,23 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
                 placeholder="tu@email.com"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                style={inputStyle}
+                className="modal-input"
               />
-              
+
               <label>Ubicación (from):</label>
               <input
                 type="text"
                 placeholder="Ciudad, País"
                 value={formData.from}
                 onChange={(e) => handleInputChange('from', e.target.value)}
-                style={inputStyle}
+                className="modal-input"
               />
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -271,7 +271,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Foto de Portada</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>URL de la imagen de portada:</label>
               <input
@@ -279,25 +279,25 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
                 placeholder="https://ejemplo.com/mi-portada.jpg"
                 value={formData.coverPicture}
                 onChange={(e) => handleInputChange('coverPicture', e.target.value)}
-                style={inputStyle}
+                className="modal-input"
               />
               {formData.coverPicture && (
-                <div style={{ marginBottom: '1rem' }}>
+                <div className="preview-block">
                   <p>Vista previa:</p>
-                  <img 
-                    src={formData.coverPicture} 
-                    alt="Preview" 
-                    style={{ width: '200px', height: '100px', objectFit: 'cover', borderRadius: '10px' }}
+                  <img
+                    src={formData.coverPicture}
+                    alt="Preview"
+                    className="preview-image cover"
                     onError={() => setError('URL de imagen no válida')}
                   />
                 </div>
               )}
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -308,7 +308,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Biografía</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>Descripción (máximo 250 caracteres):</label>
               <textarea
@@ -317,17 +317,64 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
                 onChange={(e) => handleInputChange('desc', e.target.value)}
                 maxLength={250}
                 rows={4}
-                style={{...inputStyle, resize: 'vertical'}}
+                className="modal-textarea"
               />
-              <small style={{color: '#6c757d'}}>
+              <small className="text-muted">
                 {formData.desc.length}/250 caracteres
               </small>
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
+                Cancelar
+              </button>
+            </div>
+          </>
+        );
+
+      case 'preferences':
+        return (
+          <>
+            <h3>Mis géneros musicales</h3>
+            {error && <p className="error-text">{error}</p>}
+            <p className="modal-hint">
+              Selecciona tus géneros favoritos. Se usarán para conectar con usuarios con gustos similares y mejorar las recomendaciones.
+            </p>
+            <div className="chips-container">
+              {ALL_GENRES.map((genre) => {
+                const selected = formData.musicPreferences.includes(genre);
+                return chip(genre, selected, () => {
+                  setFormData(prev => ({
+                    ...prev,
+                    musicPreferences: selected
+                      ? prev.musicPreferences.filter(x => x !== genre)
+                      : [...prev.musicPreferences, genre]
+                  }));
+                });
+              })}
+            </div>
+
+            {formData.musicPreferences.length > 0 && (
+              <div className="mt-1">
+                <strong>Seleccionados:</strong>
+                <div className="chips-selected">
+                  {formData.musicPreferences.map(genre => chip(genre, true, () => {
+                    setFormData(prev => ({
+                      ...prev,
+                      musicPreferences: prev.musicPreferences.filter(x => x !== genre)
+                    }));
+                  }))}
+                </div>
+              </div>
+            )}
+
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
+                {loading ? 'Guardando...' : 'Guardar'}
+              </button>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -338,24 +385,24 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Estado de Relación</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>Estado de relación:</label>
               <select
                 value={formData.relationship}
                 onChange={(e) => handleInputChange('relationship', e.target.value)}
-                style={inputStyle}
+                className="modal-select"
               >
                 <option value={1}>Soltero/a</option>
                 <option value={2}>En una relación</option>
                 <option value={3}>Casado/a</option>
               </select>
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -367,7 +414,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           <>
             <h3>Funcionalidad en desarrollo</h3>
             <p>La opción "{modalType}" estará disponible próximamente.</p>
-            <button onClick={() => setShowModal(false)} style={buttonStyle}>
+            <button onClick={() => setShowModal(false)} className="modal-btn">
               Cerrar
             </button>
           </>
@@ -388,87 +435,87 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     <div className="columna-derecha">
       <div className="opciones">
         <h3>Editar mi información</h3>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('profile-picture')}
         >
           Editar mi foto de perfil
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('cover-picture')}
         >
           Editar foto de portada
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('name')}
         >
           Editar mi nombre
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('contact')}
         >
           Editar mi contacto
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('bio')}
         >
           Editar biografía
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('relationship')}
         >
           Estado de relación
         </button>
-        
+
         <hr />
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('privacy')}
         >
           Privacidad y Seguridad
         </button>
-        
+
         <hr />
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('preferences')}
         >
           Mis Preferencias
         </button>
-        
+
         <hr />
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('activity')}
         >
           Mi Actividad
         </button>
-        
+
         <hr />
-        
+
         <div className="acciones">
-          <button 
+          <button
             className="reporte"
             onClick={() => handleEditOption('report')}
           >
             Reportar un problema
           </button>
-          
-          <button 
+
+          <button
             className="cerrar-sesion"
             onClick={handleLogoutConfirm}
           >
@@ -479,27 +526,8 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
 
       {/* Modal funcional para edición */}
       {showModal && (
-        <div className="modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div className="modal-content" style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '10px',
-            maxWidth: '500px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflowY: 'auto'
-          }}>
+        <div className="modal-overlay">
+          <div className="modal-content">
             {renderModalContent()}
           </div>
         </div>

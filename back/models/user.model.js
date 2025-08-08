@@ -53,6 +53,12 @@ const userSchema = new Schema({
     default: 1,
   },
 
+  // Preferencias musicales del usuario (géneros)
+  musicPreferences: {
+    type: [String],
+    default: [],
+  },
+
   authProvider: {
     type: String,
     enum: ['local', 'google'],

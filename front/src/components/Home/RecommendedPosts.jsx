@@ -6,7 +6,7 @@ import PostCard from './PostCard';
 import './RecommendedPosts.css';
 import './Sidebar.css';
 
-export default function RecommendedPosts({ user, limit = 10, followingUsers, followLoading, onLike, onFollow, onUnfollow, isFollowing }) {
+export default function RecommendedPosts({ user, limit = 5, followingUsers, followLoading, onLike, onFollow, onUnfollow, isFollowing }) {
   const [reco, setReco] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
