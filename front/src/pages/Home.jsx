@@ -11,6 +11,8 @@ import Swal from "sweetalert2";
 import Navbar from "../components/Home/Navbar";
 import CreatePostForm from "../components/Home/CreatePostForm";
 import PostsList from "../components/Home/PostsList";
+import SuggestedFriends from "../components/Home/SuggestedFriends";
+import RecommendedPosts from "../components/Home/RecommendedPosts";
 
 /**
  * Componente Home - Página principal del timeline
@@ -148,29 +150,51 @@ export default function Home() {
       />
 
       {/* Feed principal */}
-      <main className="feed">
-        {/* Formulario para crear posts */}
-        <CreatePostForm
-          user={user}
-          onPostCreated={handlePostCreated}
-        />
-        
-        {/* Lista de posts */}
-        <PostsList
-          posts={posts}
-          loading={loading}
-          error={error}
-          user={user}
-          followingUsers={followingUsers}
-          followLoading={followLoading}
-          onLike={handleLike}
-          onDelete={handleDelete}
-          onEdit={handleEdit}
-          onFollow={followUser}
-          onUnfollow={unfollowUser}
-          isFollowing={isFollowing}
-        />
-      </main>
+      <div className="content-layout">
+        <aside className="left-sidebar">
+          {/* Bloque de recomendaciones a la izquierda */}
+          <SuggestedFriends
+            user={user}
+            onFollow={followUser}
+            onUnfollow={unfollowUser}
+            isFollowing={isFollowing}
+            followLoading={followLoading}
+          />
+          <RecommendedPosts
+            user={user}
+            followingUsers={followingUsers}
+            followLoading={followLoading}
+            onLike={handleLike}
+            onFollow={followUser}
+            onUnfollow={unfollowUser}
+            isFollowing={isFollowing}
+          />
+        </aside>
+
+        <main className="feed">
+          {/* Formulario para crear posts */}
+          <CreatePostForm
+            user={user}
+            onPostCreated={handlePostCreated}
+          />
+
+          {/* Lista de posts */}
+          <PostsList
+            posts={posts}
+            loading={loading}
+            error={error}
+            user={user}
+            followingUsers={followingUsers}
+            followLoading={followLoading}
+            onLike={handleLike}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            onFollow={followUser}
+            onUnfollow={unfollowUser}
+            isFollowing={isFollowing}
+          />
+        </main>
+      </div>
     </div>
   );
 }

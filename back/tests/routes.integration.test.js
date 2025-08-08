@@ -69,11 +69,12 @@ describe('API Routes Integration Tests', () => {
     router.get("/get-user-posts/:userId", () => {});
     router.post("/comment-post/:id", () => {});
     router.get("/get-comments/:id", () => {});
-    router.get('/', () => {});
+  router.get('/', () => {});
+  router.get('/recommended/:userId', () => {});
     
     const routes = router.getRoutes();
     
-    expect(Object.keys(routes).length).toBe(10);
+  expect(Object.keys(routes).length).toBe(11);
     expect(routes).toHaveProperty('POST /create-post');
     expect(routes).toHaveProperty('PUT /update-post/:id');
     expect(routes).toHaveProperty('DELETE /delete-post/:id/:userId');
@@ -86,6 +87,7 @@ describe('API Routes Integration Tests', () => {
     
     // Simulate user routes registration
     router.get('/search', () => {});
+  router.get('/:userId/recommendations/friends', () => {});
     router.put('/:id', () => {});
     router.delete('/:id', () => {});
     router.get('/:id', () => {});
@@ -95,8 +97,9 @@ describe('API Routes Integration Tests', () => {
     
     const routes = router.getRoutes();
     
-    expect(Object.keys(routes).length).toBe(7);
+  expect(Object.keys(routes).length).toBe(8);
     expect(routes).toHaveProperty('GET /search');
+  expect(routes).toHaveProperty('GET /:userId/recommendations/friends');
     expect(routes).toHaveProperty('PUT /follow/:id');
     expect(routes).toHaveProperty('PUT /unfollow/:id');
   });

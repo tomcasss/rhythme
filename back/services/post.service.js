@@ -1,6 +1,7 @@
 import postModel from "../models/post.model.js";
 import userModel from "../models/user.model.js";
 import mongoose from "mongoose";
+import { getArtistDetails, getTrackDetails, getAlbumDetails } from "./spotify.service.js";
 
 // Crear un nuevo post, asegurando que userId sea ObjectId
 export const createPost = async (body) => {
@@ -10,6 +11,38 @@ export const createPost = async (body) => {
         // Convertir userId a ObjectId si es string
         if (body.userId && typeof body.userId === "string") {
             body.userId = new mongoose.Types.ObjectId(body.userId);
+        }
+
+        // Normalizar géneros si hay contenido de Spotify
+        if (body.spotifyContent && body.spotifyContent.spotifyId && !Array.isArray(body.spotifyContent.genres)) {
+            try {
+                const sc = body.spotifyContent;
+                let genres = [];
+                if (sc.type === 'track') {
+                    const track = await getTrackDetails(sc.spotifyId);
+                    // tomar géneros del primer artista del track
+                    const firstArtistId = track?.artists?.[0]?.id;
+                    if (firstArtistId) {
+                        const artist = await getArtistDetails(firstArtistId);
+                        genres = (artist?.genres || []).map(g => String(g).toLowerCase());
+                    }
+                } else if (sc.type === 'artist') {
+                    const artist = await getArtistDetails(sc.spotifyId);
+                    genres = (artist?.genres || []).map(g => String(g).toLowerCase());
+                } else if (sc.type === 'album') {
+                    const album = await getAlbumDetails(sc.spotifyId);
+                    // no hay géneros en álbum directo, tomar del primer artista
+                    const firstArtistId = album?.artists?.[0]?.id;
+                    if (firstArtistId) {
+                        const artist = await getArtistDetails(firstArtistId);
+                        genres = (artist?.genres || []).map(g => String(g).toLowerCase());
+                    }
+                }
+                body.spotifyContent.genres = Array.from(new Set(genres)).slice(0, 20);
+            } catch (e) {
+                console.warn('No se pudieron obtener géneros para el contenido de Spotify:', e?.message || e);
+                body.spotifyContent.genres = [];
+            }
         }
         
         console.log('📋 Final post data before save:', body);
@@ -202,3 +235,96 @@ export const getUserPosts = async (params) => {
         throw error;
     }
 };
+
+    // Recomendación de contenido: mezcla de posts de amigos de amigos, posts populares recientes y afinidad por Spotify
+    export const getRecommendedPosts = async (userId, { limit = 20 } = {}) => {
+        try {
+            const me = await userModel.findById(userId).lean();
+            if (!me) return [];
+
+            // base: no mostrar mis posts
+            const excludeAuthor = userId;
+            const excludeAuthorId = mongoose.Types.ObjectId.isValid(userId)
+                ? new mongoose.Types.ObjectId(userId)
+                : userId;
+
+            // 1) posts de amigos y amigos de amigos
+            const following = new Set((me.following || []).map(String));
+            const friends = Array.from(following);
+            const friendsObjectIds = friends
+                .filter((id) => mongoose.Types.ObjectId.isValid(id))
+                .map((id) => new mongoose.Types.ObjectId(id));
+            const fofDocs = await userModel.find({ _id: { $in: friends } }).select('following').lean();
+            const fof = new Set();
+            for (const f of fofDocs) {
+                for (const u of (f.following || [])) {
+                    const uid = String(u);
+                    if (uid !== String(userId)) fof.add(uid);
+                }
+            }
+
+            // 2) Afinidad por Spotify: si el usuario tiene posts con spotifyContent, priorizar similares
+            const mySpotify = await postModel.find({ userId, spotifyContent: { $exists: true, $ne: null } })
+                .select('spotifyContent.type spotifyContent.artist spotifyContent.spotifyId')
+                .lean();
+            const preferredArtists = new Set(mySpotify.map(p => (p.spotifyContent && p.spotifyContent.artist) || '').filter(Boolean));
+            const preferredIds = new Set(mySpotify.map(p => (p.spotifyContent && p.spotifyContent.spotifyId) || '').filter(Boolean));
+
+            // 3) Query base: últimos 30 días y excluir mis posts
+            const since = new Date();
+            since.setDate(since.getDate() - 30);
+
+                // Filtrado por géneros preferidos: inferidos de posts del usuario y sus follows
+                const myGenrePosts = await postModel.find({ userId: excludeAuthorId }).select('spotifyContent.genres').lean();
+                const myGenres = new Set(myGenrePosts.flatMap(p => p.spotifyContent?.genres || []).map(g => String(g).toLowerCase()));
+                // Si no hay géneros propios, derivar de follows (opcional)
+                if (myGenres.size === 0 && friends.length) {
+                    const followGenrePosts = await postModel.find({ userId: { $in: friends } }).select('spotifyContent.genres').lean();
+                    for (const p of followGenrePosts) {
+                        for (const g of (p.spotifyContent?.genres || [])) myGenres.add(String(g).toLowerCase());
+                    }
+                }
+
+                const candidates = await postModel
+                    .find({
+                        // excluir mis posts y los de usuarios que ya sigo
+                        userId: {
+                            $ne: excludeAuthorId,
+                            ...(friendsObjectIds.length ? { $nin: friendsObjectIds } : {}),
+                        },
+                        createdAt: { $gte: since },
+                        // Si hay géneros preferidos, exigir intersección
+                        ...(myGenres.size > 0 ? { 'spotifyContent.genres': { $elemMatch: { $in: Array.from(myGenres) } } } : {}),
+                    })
+                .populate('userId', 'username email profilePicture')
+                .sort({ createdAt: -1 })
+                .limit(limit * 5) // traer más para poder reordenar por score
+                .lean();
+
+            const scored = candidates.map(p => {
+                let score = 0;
+                const authorId = String(p.userId?._id || p.userId);
+                if (following.has(authorId)) score += 5; // sigo al autor
+                if (fof.has(authorId)) score += 3; // amigo de amigo
+                const likeCount = (p.likes || []).length;
+                score += Math.min(likeCount, 10) * 0.5; // popularidad acotada
+                // Afinidad Spotify
+                const sc = p.spotifyContent;
+                if (sc) {
+                    if (preferredArtists.has(sc.artist || '')) score += 4;
+                    if (preferredIds.has(sc.spotifyId || '')) score += 6;
+                    if (sc.type === 'track') score += 1; // pequeño boost a tracks
+                }
+                return { ...p, recommendationScore: score };
+            });
+
+            // Orden final por score desc y fecha reciente como desempate
+            scored.sort((a, b) => b.recommendationScore - a.recommendationScore || (new Date(b.createdAt) - new Date(a.createdAt)));
+
+            // Si no hay candidatos por filtro estricto y no hay géneros, retorna top por score
+            const result = scored.slice(0, limit);
+            return result;
+        } catch (error) {
+            throw error;
+        }
+    };

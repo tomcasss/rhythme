@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   FOLLOW_USER: (id) => `${BASE_URL}/users/follow/${id}`,
   UNFOLLOW_USER: (id) => `${BASE_URL}/users/unfollow/${id}`,
   SEARCH_USERS: (query) => `${BASE_URL}/users/search?q=${encodeURIComponent(query)}`,
+  FRIEND_RECOMMENDATIONS: (userId, limit) => `${BASE_URL}/users/${userId}/recommendations/friends${limit ? `?limit=${limit}` : ''}`,
   
   // Post endpoints
   GET_POSTS: `${BASE_URL}/posts`,
@@ -31,6 +32,7 @@ export const API_ENDPOINTS = {
   GET_POST: (id) => `${BASE_URL}/posts/get-post/${id}`,
   GET_TIMELINE_POSTS: (userId) => `${BASE_URL}/posts/get-timeline-posts/${userId}`,
   GET_USER_POSTS: (userId) => `${BASE_URL}/posts/get-user-posts/${userId}`,
+  GET_RECOMMENDED_POSTS: (userId, limit) => `${BASE_URL}/posts/recommended/${userId}${limit ? `?limit=${limit}` : ''}`,
   
   // Comment endpoints
   COMMENT_POST: (id) => `${BASE_URL}/posts/comment-post/${id}`,

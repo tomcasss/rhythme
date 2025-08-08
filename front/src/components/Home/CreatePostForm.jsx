@@ -7,6 +7,7 @@ import { faSpotify } from "@fortawesome/free-brands-svg-icons";
 import { API_ENDPOINTS } from "../../config/api.js";
 import SpotifySearch from "./SpotifySearch.jsx";
 import SpotifyContent from "./SpotifyContent.jsx";
+import "./CreatePostForm.css";
 
 /**
  * Componente CreatePostForm - Formulario para crear nuevos posts
@@ -108,31 +109,14 @@ export default function CreatePostForm({ user, onPostCreated }) {
   return (
     <>
       {/* Formulario para crear post */}
-      <form 
-        onSubmit={handleCreatePost} 
-        style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '1rem',
-          marginBottom: '2rem',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem',
-        }}
-      >
+  <form className="create-post-form" onSubmit={handleCreatePost}>
         <textarea
           placeholder="¿Qué estás escuchando o pensando?"
           value={desc}
           onChange={e => setDesc(e.target.value)}
           required
           rows={2}
-          style={{
-            resize: 'none', 
-            borderRadius: 8, 
-            padding: 8, 
-            border: '1px solid #eee'
-          }}
+          className="create-textarea"
           disabled={creating}
         />
         
@@ -142,36 +126,17 @@ export default function CreatePostForm({ user, onPostCreated }) {
           value={img}
           onChange={e => setImg(e.target.value)}
           disabled={creating}
-          style={{
-            borderRadius: 8, 
-            padding: 8, 
-            border: '1px solid #eee'
-          }}
+          className="create-image-input"
         />
 
         {/* Mostrar contenido de Spotify seleccionado */}
         {spotifyContent && (
-          <div style={{ position: 'relative' }}>
+          <div className="spotify-selected">
             <SpotifyContent spotifyContent={spotifyContent} size="small" />
             <button
               type="button"
               onClick={removeSpotifyContent}
-              style={{
-                position: 'absolute',
-                top: '8px',
-                right: '8px',
-                background: 'rgba(0,0,0,0.7)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '50%',
-                width: '24px',
-                height: '24px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.8rem'
-              }}
+              className="remove-spotify-btn"
               title="Remover contenido de Spotify"
             >
               <FontAwesomeIcon icon={faTimes} />
@@ -180,24 +145,12 @@ export default function CreatePostForm({ user, onPostCreated }) {
         )}
 
         {/* Botones de acción */}
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="create-actions">
           <button
             type="button"
             onClick={() => setShowSpotifySearch(true)}
             disabled={creating}
-            style={{
-              borderRadius: 8,
-              padding: '8px 12px',
-              background: '#1DB954',
-              color: 'white',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '0.9rem',
-              flex: '0 0 auto'
-            }}
+            className="btn-spotify"
             title="Agregar contenido de Spotify"
           >
             <FontAwesomeIcon icon={faSpotify} />
@@ -207,22 +160,14 @@ export default function CreatePostForm({ user, onPostCreated }) {
           <button 
             type="submit" 
             disabled={creating || !desc} 
-            style={{
-              borderRadius: 8, 
-              padding: 8, 
-              background: 'linear-gradient(90deg, #fb7202, #e82c0b)', 
-              color: '#fff', 
-              border: 'none', 
-              cursor: 'pointer',
-              flex: 1
-            }}
+            className="btn-publish"
           >
             {creating ? 'Publicando...' : 'Publicar'}
           </button>
         </div>
         
         {createError && (
-          <span style={{color: '#ff3333'}}>{createError}</span>
+          <span className="create-error">{createError}</span>
         )}
       </form>
 

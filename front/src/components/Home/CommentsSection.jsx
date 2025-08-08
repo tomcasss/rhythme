@@ -4,6 +4,7 @@ import axios from "axios";
 import { API_ENDPOINTS } from "../../config/api.js";
 import userImg from '../../assets/user.png';
 import Swal from "sweetalert2";
+import "./CommentsSection.css";
 
 /**
  * Componente CommentsSection - Sección de comentarios de un post

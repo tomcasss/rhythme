@@ -1,5 +1,5 @@
 import express from "express";
-import { commentPostController, createPostController, deletePostController, getPostController, getPostCommentsController, getTimelinePostsController, getUserPostsController, likeAndUnlikePostController, updatePostController } from "../controllers/post.controller.js";
+import { commentPostController, createPostController, deletePostController, getPostController, getPostCommentsController, getTimelinePostsController, getUserPostsController, likeAndUnlikePostController, updatePostController, getRecommendedPostsController } from "../controllers/post.controller.js";
 import Post from "../models/post.model.js";
 
 const router = express.Router();
@@ -13,6 +13,7 @@ router.get("/get-timeline-posts/:userId", getTimelinePostsController);
 router.get("/get-user-posts/:userId", getUserPostsController);
 router.post("/comment-post/:id", commentPostController);
 router.get("/get-comments/:id", getPostCommentsController);
+router.get('/recommended/:userId', getRecommendedPostsController);
 router.get('/', async (req, res) => {
   try {
     const posts = await Post.find().populate('userId', 'username email');

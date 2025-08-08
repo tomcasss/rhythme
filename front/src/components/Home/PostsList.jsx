@@ -1,5 +1,6 @@
 // src/components/Home/PostsList.jsx
 import PostCard from './PostCard';
+import './PostsList.css';
 
 /**
  * Componente PostsList - Lista de posts del timeline
@@ -32,17 +33,9 @@ export default function PostsList({
   isFollowing
 }) {
   // Estados de carga y error
-  if (loading) {
-    return <p>Cargando posts...</p>;
-  }
-
-  if (error) {
-    return <p style={{ color: "#ff3333" }}>{error}</p>;
-  }
-
-  if (posts.length === 0) {
-    return <p>No hay posts para mostrar.</p>;
-  }
+  if (loading) return <p className="posts-loading">Cargando posts...</p>;
+  if (error) return <p className="posts-error">{error}</p>;
+  if (posts.length === 0) return <p className="posts-empty">No hay posts para mostrar.</p>;
 
   return (
     <>

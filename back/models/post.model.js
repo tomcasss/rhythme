@@ -49,6 +49,10 @@ const spotifyContentSchema = new Schema({
     },
     duration: {
         type: Number, // Duración en milisegundos (para tracks)
+    },
+    genres: {
+        type: [String], // géneros musicales normalizados (lowercase)
+        default: [],
     }
 });
 

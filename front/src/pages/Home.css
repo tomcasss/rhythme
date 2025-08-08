@@ -7,10 +7,33 @@
   display: flex;
   flex-direction: column;
 }
-.feed {
+
+/* Layout principal con sidebar izquierda + feed */
+.content-layout {
+  display: flex;
   width: 100%;
-  max-width: 700px;
+  max-width: 1800px;
   margin: 0 auto;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  box-sizing: border-box;
+}
+
+.left-sidebar {
+  flex: 0 0 320px;
+  width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-self: flex-start;
+  position: sticky;
+  top: 90px; /* navbar (70px) + margen */
+}
+
+.feed {
+  flex: 1;
+  max-width: 700px;
+  margin: 0;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -105,6 +128,24 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+/* Responsive: apilar sidebar y feed en pantallas pequeñas */
+@media (max-width: 1024px) {
+  .content-layout {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .left-sidebar {
+    position: static;
+    width: 100%;
+    flex: 1 1 auto;
+  }
+  .feed {
+    max-width: 100%;
+    padding: 1rem 0;
+  }
 }
 
 
