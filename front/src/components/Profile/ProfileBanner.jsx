@@ -1,6 +1,7 @@
 // src/components/Profile/ProfileBanner.jsx
 import perfil from '../../assets/perfil.png';
 import './ProfileBanner.css';
+import MusicPreferencesChips from './MusicPreferencesChips.jsx';
 
 /**
  * Componente ProfileBanner - Banner principal del perfil de usuario

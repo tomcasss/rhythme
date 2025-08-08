@@ -1,0 +1,26 @@
+{
+  // VS Code Jest - guide the extension to run tests per package folder
+  // The extension scans the workspace; we provide explicit configs per folder
+  "jest.rootPath": "",
+  "jest.runMode": "watch",
+  // Frontend Jest config
+  "jest.jestCommandLine": "npm test --silent",
+  "jest.nodeEnv": {
+    "FORCE_COLOR": "1"
+  },
+  // Folder-specific overrides
+  "jest.folders": [
+    {
+      "name": "front",
+      "path": "front",
+      "jestCommandLine": "npm test --silent",
+      "rootPath": "front"
+    },
+    {
+      "name": "back",
+      "path": "back",
+      "jestCommandLine": "npm test --silent",
+      "rootPath": "back"
+    }
+  ]
+}

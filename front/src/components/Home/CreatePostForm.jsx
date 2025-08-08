@@ -86,6 +86,20 @@ export default function CreatePostForm({ user, onPostCreated }) {
     }
   };
 
+  // Valida el archivo de imagen (tipo y tamaño)
+  const validateImageFile = (file, setError) => {
+    if (!file.type || !file.type.startsWith('image/')) {
+      setError('Solo se permiten imágenes');
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen debe ser menor a 5MB');
+      return false;
+    }
+    setError("");
+    return true;
+  };
+
   const handleFileToDataUrl = async (file) => {
     if (!validateImageFile(file, setCreateError)) return;
     try {
