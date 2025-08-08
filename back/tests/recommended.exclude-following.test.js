@@ -1,7 +1,4 @@
-// Test that recommendations exclude posts from authors the user already follows
-const describe=(n,f)=>{console.log(`\n📝 ${n}`);f();};
-const it=(n,f)=>{try{const r=f();if(r&&r.then)r.then(()=>console.log(`  ✅ ${n}`)).catch(e=>console.log(`  ❌ ${n}: ${e.message}`));else console.log(`  ✅ ${n}`);}catch(e){console.log(`  ❌ ${n}: ${e.message}`)}};
-const expect=(a)=>({toEqual:(b)=>{if(JSON.stringify(a)!==JSON.stringify(b))throw new Error(`Expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`)}});
+// Jest test that recommendations exclude posts from followed authors
 
 describe('Exclude Following Authors in Recommendations',()=>{
   it('Should filter out posts authored by followed users',()=>{
@@ -18,4 +15,7 @@ describe('Exclude Following Authors in Recommendations',()=>{
   });
 });
 
-console.log('\n🏁 Exclude following authors tests completed');
+afterAll(() => {
+  // eslint-disable-next-line no-console
+  console.log('\n🏁 Exclude following authors tests completed');
+});

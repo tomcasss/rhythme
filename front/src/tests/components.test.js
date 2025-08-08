@@ -1,65 +1,5 @@
 // Frontend Component Tests - Testing React components and UI logic
 
-// Simple manual test framework for React components
-const describe = (name, fn) => {
-  console.log(`\n📝 ${name}`);
-  fn();
-};
-
-const it = (name, fn) => {
-  try {
-    const result = fn();
-    if (result && typeof result.then === 'function') {
-      result
-        .then(() => console.log(`  ✅ ${name}`))
-        .catch(error => console.log(`  ❌ ${name}: ${error.message}`));
-    } else {
-      console.log(`  ✅ ${name}`);
-    }
-  } catch (error) {
-    console.log(`  ❌ ${name}: ${error.message}`);
-  }
-};
-
-const expect = (actual) => ({
-  toBe: (expected) => {
-    if (actual !== expected) {
-      throw new Error(`Expected ${expected}, but got ${actual}`);
-    }
-  },
-  toContain: (expected) => {
-    if (!actual.includes(expected)) {
-      throw new Error(`Expected "${actual}" to contain "${expected}"`);
-    }
-  },
-  toHaveProperty: (prop, value) => {
-    if (!(prop in actual)) {
-      throw new Error(`Expected object to have property ${prop}`);
-    }
-    if (value !== undefined && actual[prop] !== value) {
-      throw new Error(`Expected property ${prop} to be ${value}, but got ${actual[prop]}`);
-    }
-  },
-  toThrow: (expectedMessage) => {
-    if (typeof actual !== 'function') {
-      throw new Error('Expected a function that throws');
-    }
-    try {
-      actual();
-      throw new Error('Expected function to throw an error');
-    } catch (error) {
-      if (expectedMessage && !error.message.includes(expectedMessage)) {
-        throw new Error(`Expected error message to include "${expectedMessage}", but got "${error.message}"`);
-      }
-    }
-  },
-  toEqual: (expected) => {
-    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-      throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
-    }
-  }
-});
-
 // Mock DOM utilities
 const mockDOM = {
   createElement: (type, props = {}, ...children) => ({
@@ -521,4 +461,3 @@ describe('Frontend Component Tests', () => {
   });
 });
 
-console.log('\n🏁 Frontend component tests completed');

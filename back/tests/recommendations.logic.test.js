@@ -1,11 +1,4 @@
-// Simple logic tests for recommendation scoring (friend & posts)
-
-const describe = (name, fn) => { console.log(`\n📝 ${name}`); fn(); };
-const it = (name, fn) => { try { const r = fn(); if (r && r.then) r.then(()=>console.log(`  ✅ ${name}`)).catch(e=>console.log(`  ❌ ${name}: ${e.message}`)); else console.log(`  ✅ ${name}`);} catch(e){ console.log(`  ❌ ${name}: ${e.message}`);} };
-const expect = (actual) => ({
-  toBe: (expected) => { if (actual !== expected) throw new Error(`Expected ${expected}, got ${actual}`); },
-  toEqual: (expected) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(`Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);} ,
-});
+// Jest logic tests for recommendation scoring (friend & posts)
 
 describe('Recommendations Logic Tests', () => {
   it('Friend-of-friend candidates should be counted and ranked', () => {
@@ -50,4 +43,7 @@ describe('Recommendations Logic Tests', () => {
   });
 });
 
-console.log('\n🏁 Recommendations logic tests completed');
+afterAll(() => {
+  // eslint-disable-next-line no-console
+  console.log('\n🏁 Recommendations logic tests completed');
+});

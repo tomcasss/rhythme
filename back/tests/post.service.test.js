@@ -1,59 +1,4 @@
-// Simple unit tests for post.service focusing on core logic validation
-
-// Simple manual test framework for ES modules
-const describe = (name, fn) => {
-  console.log(`\n📝 ${name}`);
-  fn();
-};
-
-const it = (name, fn) => {
-  try {
-    const result = fn();
-    if (result && typeof result.then === 'function') {
-      // Handle async test
-      result
-        .then(() => console.log(`  ✅ ${name}`))
-        .catch(error => console.log(`  ❌ ${name}: ${error.message}`));
-    } else {
-      console.log(`  ✅ ${name}`);
-    }
-  } catch (error) {
-    console.log(`  ❌ ${name}: ${error.message}`);
-  }
-};
-
-const expect = (actual) => ({
-  toBe: (expected) => {
-    if (actual !== expected) {
-      throw new Error(`Expected ${expected}, but got ${actual}`);
-    }
-  },
-  toEqual: (expected) => {
-    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-      throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
-    }
-  },
-  toHaveProperty: (prop, value) => {
-    if (!(prop in actual)) {
-      throw new Error(`Expected object to have property ${prop}`);
-    }
-    if (value !== undefined && actual[prop] !== value) {
-      throw new Error(`Expected property ${prop} to be ${value}, but got ${actual[prop]}`);
-    }
-  },
-  rejects: {
-    toThrow: async (message) => {
-      try {
-        await actual;
-        throw new Error('Expected promise to reject');
-      } catch (error) {
-        if (typeof message === 'string' && !error.message.includes(message)) {
-          throw new Error(`Expected error message to include "${message}", but got "${error.message}"`);
-        }
-      }
-    }
-  }
-});
+// Jest-based unit tests for post.service focusing on core logic validation
 
 // Test post service core logic validation
 describe('Post Service Logic Tests', () => {
@@ -266,4 +211,7 @@ describe('Post Service Logic Tests', () => {
   });
 });
 
-console.log('\n🏁 Post service logic validation tests completed');
+afterAll(() => {
+  // eslint-disable-next-line no-console
+  console.log('\n🏁 Post service logic validation tests completed');
+});

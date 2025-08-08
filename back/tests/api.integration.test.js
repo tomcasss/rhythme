@@ -1,59 +1,5 @@
 // API Integration Tests - Testing API endpoints and utility functions
 
-// Simple manual test framework for ES modules
-const describe = (name, fn) => {
-  console.log(`\n📝 ${name}`);
-  fn();
-};
-
-const it = (name, fn) => {
-  try {
-    const result = fn();
-    if (result && typeof result.then === 'function') {
-      result
-        .then(() => console.log(`  ✅ ${name}`))
-        .catch(error => console.log(`  ❌ ${name}: ${error.message}`));
-    } else {
-      console.log(`  ✅ ${name}`);
-    }
-  } catch (error) {
-    console.log(`  ❌ ${name}: ${error.message}`);
-  }
-};
-
-const expect = (actual) => ({
-  toBe: (expected) => {
-    if (actual !== expected) {
-      throw new Error(`Expected ${expected}, but got ${actual}`);
-    }
-  },
-  toContain: (expected) => {
-    if (!actual.includes(expected)) {
-      throw new Error(`Expected "${actual}" to contain "${expected}"`);
-    }
-  },
-  toHaveProperty: (prop, value) => {
-    if (!(prop in actual)) {
-      throw new Error(`Expected object to have property ${prop}`);
-    }
-    if (value !== undefined && actual[prop] !== value) {
-      throw new Error(`Expected property ${prop} to be ${value}, but got ${actual[prop]}`);
-    }
-  },
-  not: {
-    toHaveProperty: (prop) => {
-      if (prop in actual) {
-        throw new Error(`Expected object NOT to have property ${prop}`);
-      }
-    }
-  },
-  toEqual: (expected) => {
-    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-      throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
-    }
-  }
-});
-
 describe('API Integration Tests', () => {
 
   // Mock HTTP client
@@ -457,4 +403,3 @@ describe('API Integration Tests', () => {
   });
 });
 
-console.log('\n🏁 API integration tests completed');

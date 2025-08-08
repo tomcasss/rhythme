@@ -1,46 +1,4 @@
-// Route Integration Tests - Testing API endpoints and routing
-
-// Simple manual test framework for ES modules
-const describe = (name, fn) => {
-  console.log(`\n📝 ${name}`);
-  fn();
-};
-
-const it = (name, fn) => {
-  try {
-    const result = fn();
-    if (result && typeof result.then === 'function') {
-      result
-        .then(() => console.log(`  ✅ ${name}`))
-        .catch(error => console.log(`  ❌ ${name}: ${error.message}`));
-    } else {
-      console.log(`  ✅ ${name}`);
-    }
-  } catch (error) {
-    console.log(`  ❌ ${name}: ${error.message}`);
-  }
-};
-
-const expect = (actual) => ({
-  toBe: (expected) => {
-    if (actual !== expected) {
-      throw new Error(`Expected ${expected}, but got ${actual}`);
-    }
-  },
-  toContain: (expected) => {
-    if (!actual.includes(expected)) {
-      throw new Error(`Expected "${actual}" to contain "${expected}"`);
-    }
-  },
-  toHaveProperty: (prop, value) => {
-    if (!(prop in actual)) {
-      throw new Error(`Expected object to have property ${prop}`);
-    }
-    if (value !== undefined && actual[prop] !== value) {
-      throw new Error(`Expected property ${prop} to be ${value}, but got ${actual[prop]}`);
-    }
-  }
-});
+// Route Integration Tests - Testing API endpoints and routing (Jest)
 
 describe('API Routes Integration Tests', () => {
 
@@ -237,4 +195,7 @@ describe('API Routes Integration Tests', () => {
   });
 });
 
-console.log('\n🏁 Route integration tests completed');
+afterAll(() => {
+  // eslint-disable-next-line no-console
+  console.log('\n🏁 Route integration tests completed');
+});

@@ -1,7 +1,4 @@
-// Quick test for genre-based filtering logic
-const describe = (n,f)=>{console.log(`\n📝 ${n}`);f();};
-const it=(n,f)=>{try{const r=f();if(r&&r.then)r.then(()=>console.log(`  ✅ ${n}`)).catch(e=>console.log(`  ❌ ${n}: ${e.message}`));else console.log(`  ✅ ${n}`);}catch(e){console.log(`  ❌ ${n}: ${e.message}`)}};
-const expect=(a)=>({toBe:(b)=>{if(a!==b)throw new Error(`Expected ${b}, got ${a}`)},toEqual:(b)=>{if(JSON.stringify(a)!==JSON.stringify(b))throw new Error(`Expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`)}});
+// Jest test for genre-based filtering logic
 
 describe('Genre Filter Logic',()=>{
   it('Should select only posts whose spotifyContent.genres intersects user genres',()=>{
@@ -21,4 +18,7 @@ describe('Genre Filter Logic',()=>{
   });
 });
 
-console.log('\n🏁 Genre filter tests completed');
+afterAll(() => {
+  // eslint-disable-next-line no-console
+  console.log('\n🏁 Genre filter tests completed');
+});

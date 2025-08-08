@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon server.js",
-  "test": "node tests/user.service.test.js && node tests/post.service.test.js && node tests/notification.service.test.js && node tests/auth.service.test.js && node tests/routes.integration.test.js && node tests/recommendations.logic.test.js && node tests/recommended.genre.filter.test.js && node tests/recommended.exclude-following.test.js",
+  "test": "jest",
     "test:all": "node tests/run-all-tests.js",
     "test:services": "node tests/user.service.test.js && node tests/post.service.test.js && node tests/notification.service.test.js && node tests/auth.service.test.js",
     "test:controllers": "node tests/post.controller.test.js",
