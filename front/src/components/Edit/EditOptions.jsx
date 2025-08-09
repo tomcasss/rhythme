@@ -16,6 +16,8 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
   const [modalType, setModalType] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [dragOver, setDragOver] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   // Estados para los formularios
   const [formData, setFormData] = useState({
@@ -43,6 +45,8 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     setModalType(type);
     setShowModal(true);
     setError('');
+    setUploadError('');
+    setDragOver(false);
 
     // Obtener datos actuales del usuario desde localStorage
     const currentUser = JSON.parse(localStorage.getItem("user"));
@@ -152,6 +156,69 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     }
   };
 
+  // Helpers para imágenes (mismo patrón que CreatePostForm)
+  const validateImageFile = (file, setErr) => {
+    if (!file.type || !file.type.startsWith('image/')) {
+      setErr('Solo se permiten imágenes');
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErr('La imagen debe ser menor a 5MB');
+      return false;
+    }
+    setErr('');
+    return true;
+  };
+
+  const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const handleFileInputChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!validateImageFile(file, setUploadError)) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      if (modalType === 'profile-picture') {
+        setFormData(prev => ({ ...prev, profilePicture: dataUrl }));
+      } else if (modalType === 'cover-picture') {
+        setFormData(prev => ({ ...prev, coverPicture: dataUrl }));
+      }
+    } catch {
+      setUploadError('No se pudo leer la imagen');
+    }
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    if (!validateImageFile(file, setUploadError)) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      if (modalType === 'profile-picture') {
+        setFormData(prev => ({ ...prev, profilePicture: dataUrl }));
+      } else if (modalType === 'cover-picture') {
+        setFormData(prev => ({ ...prev, coverPicture: dataUrl }));
+      }
+    } catch {
+      setUploadError('No se pudo leer la imagen');
+    }
+  };
+
+  const clearLocalImage = () => {
+    if (modalType === 'profile-picture') {
+      setFormData(prev => ({ ...prev, profilePicture: '' }));
+    } else if (modalType === 'cover-picture') {
+      setFormData(prev => ({ ...prev, coverPicture: '' }));
+    }
+  };
+
   /**
    * Renderizar contenido del modal según el tipo
    */
@@ -174,27 +241,28 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
 
             <h3>Editar Foto de Perfil</h3>
             {error && <p className="error-text">{error}</p>}
-            <div>
-              <label>URL de la imagen:</label>
-              <input
-                type="url"
-                placeholder="https://ejemplo.com/mi-foto.jpg"
-                value={formData.profilePicture}
-                onChange={(e) => handleInputChange('profilePicture', e.target.value)}
-                className="modal-input"
-              />
-              {formData.profilePicture && (
-                <div className="preview-block">
-                  <p>Vista previa:</p>
-                  <img
-                    src={formData.profilePicture}
-                    alt="Preview"
-                    className="preview-image profile"
-                    onError={() => setError('URL de imagen no válida')}
-                  />
-                </div>
-              )}
+            <div
+              className={`dropzone ${dragOver ? 'dragover' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+            >
+              <p style={{ margin: 0 }}>
+                Arrastra y suelta una imagen aquí o
+                <label style={{ color: '#fb7202', cursor: 'pointer', marginLeft: 4 }}>
+                  selecciónala
+                  <input type="file" accept="image/*" onChange={handleFileInputChange} disabled={loading} style={{ display: 'none' }} />
+                </label>
+              </p>
+              <small style={{ color: '#666' }}>Máximo 5MB. Formatos comunes de imagen.</small>
             </div>
+            {formData.profilePicture && (
+              <div className="create-image-preview" style={{ marginTop: 12 }}>
+                <button type="button" className="remove-image-btn" onClick={clearLocalImage} title="Quitar imagen">×</button>
+                <img src={formData.profilePicture} alt="Preview" className="preview-image profile" />
+              </div>
+            )}
+            {uploadError && <div className="error-text" style={{ marginTop: 8 }}>{uploadError}</div>}
             <div className="modal-actions">
               <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
@@ -272,27 +340,28 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           <>
             <h3>Editar Foto de Portada</h3>
             {error && <p className="error-text">{error}</p>}
-            <div>
-              <label>URL de la imagen de portada:</label>
-              <input
-                type="url"
-                placeholder="https://ejemplo.com/mi-portada.jpg"
-                value={formData.coverPicture}
-                onChange={(e) => handleInputChange('coverPicture', e.target.value)}
-                className="modal-input"
-              />
-              {formData.coverPicture && (
-                <div className="preview-block">
-                  <p>Vista previa:</p>
-                  <img
-                    src={formData.coverPicture}
-                    alt="Preview"
-                    className="preview-image cover"
-                    onError={() => setError('URL de imagen no válida')}
-                  />
-                </div>
-              )}
+            <div
+              className={`dropzone ${dragOver ? 'dragover' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+            >
+              <p style={{ margin: 0 }}>
+                Arrastra y suelta una imagen aquí o
+                <label style={{ color: '#fb7202', cursor: 'pointer', marginLeft: 4 }}>
+                  selecciónala
+                  <input type="file" accept="image/*" onChange={handleFileInputChange} disabled={loading} style={{ display: 'none' }} />
+                </label>
+              </p>
+              <small style={{ color: '#666' }}>Máximo 5MB. Formatos comunes de imagen.</small>
             </div>
+            {formData.coverPicture && (
+              <div className="create-image-preview" style={{ marginTop: 12 }}>
+                <button type="button" className="remove-image-btn" onClick={clearLocalImage} title="Quitar imagen">×</button>
+                <img src={formData.coverPicture} alt="Preview" className="preview-image cover" />
+              </div>
+            )}
+            {uploadError && <div className="error-text" style={{ marginTop: 8 }}>{uploadError}</div>}
             <div className="modal-actions">
               <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}

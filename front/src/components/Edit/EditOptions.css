@@ -126,3 +126,31 @@
 .mt-1 { margin-top: 1rem; }
 .mb-1 { margin-bottom: 1rem; }
 .mb-05 { margin-bottom: 0.5rem; }
+
+/* Reuso de estilos de uploader (similar a CreatePostForm) */
+.dropzone {
+  border: 2px dashed #ddd;
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  color: #666;
+  background: #fafafa;
+  margin-top: 0.5rem;
+}
+.dropzone.dragover { border-color: #fb7202; background: #fff7f0; }
+.create-image-preview { position: relative; }
+.remove-image-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

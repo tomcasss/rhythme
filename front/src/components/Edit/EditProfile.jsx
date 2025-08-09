@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import perfil from '../../assets/perfil.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCamera, faUsers, faMusic } from '@fortawesome/free-solid-svg-icons';
+import { faCamera, faUsers, faMusic, faImage, faTimes } from '@fortawesome/free-solid-svg-icons';
+import './EditOptions.css';
 import './EditProfile.css';
 
 /**
@@ -14,6 +15,10 @@ import './EditProfile.css';
 export default function EditProfile({ user, onUpdateUser }) {
   const [updating, setUpdating] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
+  const [localImagePreview, setLocalImagePreview] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   if (!user) {
     return (
@@ -29,32 +34,84 @@ export default function EditProfile({ user, onUpdateUser }) {
   /**
    * Manejar actualización rápida de foto de perfil
    */
-  const handleQuickPhotoUpdate = async () => {
-    const newPhotoUrl = prompt("Ingresa la URL de tu nueva foto de perfil:", user.profilePicture || "");
-    
-    if (newPhotoUrl !== null && newPhotoUrl !== user.profilePicture) {
-      setUpdating(true);
-      setUpdateMessage("📤 Subiendo nueva foto...");
-      
-      try {
-        const result = await onUpdateUser({ 
-          profilePicture: newPhotoUrl,
-          userId: user._id 
-        });
-        if (result?.success || result?.user) {
-          setUpdateMessage("✅ Foto actualizada correctamente");
-          setTimeout(() => setUpdateMessage(""), 3000);
-        } else {
-          setUpdateMessage("❌ Error al actualizar la foto");
-          setTimeout(() => setUpdateMessage(""), 3000);
-        }
-      } catch {
-        setUpdateMessage("❌ Error al actualizar la foto");
-        setTimeout(() => setUpdateMessage(""), 3000);
-      } finally {
-        setUpdating(false);
-      }
+  const handleQuickPhotoUpdate = () => {
+    setUploadError("");
+    setLocalImagePreview("");
+    setShowPhotoModal(true);
+  };
+
+  // Utilidades de validación y lectura de archivo (igual que en posts)
+  const validateImageFile = (file, setError) => {
+    if (!file.type || !file.type.startsWith('image/')) {
+      setError('Solo se permiten imágenes');
+      return false;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen debe ser menor a 5MB');
+      return false;
+    }
+    setError("");
+    return true;
+  };
+
+  const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const handleFileInputChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!validateImageFile(file, setUploadError)) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setLocalImagePreview(dataUrl);
+    } catch {
+      setUploadError('No se pudo leer la imagen');
+    }
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    if (!validateImageFile(file, setUploadError)) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setLocalImagePreview(dataUrl);
+    } catch {
+      setUploadError('No se pudo leer la imagen');
+    }
+  };
+
+  const handleUploadProfilePhoto = async () => {
+    if (!localImagePreview) return;
+    setUpdating(true);
+    setUpdateMessage('📤 Subiendo foto de perfil...');
+    setUploadError("");
+    try {
+      const result = await onUpdateUser({ profilePicture: localImagePreview, userId: user._id });
+      if (result?.success || result?.user) {
+        setUpdateMessage('✅ Foto actualizada correctamente');
+        setLocalImagePreview("");
+        setShowPhotoModal(false);
+      } else {
+        setUpdateMessage('❌ Error al actualizar la foto');
+      }
+    } catch {
+      setUpdateMessage('❌ Error al actualizar la foto');
+    } finally {
+      setTimeout(() => setUpdateMessage(""), 3000);
+      setUpdating(false);
+    }
+  };
+
+  const handleRemoveLocalImage = () => {
+    setLocalImagePreview("");
+    setUploadError("");
   };
 
   /**
@@ -154,8 +211,52 @@ export default function EditProfile({ user, onUpdateUser }) {
           <span><FontAwesomeIcon icon={faMusic} /> {user.following?.length || 0} siguiendo</span>
         </div>
       </div>
-
-     
+      {showPhotoModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Actualizar foto de perfil</h3>
+            <div
+              className={`dropzone ${dragOver ? 'dragover' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+            >
+              <p style={{ margin: 0 }}>
+                <FontAwesomeIcon icon={faImage} /> Arrastra y suelta una imagen aquí o
+                <label style={{ color: '#fb7202', cursor: 'pointer', marginLeft: 4 }}>
+                  selecciónala
+                  <input type="file" accept="image/*" onChange={handleFileInputChange} disabled={updating} style={{ display: 'none' }} />
+                </label>
+              </p>
+              <small style={{ color: '#666' }}>Máximo 5MB. Formatos comunes de imagen.</small>
+            </div>
+            {localImagePreview && (
+              <div className="create-image-preview" style={{ marginTop: 12 }}>
+                <button
+                  type="button"
+                  className="remove-image-btn"
+                  onClick={handleRemoveLocalImage}
+                  title="Quitar imagen"
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+                <img src={localImagePreview} alt="Vista previa" style={{ maxWidth: '100%', borderRadius: 8 }} />
+              </div>
+            )}
+            {uploadError && (
+              <div className="update-msg update-err" style={{ marginTop: 12 }}>{uploadError}</div>
+            )}
+            <div className="modal-actions" style={{ marginTop: 20 }}>
+              <button onClick={handleUploadProfilePhoto} className="modal-btn" disabled={updating || !localImagePreview}>
+                {updating ? 'Subiendo...' : 'Guardar'}
+              </button>
+              <button onClick={() => { if (!updating) { setShowPhotoModal(false); } }} className="modal-btn cancel">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
