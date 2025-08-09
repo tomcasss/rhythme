@@ -4,7 +4,7 @@
   "jest.rootPath": "",
   "jest.runMode": "watch",
   // Frontend Jest config
-  "jest.jestCommandLine": "npm test --silent",
+  "jest.jestCommandLine": "npm test",
   "jest.nodeEnv": {
     "FORCE_COLOR": "1"
   },

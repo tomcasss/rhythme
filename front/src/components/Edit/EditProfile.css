@@ -50,3 +50,32 @@
 
 .user-stats { margin-top: 1rem; }
 .user-stats-row { display: flex; gap: 1rem; font-size: 0.9rem; color: #6c757d; }
+
+/* Uploader de foto de perfil (similar a posts) */
+.profile-upload { margin-top: 1rem; display: flex; flex-direction: column; gap: 8px; }
+.profile-dropzone {
+  border: 2px dashed #ddd;
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  color: #666;
+  background: #fafafa;
+}
+.profile-dropzone.dragover { border-color: #fb7202; background: #fff7f0; }
+.profile-image-preview { position: relative; margin-top: 6px; }
+.profile-remove-image-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-upload-actions { display: flex; gap: 8px; }
