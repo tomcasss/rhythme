@@ -22,19 +22,19 @@ import "./PostCard.css";
  * @param {Function} props.onUnfollow - Función para dejar de seguir usuario
  * @param {Function} props.isFollowing - Función para verificar si sigue a un usuario
  */
-export default function PostCard({ 
-  post, 
-  user, 
-  followLoading, 
-  onLike, 
-  onDelete, 
-  onEdit, 
-  onFollow, 
+export default function PostCard({
+  post,
+  user,
+  followLoading,
+  onLike,
+  onDelete,
+  onEdit,
+  onFollow,
   onUnfollow,
-  isFollowing 
+  isFollowing
 }) {
   const navigate = useNavigate();
-  
+
   // Estados para menú de opciones
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef();
@@ -155,14 +155,14 @@ export default function PostCard({
     <div className="post-card">
       {/* Header del post */}
       <div className="post-header">
-  <img 
-          src={userImg} 
-          alt="user" 
-      className="avatar avatar-clickable" 
+        <img
+          src={userImg}
+          alt="user"
+          className="avatar avatar-clickable"
           onClick={goToProfile}
         />
         <div className="post-user">
-      <strong onClick={goToProfile} className="post-user-name">
+          <strong onClick={goToProfile} className="post-user-name">
             {post.userId && typeof post.userId === 'object'
               ? (post.userId.username || post.userId.email || `ID: ${post.userId._id?.slice(0, 6)}...`)
               : (post.username || (post.userId ? `ID: ${post.userId.slice(0, 6)}...` : "Usuario"))
@@ -172,29 +172,29 @@ export default function PostCard({
             <span className="time">
               {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
             </span>
-            
+
             {/* Indicador de tipo de post */}
             {isOwnPost() ? (
-        <span className="post-user-status own">
+              <span className="post-user-status own">
                 Tu post
               </span>
             ) : isFollowingUser() ? (
-        <span className="post-user-status following">
+              <span className="post-user-status following">
                 Siguiendo
               </span>
             ) : (
-        <span className="post-user-status">
+              <span className="post-user-status">
                 No sigues
               </span>
             )}
           </div>
         </div>
-        
+
         {/* Botón de seguir/dejar de seguir */}
         {!isOwnPost() && (
-      <div className="post-follow-wrapper">
+          <div className="post-follow-wrapper">
             {isFollowingUser() ? (
-              <button 
+              <button
                 className="following-btn"
                 onClick={() => onUnfollow(getPostUserId())}
                 disabled={followLoading[getPostUserId()]}
@@ -203,7 +203,7 @@ export default function PostCard({
                 {followLoading[getPostUserId()] ? '...' : 'Siguiendo'}
               </button>
             ) : (
-              <button 
+              <button
                 className="follow-btn"
                 onClick={() => onFollow(getPostUserId())}
                 disabled={followLoading[getPostUserId()]}
@@ -217,24 +217,24 @@ export default function PostCard({
 
         {/* Menú de opciones para posts propios */}
         {isOwnPost() && (
-      <div className="post-options-wrapper">
-            <button 
-              className="action-btn" 
-              onClick={() => setOpenMenu(!openMenu)} 
+          <div className="post-options-wrapper">
+            <button
+              className="action-btn"
+              onClick={() => setOpenMenu(!openMenu)}
               title="Opciones"
             >
               ⋮
             </button>
             {openMenu && (
-        <div ref={menuRef} className="post-options-panel">
-                <button 
-          className="action-btn post-options-item" 
+              <div ref={menuRef} className="post-options-panel">
+                <button
+                  className="action-btn post-options-item"
                   onClick={handleDelete}
                 >
                   <FontAwesomeIcon icon={faTrash} /> Eliminar
                 </button>
-                <button 
-          className="action-btn post-options-item" 
+                <button
+                  className="action-btn post-options-item"
                   onClick={startEdit}
                 >
                   <FontAwesomeIcon icon={faPencil} /> Editar
@@ -266,16 +266,16 @@ export default function PostCard({
               className="post-edit-input"
             />
             <div className="post-edit-actions">
-              <button 
-                type="submit" 
-                disabled={editLoading || !editDesc} 
+              <button
+                type="submit"
+                disabled={editLoading || !editDesc}
                 className="btn-save"
               >
                 {editLoading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button 
-                type="button" 
-                onClick={cancelEdit} 
+              <button
+                type="button"
+                onClick={cancelEdit}
                 className="btn-cancel"
               >
                 Cancelar

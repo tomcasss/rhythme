@@ -8,6 +8,7 @@ import { faUser, faBell } from "@fortawesome/free-solid-svg-icons";
 import userImg from "../../assets/user.png";
 import { API_ENDPOINTS } from "../../config/api.js";
 import "./Navbar.css";
+import ThemeToggle from "../ThemeToggle.jsx";
 
 /**
  * Componente Navbar - Barra de navegación con búsqueda de usuarios
@@ -106,7 +107,7 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
         setSearchResults([]);
         setShowSearchResults(false);
       }
-    }, 300);
+  }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
@@ -120,8 +121,7 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
       setShowSearchResults(false);
       return;
     }
-
-    setSearchLoading(true);
+  setSearchLoading(true);
     try {
       const res = await axios.get(API_ENDPOINTS.SEARCH_USERS(query.trim()));
       setSearchResults(res.data.users || []);
@@ -218,7 +218,7 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
 
       {/* Barra de búsqueda */}
       <div className="search-container" ref={searchRef}>
-  <div className="search-input-wrapper" style={{ position: "relative" }}>
+        <div className="search-input-wrapper" style={{ position: "relative" }}>
           <input
             type="text"
             placeholder="Buscar usuarios..."
@@ -240,9 +240,7 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
         {showSearchResults && (
           <div className="search-results-panel">
             {searchLoading ? (
-              <div className="search-panel-loading" style={{ padding: "1rem", textAlign: "center", color: "#666" }}>
-                Buscando usuarios...
-              </div>
+              <div className="search-panel-loading">Buscando usuarios...</div>
             ) : searchResults.length > 0 ? (
               <>
                 <div className="search-panel-header">
@@ -280,9 +278,7 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
                     {/* Botones de seguir/dejar de seguir */}
                     <div className="search-result-actions">
                       {searchUser._id === user?._id ? (
-                        <span className="search-self-pill" style={{ fontSize: "0.8rem", color: "#999", fontStyle: "italic" }}>
-                          Tú
-                        </span>
+                        <span className="search-self-pill">Tú</span>
                       ) : isFollowing(searchUser._id) ? (
                         <button
                           onClick={(e) =>
@@ -311,16 +307,15 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
                 ))}
               </>
             ) : searchQuery.trim() && !searchLoading ? (
-              <div className="search-panel-empty" style={{ padding: "1rem", textAlign: "center", color: "#666" }}>
-                No se encontraron usuarios para "{searchQuery}"
-              </div>
+              <div className="search-panel-empty">No se encontraron usuarios para "{searchQuery}"</div>
             ) : null}
           </div>
         )}
       </div>
 
       {/* Iconos de navegación */}
-      <div className="navbar-icons">
+      <div className="navbar-icons" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <ThemeToggle />
         <span className="icon notif notif-wrapper">
   <button
     onClick={toggleDropdown}

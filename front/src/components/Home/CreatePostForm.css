@@ -1,9 +1,9 @@
 .create-post-form {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 12px;
   padding: 1rem 1.25rem;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -13,13 +13,13 @@
   resize: none;
   border-radius: 8px;
   padding: 8px;
-  border: 1px solid #eee;
+  border: 1px solid var(--color-border-subtle);
 }
 
 .create-image-input {
   border-radius: 8px;
   padding: 8px;
-  border: 1px solid #eee;
+  border: 1px solid var(--color-border-subtle);
 }
 
 /* Local image upload */
@@ -30,16 +30,16 @@
 }
 
 .dropzone {
-  border: 2px dashed #ddd;
+  border: 2px dashed var(--color-border);
   border-radius: 10px;
   padding: 14px;
   text-align: center;
-  color: #666;
-  background: #fafafa;
+  color: var(--color-text-muted);
+  background: var(--color-surface-alt);
 }
 .dropzone.dragover {
-  border-color: #fb7202;
-  background: #fff7f0;
+  border-color: var(--color-primary-start);
+  background: var(--color-accent-bg);
 }
 
 .create-image-preview {
@@ -91,7 +91,7 @@
 .btn-spotify {
   border-radius: 8px;
   padding: 8px 12px;
-  background: #1DB954;
+  background: var(--color-spotify);
   color: #fff;
   border: none;
   cursor: pointer;
@@ -100,18 +100,20 @@
   gap: 6px;
   font-size: 0.9rem;
   flex: 0 0 auto;
+  box-shadow: var(--shadow-soft);
 }
+
+    
 
 .btn-publish {
   border-radius: 8px;
   padding: 8px;
-  background: linear-gradient(90deg, #fb7202, #e82c0b);
+  background: var(--gradient-primary);
   color: #fff;
   border: none;
   cursor: pointer;
   flex: 1;
+  box-shadow: var(--shadow-soft);
 }
 
-.create-error {
-  color: #ff3333;
-}
+.create-error { color: var(--color-danger-alt); }

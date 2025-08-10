@@ -2,13 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import "./Perfil_usuario.css";
 import { API_ENDPOINTS } from "../config/api.js";
 import { useFollowSystem } from "../hooks/useFollowSystem.js";
+import NavBar from "../components/Home/Navbar.jsx";
 
 // Componentes
-import ProfileHeader from "../components/Profile/ProfileHeader";
 import ProfileBanner from "../components/Profile/ProfileBanner";
 import ProfileContent from "../components/Profile/ProfileContent";
 import "../components/Profile/ProfileContent.css";
@@ -81,7 +79,7 @@ export const Perfil_usuario = () => {
   if (loading) {
     return (
       <div className="contenedor">
-        <ProfileHeader />
+        <NavBar />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <p>Cargando perfil...</p>
         </div>
@@ -92,7 +90,7 @@ export const Perfil_usuario = () => {
   if (error) {
     return (
       <div className="contenedor">
-        <ProfileHeader />
+        <NavBar />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <p style={{ color: '#e74c3c' }}>{error}</p>
           <button onClick={() => navigate('/home')} className="btn-red">
@@ -105,7 +103,7 @@ export const Perfil_usuario = () => {
 
   return (
     <div className="contenedor">
-      <ProfileHeader />
+      <NavBar />
       
       <ProfileBanner
         profileUser={profileUser}
@@ -132,7 +130,14 @@ export const Perfil_usuario = () => {
           
           {/* Profile Content buttons - lado derecho */}
           <div className="profile-buttons-section right-panel-narrow">
-            <ProfileContent userId={userId} />
+            <ProfileContent
+              userId={userId}
+              viewerUser={currentUser}
+              followLoading={followLoading}
+              isFollowing={isFollowing}
+              onFollow={followUser}
+              onUnfollow={unfollowUser}
+            />
           </div>
         </div>
       </div>

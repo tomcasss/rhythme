@@ -3,20 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import "./Editar_usuario.css";
 import axios from 'axios';
 import { API_ENDPOINTS } from "../config/api.js";
+import NavBar from "../components/Home/Navbar.jsx";
+import { useFollowSystem } from "../hooks/useFollowSystem.js";
 
 // Componentes
-import EditHeader from "../components/Edit/EditHeader";
 import EditProfile from "../components/Edit/EditProfile";
 import EditOptions from "../components/Edit/EditOptions";
 import SpotifyConnection from "../components/Profile/SpotifyConnection";
 
-export const Editar_usuario = () => {
+const Editar_usuario = () => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Sistema de follow para Navbar (solo lectura/acciones básicas)
+  const {
+    followLoading,
+    isFollowing,
+    followUser,
+    unfollowUser,
+    loadFollowingUsers
+  } = useFollowSystem(currentUser);
 
   // Inicialización - obtener usuario actual del localStorage
   useEffect(() => {
@@ -25,10 +35,10 @@ export const Editar_usuario = () => {
       navigate("/");
       return;
     }
-
     setCurrentUser(userData);
     fetchUserData(userData._id);
-  }, [navigate]);
+    loadFollowingUsers(userData._id);
+  }, [navigate, loadFollowingUsers]);
 
   // Obtener datos actuales del usuario desde el backend
   const fetchUserData = async (userId) => {
@@ -45,7 +55,6 @@ export const Editar_usuario = () => {
       setLoading(false);
     }
   };
-
 
   // Manejar actualización de usuario
   const handleUpdateUser = async (updatedData) => {
@@ -95,7 +104,13 @@ export const Editar_usuario = () => {
   if (loading) {
     return (
       <div className="contenedor">
-        <EditHeader onBack={() => navigate('/home')} />
+        <NavBar
+          user={currentUser}
+          followLoading={followLoading}
+          onFollowUser={followUser}
+          onUnfollowUser={unfollowUser}
+          isFollowing={isFollowing}
+        />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <p>Cargando datos del usuario...</p>
         </div>
@@ -106,7 +121,13 @@ export const Editar_usuario = () => {
   if (error) {
     return (
       <div className="contenedor">
-        <EditHeader onBack={() => navigate('/home')} />
+        <NavBar
+          user={currentUser}
+          followLoading={followLoading}
+          onFollowUser={followUser}
+          onUnfollowUser={unfollowUser}
+          isFollowing={isFollowing}
+        />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <p style={{ color: '#e74c3c' }}>{error}</p>
           <button onClick={() => navigate('/home')} className="btn-opcion">
@@ -119,7 +140,13 @@ export const Editar_usuario = () => {
 
   return (
     <div className="contenedor">
-      <EditHeader onBack={() => navigate('/home')} />
+      <NavBar
+        user={currentUser}
+        followLoading={followLoading}
+        onFollowUser={followUser}
+        onUnfollowUser={unfollowUser}
+        isFollowing={isFollowing}
+      />
 
       <div className="contenido-editar">
         <div className='columna-izquierda'>
@@ -135,8 +162,6 @@ export const Editar_usuario = () => {
           />
         </div>
 
-
-
         <div className='columna-derecha'>
           <EditOptions
             onLogout={handleLogout}
@@ -145,7 +170,8 @@ export const Editar_usuario = () => {
         </div>
       </div>
     </div>
-
   );
-}
+};
+
+export default Editar_usuario;
 

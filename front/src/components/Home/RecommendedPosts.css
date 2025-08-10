@@ -8,5 +8,5 @@
 }
 
 .reco-error {
-  color: #ff3333;
+  color: var(--color-danger-alt);
 }

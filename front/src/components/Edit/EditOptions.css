@@ -11,7 +11,7 @@
 }
 
 .modal-content {
-  background-color: #fff;
+  background-color: var(--color-surface);
   padding: 2rem;
   border-radius: 10px;
   max-width: 500px;
@@ -26,12 +26,12 @@
 .modal-textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-subtle);
   border-radius: 5px;
   font-size: 1rem;
   margin-bottom: 1rem;
-  color: #333;
-  background-color: #fff;
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface);
 }
 
 .modal-textarea {
@@ -45,7 +45,7 @@
 }
 
 .modal-btn {
-  background: #ff7a00;
+  background: var(--gradient-primary);
   color: #fff;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -55,11 +55,11 @@
 }
 
 .modal-btn.cancel {
-  background: #6c757d;
+  background: var(--color-text-muted);
 }
 
 .error-text {
-  color: #e74c3c;
+  color: var(--color-danger-alt);
   margin-bottom: 1rem;
 }
 
@@ -83,7 +83,7 @@
 
 .modal-hint {
   margin-bottom: 0.5rem;
-  color: #555;
+  color: var(--color-text-muted);
 }
 
 .chips-container {
@@ -105,22 +105,22 @@
 .chip {
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #333;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   cursor: pointer;
   font-size: 0.9rem;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .chip-selected {
-  border: 2px solid #ff7a00;
-  background: rgba(255, 122, 0, 0.12);
-  color: #ff7a00;
+  border: 2px solid var(--color-primary-start);
+  background: var(--color-accent-bg-faint);
+  color: var(--color-primary-start);
 }
 
 .text-muted {
-  color: #6c757d;
+  color: var(--color-text-muted);
 }
 
 .mt-1 { margin-top: 1rem; }
@@ -129,15 +129,15 @@
 
 /* Reuso de estilos de uploader (similar a CreatePostForm) */
 .dropzone {
-  border: 2px dashed #ddd;
+  border: 2px dashed var(--color-border-subtle);
   border-radius: 10px;
   padding: 14px;
   text-align: center;
-  color: #666;
-  background: #fafafa;
+  color: var(--color-text-muted);
+  background: var(--color-surface-alt);
   margin-top: 0.5rem;
 }
-.dropzone.dragover { border-color: #fb7202; background: #fff7f0; }
+.dropzone.dragover { border-color: var(--color-primary-start); background: var(--color-accent-bg); }
 .create-image-preview { position: relative; }
 .remove-image-btn {
   position: absolute;

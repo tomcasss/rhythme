@@ -13,7 +13,7 @@
 }
 
 .spotify-search-modal {
-    background: white;
+    background: var(--color-surface);
     border-radius: 12px;
     width: 90%;
     max-width: 600px;
@@ -24,95 +24,95 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.spotify-search-header {
+ .spotify-search-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 1px solid #eee;
-    background: #f8f9fa;
+    border-bottom: 1px solid var(--color-border-subtle);
+    background: var(--color-surface-alt);
 }
 
-.spotify-search-header h3 {
+ .spotify-search-header h3 {
     margin: 0;
-    color: #333;
+    color: var(--color-text-secondary);
     font-size: 1.2rem;
     display: flex;
     align-items: center;
 }
 
-.close-btn {
+ .close-btn {
     background: none;
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: #666;
+    color: var(--color-text-muted);
     padding: 5px;
     border-radius: 50%;
     transition: all 0.2s;
 }
 
-.close-btn:hover {
-    background: #e9ecef;
-    color: #333;
+ .close-btn:hover {
+     background: var(--color-border-subtle);
+     color: var(--color-text-secondary);
 }
 
-.spotify-search-input {
+ .spotify-search-input {
     position: relative;
     padding: 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
-.spotify-search-input input {
+ .spotify-search-input input {
     width: 100%;
     padding: 12px 40px 12px 12px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--color-border-subtle);
     border-radius: 8px;
     font-size: 1rem;
     outline: none;
     transition: border-color 0.2s;
 }
 
-.spotify-search-input input:focus {
-    border-color: #1DB954;
+ .spotify-search-input input:focus {
+     border-color: var(--color-spotify);
 }
 
-.search-icon {
+ .search-icon {
     position: absolute;
     right: 35px;
     top: 50%;
     transform: translateY(-50%);
-    color: #666;
+    color: var(--color-text-muted);
 }
 
-.error-message {
+ .error-message {
     padding: 15px 20px;
-    background: #ffe6e6;
-    color: #d63384;
-    border-left: 4px solid #d63384;
+    background: var(--color-danger-alt)10; /* mild tint via hex-like */
+    color: var(--color-danger-alt);
+    border-left: 4px solid var(--color-danger-alt);
     margin: 0 20px;
     border-radius: 4px;
 }
 
-.loading-message {
+ .loading-message {
     padding: 20px;
     text-align: center;
-    color: #666;
+    color: var(--color-text-muted);
 }
 
-.search-tabs {
+ .search-tabs {
     display: flex;
-    border-bottom: 1px solid #eee;
-    background: #f8f9fa;
+    border-bottom: 1px solid var(--color-border-subtle);
+    background: var(--color-surface-alt);
 }
 
-.main-tabs {
+ .main-tabs {
     display: flex;
-    border-bottom: 2px solid #e9ecef;
-    background: #ffffff;
+    border-bottom: 2px solid var(--color-border-subtle);
+    background: var(--color-surface);
 }
 
-.main-tab {
+ .main-tab {
     flex: 1;
     padding: 16px 20px;
     border: none;
@@ -120,43 +120,43 @@
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
-    color: #666;
+    color: var(--color-text-muted);
     transition: all 0.2s;
     border-bottom: 3px solid transparent;
 }
 
-.main-tab:hover {
-    background: #f8f9fa;
-    color: #333;
+ .main-tab:hover {
+     background: var(--color-surface-alt);
+     color: var(--color-text-secondary);
 }
 
-.main-tab.active {
-    color: #1DB954;
-    border-bottom-color: #1DB954;
-    background: white;
+ .main-tab.active {
+     color: var(--color-spotify);
+     border-bottom-color: var(--color-spotify);
+     background: var(--color-surface);
 }
 
-.tab {
+ .tab {
     flex: 1;
     padding: 12px 16px;
     border: none;
     background: none;
     cursor: pointer;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--color-text-muted);
     transition: all 0.2s;
     border-bottom: 3px solid transparent;
 }
 
-.tab:hover {
-    background: #e9ecef;
-    color: #333;
+ .tab:hover {
+     background: var(--color-border-subtle);
+     color: var(--color-text-secondary);
 }
 
-.tab.active {
-    color: #1DB954;
-    border-bottom-color: #1DB954;
-    background: white;
+ .tab.active {
+     color: var(--color-spotify);
+     border-bottom-color: var(--color-spotify);
+     background: var(--color-surface);
 }
 
 .search-results {
@@ -165,17 +165,17 @@
     max-height: 400px;
 }
 
-.search-result-item {
+ .search-result-item {
     display: flex;
     align-items: center;
     padding: 12px 20px;
     cursor: pointer;
     transition: background-color 0.2s;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
-.search-result-item:hover {
-    background: #f8f9fa;
+ .search-result-item:hover {
+     background: var(--color-surface-alt);
 }
 
 .search-result-item:last-child {
@@ -197,14 +197,14 @@
     object-fit: cover;
 }
 
-.placeholder-image {
+ .placeholder-image {
     width: 100%;
     height: 100%;
-    background: #e9ecef;
+    background: var(--color-border-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 1.2rem;
 }
 
@@ -213,37 +213,37 @@
     min-width: 0;
 }
 
-.result-name {
+ .result-name {
     font-weight: 600;
-    color: #333;
+    color: var(--color-text-secondary);
     margin-bottom: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.result-artist {
-    color: #666;
+ .result-artist {
+    color: var(--color-text-muted);
     font-size: 0.9rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.result-duration {
-    color: #999;
+ .result-duration {
+    color: var(--color-text-faint);
     font-size: 0.8rem;
     margin-top: 2px;
 }
 
-.result-type {
+ .result-type {
     margin: 0 15px;
-    color: #1DB954;
+    color: var(--color-spotify);
     font-size: 1.1rem;
 }
 
-.result-preview {
-    color: #1DB954;
+ .result-preview {
+    color: var(--color-spotify);
     font-size: 1rem;
     opacity: 0.7;
     transition: opacity 0.2s;
@@ -253,10 +253,10 @@
     opacity: 1;
 }
 
-.no-results {
+ .no-results {
     padding: 40px 20px;
     text-align: center;
-    color: #999;
+    color: var(--color-text-faint);
     font-style: italic;
 }
 

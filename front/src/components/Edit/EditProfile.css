@@ -5,8 +5,8 @@
   margin-bottom: 1rem;
 }
 .btn-primary {
-  background: #ff7a00;
-  color: white;
+  background: var(--gradient-primary);
+  color: #fff;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 5px;
@@ -21,17 +21,17 @@
   border-radius: 5px;
   font-size: 0.9rem;
 }
-.update-ok { background-color: #d4edda; color: #155724; }
-.update-warn { background-color: #d1ecf1; color: #0c5460; }
-.update-err { background-color: #f8d7da; color: #721c24; }
+.update-ok { background-color: rgba(40,167,69,0.15); color: var(--color-success); }
+.update-warn { background-color: rgba(255,179,71,0.25); color: var(--color-warning); }
+.update-err { background-color: rgba(220,53,69,0.15); color: var(--color-danger); }
 
 .photo-wrapper { position: relative; display: inline-block; }
 .quick-photo-btn {
   position: absolute;
   bottom: 5px;
   right: 5px;
-  background: #ff7a00;
-  color: white;
+  background: var(--gradient-primary);
+  color: #fff;
   border: none;
   border-radius: 50%;
   width: 30px;
@@ -46,22 +46,15 @@
 .quick-photo-btn[disabled] { cursor: not-allowed; opacity: 0.6; }
 
 .cover-wrapper { margin-top: 1rem; width: 30%; }
-.cover-image { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; border: 1px solid #ddd; }
+.cover-image { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; border: 1px solid var(--color-border); }
 
 .user-stats { margin-top: 1rem; }
-.user-stats-row { display: flex; gap: 1rem; font-size: 0.9rem; color: #6c757d; }
+.user-stats-row { display: flex; gap: 1rem; font-size: 0.9rem; color: var(--color-text-muted); }
 
 /* Uploader de foto de perfil (similar a posts) */
 .profile-upload { margin-top: 1rem; display: flex; flex-direction: column; gap: 8px; }
-.profile-dropzone {
-  border: 2px dashed #ddd;
-  border-radius: 10px;
-  padding: 14px;
-  text-align: center;
-  color: #666;
-  background: #fafafa;
-}
-.profile-dropzone.dragover { border-color: #fb7202; background: #fff7f0; }
+.profile-dropzone { border: 2px dashed var(--color-border); border-radius: 10px; padding: 14px; text-align: center; color: var(--color-text-muted); background: var(--color-surface-alt); }
+.profile-dropzone.dragover { border-color: var(--color-primary-start); background: var(--color-accent-bg); }
 .profile-image-preview { position: relative; margin-top: 6px; }
 .profile-remove-image-btn {
   position: absolute;
