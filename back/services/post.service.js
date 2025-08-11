@@ -91,7 +91,7 @@ export const deletePost = async (params, body) => {
     // Solo el autor puede eliminar
     if (!deletedPost) {
       throw new Error("Post not found");
-    } else if (deletedPost.userId.toString() === body.userId.toString()) {
+  } else if (deletedPost.userId.toString() === body.userId.toString() || body.isAdmin) {
       await postModel.deleteOne({ _id: params.id });
       return deletedPost;
     } else {
@@ -111,7 +111,12 @@ export const likeAndUnlikePost = async (params, body) => {
     } else {
       await post.updateOne({ $pull: { likes: body.userId } });
     }
-    return post;
+    // Retornar post actualizado con datos del autor (incluyendo avatar)
+    const updated = await postModel
+      .findById(params.id)
+      .populate("userId", "username email profilePicture")
+      .populate("comments.userId", "username email profilePicture");
+    return updated;
   } catch (error) {
     throw error;
   }
@@ -120,7 +125,10 @@ export const likeAndUnlikePost = async (params, body) => {
 // Obtener un post por id
 export const getPost = async (params) => {
   try {
-    const post = await postModel.findById(params.id);
+    const post = await postModel
+      .findById(params.id)
+      .populate("userId", "username email profilePicture")
+      .populate("comments.userId", "username email profilePicture");
     return post;
   } catch (error) {
     throw error;
@@ -135,7 +143,7 @@ export const getTimelinePosts = async (body) => {
     // Populate para incluir username/email del autor
     const userPosts = await postModel
       .find({ userId: currentUser._id })
-      .populate("userId", "username email");
+      .populate("userId", "username email profilePicture");
     let timeLinePosts = [];
     if (
       Array.isArray(currentUser.following) &&
@@ -145,7 +153,7 @@ export const getTimelinePosts = async (body) => {
         currentUser.following.map((friendId) =>
           postModel
             .find({ userId: friendId })
-            .populate("userId", "username email")
+            .populate("userId", "username email profilePicture")
         )
       );
       timeLinePosts = friendsPosts.flat();

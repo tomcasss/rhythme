@@ -10,15 +10,17 @@
 
 .comment-input {
   flex: 1;
-  border: 1px solid #eee;
+  border: 1px solid var(--color-border-subtle);
   border-radius: 8px;
   padding: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .comment-submit-btn {
   border-radius: 8px;
   padding: 8px 12px;
-  background: linear-gradient(90deg, #fb7202, #e82c0b);
+  background: var(--gradient-primary);
   color: #fff;
   border: none;
   cursor: pointer;
@@ -26,7 +28,7 @@
 
 .comments-loading,
 .comments-empty {
-  color: #666;
+  color: var(--color-text-muted);
   padding: 0.5rem 0;
 }
 
@@ -46,11 +48,13 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid var(--color-border);
+  color: var(--color-text-faint);
 }
 
 .comment-content {
-  background: #fafafa;
-  border: 1px solid #eee;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 8px;
   padding: 8px 10px;
   flex: 1;
@@ -64,15 +68,15 @@
 
 .comment-author {
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-secondary);
 }
 
 .comment-time {
   font-size: 0.75rem;
-  color: #999;
+  color: var(--color-text-faint);
 }
 
 .comment-text {
   margin: 0;
-  color: #222;
+  color: var(--color-text);
 }

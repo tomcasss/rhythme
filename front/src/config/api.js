@@ -18,10 +18,18 @@ export const API_ENDPOINTS = {
   GET_USER: (id) => `${BASE_URL}/users/${id}`,
   UPDATE_USER: (id) => `${BASE_URL}/users/${id}`,
   DELETE_USER: (id) => `${BASE_URL}/users/${id}`,
+  UPDATE_PASSWORD: (id) => `${BASE_URL}/users/${id}/password`,
+  UPDATE_PRIVACY: (id) => `${BASE_URL}/users/${id}/privacy`,
+  DEACTIVATE_ACCOUNT: (id) => `${BASE_URL}/users/${id}/deactivate`,
+  REACTIVATE_ACCOUNT: (id) => `${BASE_URL}/users/${id}/reactivate`,
   FOLLOW_USER: (id) => `${BASE_URL}/users/follow/${id}`,
   UNFOLLOW_USER: (id) => `${BASE_URL}/users/unfollow/${id}`,
   SEARCH_USERS: (query) => `${BASE_URL}/users/search?q=${encodeURIComponent(query)}`,
   FRIEND_RECOMMENDATIONS: (userId, limit) => `${BASE_URL}/users/${userId}/recommendations/friends${limit ? `?limit=${limit}` : ''}`,
+  // Reports / moderation
+  REPORT_USER: (targetId) => `${BASE_URL}/users/${targetId}/report`,
+  LIST_REPORTS: (status, limit) => `${BASE_URL}/users/reports/all${status ? `?status=${status}` : ''}${limit ? `${status ? '&' : '?'}limit=${limit}` : ''}`,
+  REVIEW_REPORT: (reportId) => `${BASE_URL}/users/reports/${reportId}/review`,
   
   // Post endpoints
   GET_POSTS: `${BASE_URL}/posts`,
@@ -33,6 +41,7 @@ export const API_ENDPOINTS = {
   GET_TIMELINE_POSTS: (userId) => `${BASE_URL}/posts/get-timeline-posts/${userId}`,
   GET_USER_POSTS: (userId) => `${BASE_URL}/posts/get-user-posts/${userId}`,
   GET_RECOMMENDED_POSTS: (userId, limit) => `${BASE_URL}/posts/recommended/${userId}${limit ? `?limit=${limit}` : ''}`,
+  SEARCH_POSTS: (query) => `${BASE_URL}/posts/search?q=${encodeURIComponent(query)}`,
   
   // Comment endpoints
   COMMENT_POST: (id) => `${BASE_URL}/posts/comment-post/${id}`,

@@ -1,8 +1,8 @@
 .banner-musico {
   width: 100%;
   height: 100px;
-  background: linear-gradient(to right, #141414c7, #3a3a3ad2);
-  position: absolute;
+  background: linear-gradient(to right, var(--color-app-bg-alt), rgba(0,0,0,0.55));
+  position: sticky;
   padding-bottom: 20px; /* Mantener solo padding inferior */
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
@@ -47,7 +47,7 @@ body, html, #root {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  border: 4px solid #fff;
+  border: 4px solid var(--color-surface);
   object-fit: cover;
 }
 
@@ -76,13 +76,13 @@ body, html, #root {
 }
 
 .btn-red {
-  background-color: #ff7a00;
-  color: white;
+  background: var(--gradient-primary);
+  color: #fff;
 }
 
 .btn-mensaje {
   background: none;
-  color: #ff7a00;
+  color: var(--color-primary-start);
   font-weight: bold;
 }
 
@@ -110,9 +110,8 @@ body, html, #root {
   display: flex;
   gap: 25px;
 }
-
 .tarjeta {
-  background-color: white;
+  background-color: var(--color-surface);
   padding: 10px;
   border-radius: 10px;
   text-align: center;
@@ -121,7 +120,7 @@ body, html, #root {
 
 .tarjeta h4 {
   margin-bottom: 8px;
-  color: #ff7a00;
+  color: var(--color-primary-start);
 }
 
 .tarjeta img {
@@ -136,7 +135,7 @@ body, html, #root {
   flex: 1;
   height: 30px;
   margin: 0 20px;
-  background-color: #ffa94d;
+  background-color: var(--color-accent-bg-faint);
   border-radius: 15px;
 }
 
@@ -147,8 +146,8 @@ body, html, #root {
   font-size: 18px;
 }
 
-.tarjeta-btn {
-  background-color: white;
+  .tarjeta-btn {
+  background-color: var(--color-surface);
   border: none;
   cursor: pointer;
   padding: 10px;
@@ -163,14 +162,14 @@ body, html, #root {
 }
 
 .tarjeta-btn.active {
-  background-color: #ff7a00;
-  color: white;
+  background: var(--gradient-primary);
+  color: #fff;
   transform: scale(1.05);
-  box-shadow: 1px 1px 10px rgba(255, 122, 0, 0.3);
+  box-shadow: 1px 1px 10px rgba(0,0,0,0.25);
 }
 
 .tarjeta-btn.active h4 {
-  color: white;
+  color: #fff;
 }
 
 /* Estilos específicos para el perfil */

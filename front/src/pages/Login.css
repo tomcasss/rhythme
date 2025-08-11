@@ -1,16 +1,15 @@
 .login-container {
   background:
-    radial-gradient(ellipse at top, #ff8113, transparent),
-    radial-gradient(ellipse at bottom, #fd4410, transparent);
-
+    radial-gradient(ellipse at top, var(--color-primary-start), transparent),
+    radial-gradient(ellipse at bottom, var(--color-primary-end), transparent);
   width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  background-color: #1a1a1a;
+  background-color: var(--color-app-bg-alt);
   font-family: 'Segoe UI', sans-serif;
-  color: white;
+  color: var(--color-text);
   overflow: hidden;
 }
 
@@ -29,7 +28,7 @@
 
 .main-sub {
   font-size: 1.2rem;
-  opacity: 0.9;
+  color: var(--color-text-secondary);
 }
 .right-section {
   flex: 1;
@@ -39,14 +38,15 @@
 }
 
 .login-card {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--color-surface-alt);
   backdrop-filter: blur(10px);
   padding: 2rem 3rem;
   border-radius: 16px;
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-elevation);
   max-width: 400px;
   width: 100%;
   text-align: center;
+  border: 1px solid var(--color-border-subtle);
 }
 
 .login-card h2 {
@@ -61,24 +61,22 @@ form {
 input {
   padding: 0.8rem;
   margin-bottom: 1rem;
-  border: none;
+  border: 1px solid var(--color-border-subtle);
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.15);
-  color: white;
+  background-color: var(--color-surface-soft);
+  color: var(--color-text);
   font-size: 1rem;
 }
 
-input::placeholder {
-  color: #ffffff;
-}
+input::placeholder { color: var(--color-text-faint); }
 
 button {
   padding: 0.8rem;
   font-size: 1rem;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(90deg, #fb7202, #e82c0b);
-  color: white;
+  background: var(--gradient-primary);
+  color: #fff;
   cursor: pointer;
   transition: 0.3s;
 }
@@ -87,19 +85,8 @@ button:hover {
   opacity: 0.5;
 }
 
-.registro {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-
-.registro a {
-  color: #552600;
-  text-decoration: solid;
-}
-
-.registro a:hover{
-  color: #ffc99e;
-}
+.registro a { color: var(--color-primary-start); text-decoration: solid; }
+.registro a:hover { color: var(--color-primary-end); }
 
 .logo {
   position: absolute;

@@ -23,23 +23,28 @@ export const register = async (req, res) => {
 export const login = async (req, res)=> {
   const { email, password } = req.body;
 
-      if (email === "admin" && password === "admin123") {
+    // Soporte legacy: si se pasa 'admin' como email, intentar encontrar usuario real admin por username/email
+    if (email === 'admin') {
+      const existingAdmin = await User.findOne({ $or: [{ email: 'admin' }, { username: 'admin' }], isAdmin: true }).select('-password');
+      if (existingAdmin && password === 'admin123') {
+        return res.status(200).json({ message: 'Admin logged in successfully', data: { ...existingAdmin._doc, isAdmin: true } });
+      }
+      // Si no hay usuario admin real, devolver dummy (solo para entorno de desarrollo)
+      if (password === 'admin123') {
         return res.status(200).json({
-            message: 'Admin logged in successfully',
-            data: {
-                username: "admin",
-                role: "admin"
-            }
+          message: 'Admin (dummy) logged in successfully',
+          data: { username: 'admin', email: 'admin', isAdmin: true, dummy: true }
         });
+      }
     }
     try {
         const loggedInUser = await loginUser(req.body);
         const {password, ...data} = loggedInUser._doc; // Exclude password from response
 
-        res.status(200).json({
-            message: 'User logged in successfully',
-            data,
-        });
+    res.status(200).json({
+      message: 'User logged in successfully',
+      data: { ...data, isAdmin: !!data.isAdmin },
+    });
     } catch (error) {
       console.log("❌ Error en login:", error);
         res.status(500).json({

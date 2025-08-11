@@ -1,5 +1,6 @@
 // src/components/Edit/EditProfile.jsx
 import React, { useState } from 'react';
+import ImageModal from '../common/ImageModal.jsx';
 import perfil from '../../assets/perfil.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera, faUsers, faMusic, faImage, faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -18,7 +19,8 @@ export default function EditProfile({ user, onUpdateUser }) {
   const [localImagePreview, setLocalImagePreview] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [uploadError, setUploadError] = useState("");
-  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false); // modal para actualizar foto
+  const [viewImageSrc, setViewImageSrc] = useState(""); // modal de visualización full
 
   if (!user) {
     return (
@@ -167,6 +169,9 @@ export default function EditProfile({ user, onUpdateUser }) {
             src={user.profilePicture || perfil}
             alt="Foto de perfil"
             className="foto-perfil"
+            onClick={() => user.profilePicture && setViewImageSrc(user.profilePicture)}
+            style={{ cursor: user.profilePicture ? 'pointer' : 'default' }}
+            title={user.profilePicture ? 'Ver imagen' : undefined}
           />
           <button
             onClick={handleQuickPhotoUpdate}
@@ -199,6 +204,9 @@ export default function EditProfile({ user, onUpdateUser }) {
             src={user.coverPicture} 
             alt="Portada" 
             className="cover-image"
+            onClick={() => setViewImageSrc(user.coverPicture)}
+            style={{ cursor: 'pointer' }}
+            title="Ver portada"
           />
         </div>
       )}
@@ -257,6 +265,9 @@ export default function EditProfile({ user, onUpdateUser }) {
           </div>
         </div>
       )}
+    {viewImageSrc && (
+      <ImageModal src={viewImageSrc} alt="Imagen" onClose={() => setViewImageSrc("")} />
+    )}
     </div>
   );
 }

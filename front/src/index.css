@@ -1,16 +1,140 @@
-/* index.css limpio */
+/* Global base & theme tokens */
 :root {
   font-family: 'Segoe UI', sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  /* Light theme (default) */
+  --color-app-bg: #eaaf77;
+  --color-app-bg-alt: #df8939;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fafafa;
+  --color-surface-soft: #f8f9fa;
+  --color-border: #ddd;
+  --color-border-subtle: #eee;
+  --color-border-strong: #c5c5c5;
+  --color-text: #222;
+  --color-text-secondary: #333;
+  --color-text-muted: #666;
+  --color-text-faint: #999;
+  --color-primary-start: #fb7202;
+  --color-primary-end: #e82c0b;
+  --gradient-primary: linear-gradient(90deg, var(--color-primary-start), var(--color-primary-end));
+  --color-danger: #dc3545;
+  --color-danger-alt: #e74c3c;
+  --color-success: #28a745;
+  --color-warning: #ffb347;
+  --color-spotify: #1DB954;
+  --color-accent-bg: #fff7f0;
+  --color-accent-bg-faint: #ff7b0053;
+  --shadow-elevation: 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-soft: 0 2px 4px rgba(0,0,0,0.15);
+  --transition-theme: background-color .35s ease, color .35s ease, border-color .35s ease, box-shadow .35s ease, outline-color .35s ease;
+  /* Link colors (inherit brand gradient endpoints) */
+  --color-link: var(--color-primary-start);
+  --color-link-hover: var(--color-primary-end);
+}
+
+[data-theme='dark'] {
+  --color-app-bg: #121212;
+  --color-app-bg-alt: #181818;
+  --color-surface: #1e1e1e;
+  --color-surface-alt: #242424;
+  --color-surface-soft: #2a2a2a;
+  --color-border: #333;
+  --color-border-subtle: #2a2a2a;
+  --color-border-strong: #444;
+  --color-text: #f5f5f5;
+  --color-text-secondary: #e0e0e0;
+  --color-text-muted: #b0b0b0;
+  --color-text-faint: #888;
+  --color-primary-start: #ff8a3c;
+  --color-primary-end: #ff5126;
+  --gradient-primary: linear-gradient(90deg, var(--color-primary-start), var(--color-primary-end));
+  --color-danger: #ff5656;
+  --color-danger-alt: #ff6b6b;
+  --color-success: #2ecc71;
+  --color-warning: #ffcc66;
+  --color-spotify: #1DB954;
+  --color-accent-bg: rgba(255,255,255,0.06);
+  --color-accent-bg-faint: rgba(255,255,255,0.12);
+  --shadow-elevation: 0 2px 8px rgba(0,0,0,0.6);
+  --shadow-soft: 0 2px 4px rgba(0,0,0,0.45);
+  --color-link: var(--color-primary-start);
+  --color-link-hover: var(--color-primary-end);
 }
 
 body {
   margin: 0;
-  background-color: #eaaf77;
+  background-color: var(--color-app-bg);
   min-height: 100vh;
+  color: var(--color-text);
 }
 
-* {
-  box-sizing: border-box;
+* { 
+  box-sizing: border-box; 
+  transition: var(--transition-theme); 
+}
+
+/* Utility text colors */
+.text-danger { 
+  color: var(--color-danger-alt); 
+}
+.text-muted { 
+  color: var(--color-text-muted); 
+}
+.text-faint { 
+  color: var(--color-text-faint); 
+}
+.text-success { 
+  color: var(--color-success); 
+}
+
+/* Generic surface helpers */
+.surface { 
+  background: var(--color-surface); 
+  color: var(--color-text); 
+}
+.surface-alt { 
+  background: var(--color-surface-alt); 
+}
+
+/* Button utilities */
+.btn-primary { 
+  background: var(--gradient-primary); 
+  color: #fff; 
+  border: none; 
+  cursor: pointer; 
+}
+.btn-danger { 
+  background: var(--color-danger); 
+  color: #fff; 
+  border: none; 
+  cursor: pointer; 
+}
+.btn-spotify { 
+  background: var(--color-spotify); 
+  color: #fff; 
+  border: none; 
+  cursor: pointer; 
+}
+.btn-outline { 
+  background: transparent; 
+  border: 1px solid var(--color-border); 
+  color: var(--color-text-secondary); 
+  cursor: pointer; 
+}
+
+/* Scrollbar theming (webkit) */
+::-webkit-scrollbar { 
+  width: 10px; 
+}
+::-webkit-scrollbar-track { 
+  background: var(--color-surface-alt); 
+}
+::-webkit-scrollbar-thumb { 
+  background: var(--color-primary-start); 
+  border-radius: 6px; 
+}
+::-webkit-scrollbar-thumb:hover { 
+  background: var(--color-primary-end); 
 }

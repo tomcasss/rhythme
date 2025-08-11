@@ -12,6 +12,7 @@ import {
 } from "../services/post.service.js";
 import { createNotification } from "../services/notification.service.js";
 import User from "../models/user.model.js";
+import { isVisibilityAllowed, getUser } from "../services/user.service.js";
 
 export const createPostController = async (req, res) => {
   try {
@@ -51,6 +52,7 @@ export const deletePostController = async (req, res) => {
   try {
     const deletedPost = await deletePost(req.params, {
       userId: req.params.userId,
+      isAdmin: req.body?.isAdmin || req.query?.isAdmin || req.headers['x-admin'] === 'true'
     });
     res.status(200).json({
       deletedPost,
@@ -60,7 +62,7 @@ export const deletePostController = async (req, res) => {
     console.log(error);
     res.status(500).json({
       message: "Post deletion failed",
-      error,
+      error: error.message || error,
     });
   }
 };
@@ -68,6 +70,12 @@ export const deletePostController = async (req, res) => {
 export const likeAndUnlikePostController = async (req, res) => {
   try {
     const postBefore = await getPost(req.params);
+    if (!postBefore) return res.status(404).json({ message: 'Post not found' });
+    const owner = await User.findById(postBefore.userId);
+    const viewer = req.body.userId ? await User.findById(req.body.userId) : null;
+    if (!isVisibilityAllowed(viewer, owner, 'posts')) {
+      return res.status(403).json({ message: 'Not allowed to interact with this post' });
+    }
     const wasAlreadyLiked = postBefore.likes.includes(req.body.userId);
     const post = await likeAndUnlikePost(req.params, req.body);
     //notifica like
@@ -99,10 +107,14 @@ export const likeAndUnlikePostController = async (req, res) => {
 export const getPostController = async (req, res) => {
   try {
     const post = await getPost(req.params);
-    res.status(200).json({
-      post,
-      message: "Post fetched successfully",
-    });
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+    const owner = await User.findById(post.userId);
+    const viewerId = req.query.viewerId || req.body.userId;
+    const viewer = viewerId ? await User.findById(viewerId) : null;
+    if (!isVisibilityAllowed(viewer, owner, 'posts')) {
+      return res.status(403).json({ message: 'Post not visible' });
+    }
+    res.status(200).json({ post, message: 'Post fetched successfully' });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -114,7 +126,18 @@ export const getPostController = async (req, res) => {
 
 export const getTimelinePostsController = async (req, res) => {
   try {
-    const timeLinePosts = await getTimelinePosts({ userId: req.params.userId });
+    const viewer = await User.findById(req.params.userId);
+    const allPosts = await getTimelinePosts({ userId: req.params.userId });
+    // Filtrar por visibilidad y bloqueo
+    const filtered = [];
+    for (const p of allPosts) {
+      const owner = p.userId?._id ? p.userId : await User.findById(p.userId);
+      if (!owner) continue;
+      if (!isVisibilityAllowed(viewer, owner, 'posts')) continue;
+      if (owner.accountStatus && owner.accountStatus !== 'active' && String(owner._id) !== String(viewer?._id)) continue;
+      filtered.push(p);
+    }
+    const timeLinePosts = filtered;
     res.status(200).json({
       timeLinePosts,
       message: "Timeline posts fetch Succesfully",
@@ -130,6 +153,13 @@ export const getTimelinePostsController = async (req, res) => {
 
 export const commentPostController = async (req, res) => {
   try {
+    const pre = await getPost(req.params);
+    if (!pre) return res.status(404).json({ message: 'Post not found' });
+    const owner = await User.findById(pre.userId);
+    const viewer = req.body.userId ? await User.findById(req.body.userId) : null;
+    if (!isVisibilityAllowed(viewer, owner, 'posts')) {
+      return res.status(403).json({ message: 'Not allowed to comment this post' });
+    }
     const post = await commentPost(req.params, req.body);
     if (
       post &&
@@ -228,10 +258,13 @@ export const getPostCommentsController = async (req, res) => {
 export const getUserPostsController = async (req, res) => {
   try {
     const posts = await getUserPosts(req.params);
-    res.status(200).json({
-      posts,
-      message: "User posts fetched successfully",
-    });
+    const owner = posts?.[0]?.userId ? (posts[0].userId._id ? posts[0].userId : await User.findById(req.params.userId)) : await User.findById(req.params.userId);
+    const viewerId = req.query.viewerId || req.body.userId;
+    const viewer = viewerId ? await User.findById(viewerId) : null;
+    if (owner && !isVisibilityAllowed(viewer, owner, 'posts') && String(owner._id) !== String(viewer?._id)) {
+      return res.status(403).json({ message: 'User posts not visible' });
+    }
+    res.status(200).json({ posts, message: 'User posts fetched successfully' });
   } catch (error) {
     console.log(error);
 
@@ -253,8 +286,17 @@ export const getRecommendedPostsController = async (req, res) => {
   try {
     const { userId } = req.params;
     const { limit } = req.query;
-    const posts = await getRecommendedPosts(userId, { limit: limit ? Number(limit) : 20 });
-    res.status(200).json({ posts, message: 'Recommended posts fetched successfully' });
+    const postsRaw = await getRecommendedPosts(userId, { limit: limit ? Number(limit) : 20 });
+    const viewer = await User.findById(userId);
+    const filtered = [];
+    for (const p of postsRaw) {
+      const owner = p.userId?._id ? p.userId : await User.findById(p.userId);
+      if (!owner) continue;
+      if (!isVisibilityAllowed(viewer, owner, 'posts')) continue;
+      if (owner.accountStatus && owner.accountStatus !== 'active' && String(owner._id) !== String(viewer?._id)) continue;
+      filtered.push(p);
+    }
+    res.status(200).json({ posts: filtered, message: 'Recommended posts fetched successfully' });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Failed to fetch recommended posts', error: error.message || error });

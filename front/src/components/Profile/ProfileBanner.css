@@ -2,14 +2,13 @@
   position: sticky;
   top: 70px; /* keep below sticky navbar (70px) */
   z-index: 900; /* below navbar (1000), above content */
-  margin-top: 219px;
   margin-bottom: 2rem;
 }
 
 .cover-banner {
   width: 100%;
-  height: 300px;
-  background: linear-gradient(135deg, #ff7a00 0%, #ff9500 100%);
+  height: 250px;
+  background: var(--gradient-primary);
   border-radius: 10px;
   position: relative;
 }
@@ -42,12 +41,12 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  border: 4px solid white;
+  border: 4px solid var(--color-surface);
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .info-banner {
-  color: white;
+  color: #fff;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
   flex: 1;
 }
@@ -97,7 +96,7 @@
 .stat-number {
   font-size: 1.5rem;
   font-weight: bold;
-  color: white;
+  color: #fff;
 }
 
 .stat-label {
@@ -113,7 +112,7 @@
 .btn-mensaje {
   background: rgba(255,255,255,0.2);
   border: 2px solid rgba(255,255,255,0.5);
-  color: white;
+  color: #fff;
   padding: 0.5rem 1rem;
   border-radius: 5px;
   cursor: pointer;
@@ -121,20 +120,15 @@
   backdrop-filter: blur(10px);
 }
 
-.btn-follow {
-  background: #ff7a00;
-}
-
-.btn-unfollow {
-  background: #dc3545;
-}
+.btn-follow { background: var(--gradient-primary); }
+.btn-unfollow { background: var(--color-danger); }
 
 .btn-follow,
 .btn-unfollow {
   padding: 0.5rem 1rem;
   border-radius: 5px;
   border: none;
-  color: white;
+  color: #fff;
   cursor: pointer;
   font-size: 0.9rem;
 }

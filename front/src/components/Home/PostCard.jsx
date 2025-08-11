@@ -1,9 +1,12 @@
 // src/components/Home/PostCard.jsx
 import { useState, useRef, useEffect } from "react";
+import ImageModal from "../common/ImageModal.jsx";
 import { useNavigate } from "react-router-dom";
-import userImg from '../../assets/user.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPencil } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPencil , faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../../config/api.js';
 import CommentsSection from './CommentsSection';
 import SpotifyContent from './SpotifyContent';
 import "./PostCard.css";
@@ -22,19 +25,20 @@ import "./PostCard.css";
  * @param {Function} props.onUnfollow - Función para dejar de seguir usuario
  * @param {Function} props.isFollowing - Función para verificar si sigue a un usuario
  */
-export default function PostCard({ 
-  post, 
-  user, 
-  followLoading, 
-  onLike, 
-  onDelete, 
-  onEdit, 
-  onFollow, 
+export default function PostCard({
+  post,
+  user,
+  followLoading,
+  onLike,
+  onDelete,
+  onEdit,
+  onFollow,
   onUnfollow,
-  isFollowing 
+  isFollowing,
+  full = false // modo de detalle para mostrar contenido completo
 }) {
   const navigate = useNavigate();
-  
+
   // Estados para menú de opciones
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef();
@@ -48,6 +52,7 @@ export default function PostCard({
 
   // Estados para comentarios
   const [showComments, setShowComments] = useState(false);
+  const [showImgModal, setShowImgModal] = useState(false);
 
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
@@ -150,19 +155,37 @@ export default function PostCard({
       navigate(`/profile/${postUserId}`);
     }
   };
+  // Autor del post (cuando viene populado será un objeto en post.userId, si no intentar fallback a post.user)
+  const author = typeof post.userId === 'object' ? post.userId : (post.user || null);
+  // Resolver avatar: puede venir en author.profilePicture, o si no está poblado intentar coincidir con usuario actual
+  let authorAvatar = author?.profilePicture || author?.profileImg || null;
+  if (!authorAvatar) {
+    // Si el post solo trae un id y corresponde al usuario actual, usar su avatar
+    const postUserId = getPostUserId();
+    if (!author && user?._id && postUserId === user._id) {
+      authorAvatar = user.profilePicture || null;
+    }
+  }
+  const authorName = author?.username || author?.email || 'usuario';
 
   return (
     <div className="post-card">
       {/* Header del post */}
       <div className="post-header">
-  <img 
-          src={userImg} 
-          alt="user" 
-      className="avatar avatar-clickable" 
-          onClick={goToProfile}
-        />
+        {authorAvatar ? (
+          <img
+            src={authorAvatar}
+            alt={authorName}
+            className="avatar avatar-clickable"
+            onClick={goToProfile}
+          />
+        ) : (
+          <FontAwesomeIcon icon={faCircleUser} className="avatar avatar-clickable" onClick={goToProfile} />
+        )}
+ 
+
         <div className="post-user">
-      <strong onClick={goToProfile} className="post-user-name">
+          <strong onClick={goToProfile} className="post-user-name">
             {post.userId && typeof post.userId === 'object'
               ? (post.userId.username || post.userId.email || `ID: ${post.userId._id?.slice(0, 6)}...`)
               : (post.username || (post.userId ? `ID: ${post.userId.slice(0, 6)}...` : "Usuario"))
@@ -172,29 +195,29 @@ export default function PostCard({
             <span className="time">
               {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
             </span>
-            
+
             {/* Indicador de tipo de post */}
             {isOwnPost() ? (
-        <span className="post-user-status own">
+              <span className="post-user-status own">
                 Tu post
               </span>
             ) : isFollowingUser() ? (
-        <span className="post-user-status following">
+              <span className="post-user-status following">
                 Siguiendo
               </span>
             ) : (
-        <span className="post-user-status">
+              <span className="post-user-status">
                 No sigues
               </span>
             )}
           </div>
         </div>
-        
+
         {/* Botón de seguir/dejar de seguir */}
         {!isOwnPost() && (
-      <div className="post-follow-wrapper">
+          <div className="post-follow-wrapper">
             {isFollowingUser() ? (
-              <button 
+              <button
                 className="following-btn"
                 onClick={() => onUnfollow(getPostUserId())}
                 disabled={followLoading[getPostUserId()]}
@@ -203,7 +226,7 @@ export default function PostCard({
                 {followLoading[getPostUserId()] ? '...' : 'Siguiendo'}
               </button>
             ) : (
-              <button 
+              <button
                 className="follow-btn"
                 onClick={() => onFollow(getPostUserId())}
                 disabled={followLoading[getPostUserId()]}
@@ -215,38 +238,71 @@ export default function PostCard({
           </div>
         )}
 
-        {/* Menú de opciones para posts propios */}
-        {isOwnPost() && (
-      <div className="post-options-wrapper">
-            <button 
-              className="action-btn" 
-              onClick={() => setOpenMenu(!openMenu)} 
-              title="Opciones"
-            >
-              ⋮
-            </button>
-            {openMenu && (
-        <div ref={menuRef} className="post-options-panel">
-                <button 
-          className="action-btn post-options-item" 
-                  onClick={handleDelete}
-                >
-                  <FontAwesomeIcon icon={faTrash} /> Eliminar
-                </button>
-                <button 
-          className="action-btn post-options-item" 
-                  onClick={startEdit}
-                >
-                  <FontAwesomeIcon icon={faPencil} /> Editar
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Menú de opciones (propios: editar/eliminar, ajenos: reportar) */}
+        <div className="post-options-wrapper">
+          <button
+            className="action-btn-options"
+            onClick={() => setOpenMenu(!openMenu)}
+            title="Opciones"
+          >
+            ⋮
+          </button>
+          {openMenu && (
+            <div ref={menuRef} className="post-options-panel">
+              {isOwnPost() ? (
+                <>
+                  <button
+                    className="action-btn-options post-options-item"
+                    onClick={handleDelete}
+                  >
+                    <FontAwesomeIcon icon={faTrash} /> Eliminar
+                  </button>
+                  <button
+                    className="action-btn-options post-options-item"
+                    onClick={startEdit}
+                  >
+                    <FontAwesomeIcon icon={faPencil} /> Editar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="action-btn-options post-options-item"
+                    onClick={async () => {
+                      setOpenMenu(false);
+                      const { value: reason } = await Swal.fire({
+                        title: 'Reportar post',
+                        input: 'text',
+                        inputLabel: 'Motivo breve',
+                        inputPlaceholder: 'Spam, abuso, etc.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Enviar',
+                        cancelButtonText: 'Cancelar'
+                      });
+                      if (!reason) return;
+                      try {
+                        await axios.post(API_ENDPOINTS.REPORT_USER(getPostUserId()), { userId: user?._id, reason, postId: post._id });
+                        Swal.fire('Enviado', 'Reporte registrado', 'success');
+                      } catch (e) {
+                        if (e?.response?.status === 429) {
+                          Swal.fire('Ya enviado', 'Ya reportaste este usuario en las últimas 24h', 'info');
+                        } else {
+                          Swal.fire('Error', 'No se pudo enviar el reporte', 'error');
+                        }
+                      }
+                    }}
+                  >
+                    🚩 Reportar
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Contenido del post */}
-      <div className="post-content">
+  <div className={`post-content ${full ? 'post-content-full' : ''}`}>
         {isEditing ? (
           <form onSubmit={handleEditSubmit} className="post-edit-form">
             <textarea
@@ -266,16 +322,16 @@ export default function PostCard({
               className="post-edit-input"
             />
             <div className="post-edit-actions">
-              <button 
-                type="submit" 
-                disabled={editLoading || !editDesc} 
+              <button
+                type="submit"
+                disabled={editLoading || !editDesc}
                 className="btn-save"
               >
                 {editLoading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button 
-                type="button" 
-                onClick={cancelEdit} 
+              <button
+                type="button"
+                onClick={cancelEdit}
                 className="btn-cancel"
               >
                 Cancelar
@@ -285,8 +341,17 @@ export default function PostCard({
           </form>
         ) : (
           <>
-            <p className="post-text">{post.desc}</p>
-            {post.img && <img src={post.img} alt="post content" className="post-image" />}
+            <p className={`post-text ${full ? 'post-text-full' : ''}`}>{post.desc}</p>
+            {post.img && (
+              <img
+                src={post.img}
+                alt="post content"
+                className={`post-image ${full ? 'post-image-full' : ''}`}
+                onClick={() => setShowImgModal(true)}
+                style={{ cursor: 'pointer' }}
+                title="Ver imagen"
+              />
+            )}
             {post.spotifyContent && <SpotifyContent spotifyContent={post.spotifyContent} />}
           </>
         )}
@@ -295,10 +360,10 @@ export default function PostCard({
       {/* Acciones del post */}
       {!isEditing && (
         <div className="post-actions">
-          <button className="action-btn" onClick={() => onLike(post._id)}>
+          <button className="action-btn-inter" onClick={() => onLike(post._id)}>
             {post.likes && post.likes.includes(user?._id) ? "🎶" : "🎵"} {post.likes?.length || 0}
           </button>
-          <button className="action-btn" onClick={toggleComments}>
+          <button className="action-btn-inter" onClick={toggleComments}>
             💬 {post.comments?.length || 0}
           </button>
         </div>
@@ -307,6 +372,9 @@ export default function PostCard({
       {/* Sección de comentarios */}
       {showComments && !isEditing && (
         <CommentsSection postId={post._id} user={user} />
+      )}
+      {showImgModal && (
+        <ImageModal src={post.img} alt="Imagen del post" onClose={() => setShowImgModal(false)} />
       )}
     </div>
   );

@@ -1,20 +1,28 @@
 
 // src/components/Profile/ProfileContent.jsx
 import { useState } from 'react';
+import ImageModal from '../common/ImageModal.jsx';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
 import './ProfileContent.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClipboard, faImage } from '@fortawesome/free-solid-svg-icons';
+import PostCard from '../Home/PostCard';
 
 /**
  * Componente ProfileContent - Contenido principal del perfil
  * @param {Object} props - Propiedades del componente
  * @param {string} props.userId - ID del usuario del perfil
+ * @param {Object} props.viewerUser - Usuario que está viendo el perfil (para permisos y acciones)
+ * @param {Object} props.followLoading - Estado de carga de follow
+ * @param {Function} props.isFollowing - Función para saber si el viewer sigue a otro usuario
+ * @param {Function} props.onFollow - Seguir usuario
+ * @param {Function} props.onUnfollow - Dejar de seguir usuario
  */
-export default function ProfileContent({ userId }) {
+export default function ProfileContent({ userId, viewerUser, followLoading = {}, isFollowing = () => false, onFollow = () => {}, onUnfollow = () => {} }) {
     const [selectedSection, setSelectedSection] = useState(null);
     const [userPosts, setUserPosts] = useState([]);
+    const [viewImageSrc, setViewImageSrc] = useState("");
     const [postsLoading, setPostsLoading] = useState(false);
     const [postsError, setPostsError] = useState("");
 
@@ -28,7 +36,8 @@ export default function ProfileContent({ userId }) {
         setPostsError("");
 
         try {
-            const response = await axios.get(API_ENDPOINTS.GET_USER_POSTS(userId));
+            // Pasamos viewerId para que el backend pueda aplicar reglas de visibilidad correctamente
+            const response = await axios.get(`${API_ENDPOINTS.GET_USER_POSTS(userId)}?viewerId=${viewerUser?._id || ''}`);
             setUserPosts(response.data.posts || []);
         } catch (error) {
             console.error("Error al obtener posts del usuario:", error);
@@ -44,11 +53,48 @@ export default function ProfileContent({ userId }) {
         console.log(`Clicked on ${type}`);
 
         // Si se hace clic en posts, obtener los posts del usuario
-        if (type === 'posts') {
+        if (type === 'posts' || type === 'photos') {
             fetchUserPosts();
         }
-        if (type === 'photos') {
-            fetchUserPosts();
+    };
+
+    // Acciones mínimas para PostCard
+    const handleLike = async (postId) => {
+        try {
+            await axios.put(API_ENDPOINTS.LIKE_POST(postId), { userId: viewerUser?._id });
+            setUserPosts(prev => prev.map(p => {
+                if (p._id !== postId) return p;
+                const hasLiked = p.likes?.includes(viewerUser?._id);
+                return {
+                    ...p,
+                    likes: hasLiked ? p.likes.filter(id => id !== viewerUser._id) : [...(p.likes || []), viewerUser._id]
+                };
+            }));
+        } catch (e) {
+            console.error('Error al dar like:', e);
+        }
+    };
+
+    const handleDelete = async (postId) => {
+        const target = userPosts.find(p => p._id === postId);
+        if (!target) return;
+        const isOwner = (viewerUser && (target.userId?._id === viewerUser._id || target.userId === viewerUser._id));
+        if (!isOwner) return;
+        if (!window.confirm('¿Eliminar este post?')) return;
+        try {
+            await axios.delete(API_ENDPOINTS.DELETE_POST(postId, viewerUser._id));
+            setUserPosts(prev => prev.filter(p => p._id !== postId));
+        } catch (e) {
+            console.error('Error al eliminar post:', e);
+        }
+    };
+
+    const handleEdit = async (postId, data) => {
+        try {
+            await axios.put(API_ENDPOINTS.UPDATE_POST(postId), { ...data, userId: viewerUser?._id });
+            setUserPosts(prev => prev.map(p => p._id === postId ? { ...p, ...data } : p));
+        } catch (e) {
+            console.error('Error al editar post:', e);
         }
     };
 
@@ -61,8 +107,8 @@ export default function ProfileContent({ userId }) {
                     onClick={() => handleCardClick('photos')}
                 >
                     <div className="tarjeta-btn-content">
-                        <h4 style={{ margin: '0 0 0.5rem 0' }}>Fotos</h4>
-                        <FontAwesomeIcon icon={faImage} style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
+                        <h4 className="profile-card-title">Fotos</h4>
+                        <FontAwesomeIcon icon={faImage} className="profile-card-icon" />
                     </div>
                 </button>
 
@@ -71,8 +117,8 @@ export default function ProfileContent({ userId }) {
                     onClick={() => handleCardClick('posts')}
                 >
                     <div className="tarjeta-btn-content">
-                        <h4 style={{ margin: '0 0 0.5rem 0' }}>Posts</h4>
-                        <FontAwesomeIcon icon={faClipboard} style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
+                        <h4 className="profile-card-title">Posts</h4>
+                        <FontAwesomeIcon icon={faClipboard} className="profile-card-icon" />
                     </div>
                 </button>
             </div>
@@ -102,41 +148,20 @@ export default function ProfileContent({ userId }) {
                         )}
 
                         {!postsLoading && !postsError && userPosts.length > 0 && (
-                            <div className="posts-grid">
+                            <div className="posts-grid posts-grid-wrapper">
                                 {userPosts.map(post => (
-                                    <div key={post._id} className="post-card post-card-item">
-                                        <div className="post-header post-header-row">
-                                            <strong style={{ color: '#fb7202' }}>
-                                                {post.userId?.username || post.userId?.email || 'Usuario'}
-                                            </strong>
-                                            <span className="post-header-date">
-                                                {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}
-                                            </span>
-                                        </div>
-
-                                        {post.desc && (
-                                            <p style={{ margin: '0.5rem 0' }}>{post.desc}</p>
-                                        )}
-
-                                        {post.img && (
-                                            <img
-                                                src={post.img}
-                                                alt="Post content"
-                                                className="post-image"
-                                            />
-                                        )}
-
-                                        <div className="post-stats post-stats-row">
-                                            {post.likes?.length > 0 && (
-                                                <span>❤️ {post.likes.length} likes</span>
-                                            )}
-                                            {post.comments?.length > 0 && (
-                                                <span style={{ marginLeft: '1rem' }}>
-                                                    💬 {post.comments.length} comentarios
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
+                                    <PostCard
+                                        key={post._id}
+                                        post={post}
+                                        user={viewerUser}
+                                        followLoading={followLoading}
+                                        onLike={handleLike}
+                                        onDelete={handleDelete}
+                                        onEdit={handleEdit}
+                                        onFollow={onFollow}
+                                        onUnfollow={onUnfollow}
+                                        isFollowing={isFollowing}
+                                    />
                                 ))}
                             </div>
                         )}
@@ -166,30 +191,22 @@ export default function ProfileContent({ userId }) {
                     <div className="photos-section">
                         <h3>Fotos del usuario</h3>
                         {!postsLoading && !postsError && (
-                            <div className="photos-grid" style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                gap: '10px'
-                            }}>
+                            <div className="photos-grid">
                                 {userPosts.filter(p => !!p.img).length === 0 && (
                                     <div className="posts-section-empty">
                                         <p>Este usuario no ha subido fotos aún.</p>
                                     </div>
                                 )}
                                 {userPosts.filter(p => !!p.img).map(p => (
-                                    <div key={p._id} className="photo-item" style={{
-                                        width: '100%',
-                                        aspectRatio: '1 / 1',
-                                        overflow: 'hidden',
-                                        borderRadius: 8,
-                                        background: '#fff',
-                                        border: '1px solid #eee'
-                                    }}>
-                                        <img src={p.img} alt="Foto" style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover'
-                                        }} />
+                                    <div key={p._id} className="photo-item">
+                                        <img
+                                            src={p.img}
+                                            alt="Foto"
+                                            className="photo-img"
+                                            onClick={() => setViewImageSrc(p.img)}
+                                            style={{ cursor: 'pointer' }}
+                                            title="Ver imagen"
+                                        />
                                     </div>
                                 ))}
                             </div>
@@ -207,6 +224,9 @@ export default function ProfileContent({ userId }) {
                     </div>
                 )}
             </div>
+        {viewImageSrc && (
+            <ImageModal src={viewImageSrc} alt="Foto" onClose={() => setViewImageSrc("")} />
+        )}
         </div>
 
     );

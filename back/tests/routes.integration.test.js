@@ -9,6 +9,7 @@ describe('API Routes Integration Tests', () => {
       get: (path, handler) => { routes[`GET ${path}`] = handler; },
       post: (path, handler) => { routes[`POST ${path}`] = handler; },
       put: (path, handler) => { routes[`PUT ${path}`] = handler; },
+  patch: (path, handler) => { routes[`PATCH ${path}`] = handler; },
       delete: (path, handler) => { routes[`DELETE ${path}`] = handler; },
       getRoutes: () => routes
     };
@@ -47,6 +48,15 @@ describe('API Routes Integration Tests', () => {
     router.get('/search', () => {});
   router.get('/:userId/recommendations/friends', () => {});
     router.put('/:id', () => {});
+    router.patch('/:id/password', () => {});
+    router.patch('/:id/privacy', () => {});
+    router.post('/:id/block/:targetId', () => {});
+    router.delete('/:id/block/:targetId', () => {});
+  router.patch('/:id/deactivate', () => {});
+  router.patch('/:id/reactivate', () => {});
+  router.post('/:id/report', () => {});
+  router.get('/reports/all', () => {});
+  router.patch('/reports/:reportId/review', () => {});
     router.delete('/:id', () => {});
     router.get('/:id', () => {});
     router.put('/follow/:id', () => {});
@@ -55,11 +65,20 @@ describe('API Routes Integration Tests', () => {
     
     const routes = router.getRoutes();
     
-  expect(Object.keys(routes).length).toBe(8);
+  expect(Object.keys(routes).length).toBe(17);
     expect(routes).toHaveProperty('GET /search');
   expect(routes).toHaveProperty('GET /:userId/recommendations/friends');
     expect(routes).toHaveProperty('PUT /follow/:id');
     expect(routes).toHaveProperty('PUT /unfollow/:id');
+    expect(routes).toHaveProperty('PATCH /:id/password');
+    expect(routes).toHaveProperty('PATCH /:id/privacy');
+    expect(routes).toHaveProperty('POST /:id/block/:targetId');
+    expect(routes).toHaveProperty('DELETE /:id/block/:targetId');
+    expect(routes).toHaveProperty('PATCH /:id/deactivate');
+    expect(routes).toHaveProperty('PATCH /:id/reactivate');
+  expect(routes).toHaveProperty('POST /:id/report');
+  expect(routes).toHaveProperty('GET /reports/all');
+  expect(routes).toHaveProperty('PATCH /reports/:reportId/review');
   });
 
   it('Should register all auth routes correctly', () => {

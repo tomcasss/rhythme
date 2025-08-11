@@ -1,6 +1,6 @@
 
 .home-container {
-  background-color: #f1c8a1;
+  background-color: var(--color-app-bg);
   min-height: 100vh;
   width: 100%; 
   font-family: 'Segoe UI', sans-serif;
@@ -38,14 +38,8 @@
   gap: 2rem;
 }
 
-.feed input[type="text"], .feed textarea {
-  color: #222;
-  background: #fff;
-}
-.feed input[type="text"]::placeholder, .feed textarea::placeholder {
-  color: #888;
-  opacity: 1;
-}
+.feed input[type="text"], .feed textarea { color: var(--color-text); background: var(--color-surface); }
+.feed input[type="text"]::placeholder, .feed textarea::placeholder { color: var(--color-text-muted); opacity: 1; }
 
 
 .home-logo {
@@ -54,31 +48,7 @@
 }
 
 
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background:
-    radial-gradient(ellipse at top, #ff8113, transparent),
-    radial-gradient(ellipse at bottom, #fd4410, transparent);
-  padding: 1rem 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  height: 70px; /* Altura fija para evitar expansión */
-  min-height: 70px;
-  max-height: 70px;
-}
-
-.search-bar {
-  width: 100%;
-  padding: 0.6rem 1rem;
-  border-radius: 20px;
-  border: 1px solid #ccc;
-  outline: none;
-  font-size: 1rem;
-}
+.search-bar { width: 100%; padding: 0.6rem 1rem; border-radius: 20px; border: 1px solid var(--color-border-strong); outline: none; font-size: 1rem; background: var(--color-surface); color: var(--color-text); }
 
 .navbar-icons {
   display: flex;
@@ -91,34 +61,11 @@
   cursor: pointer;
 }
 
-.stories {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem 2rem;
-  overflow-x: auto;
-  background-color: #fdfdfd;
-  border-bottom: 1px solid #e0e0e0;
-}
+.stories { display: flex; gap: 1rem; padding: 1rem 2rem; overflow-x: auto; background-color: var(--color-surface-alt); border-bottom: 1px solid var(--color-border-subtle); }
 
-.story {
-  width: 60px;
-  height: 60px;
-  border: 2px solid #ff8113;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  color: #333;
-  background-color: #ff7b0053;
-  flex-shrink: 0;
-}
+.story { width: 60px; height: 60px; border: 2px solid var(--color-primary-start); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--color-text-secondary); background-color: var(--color-accent-bg-faint); flex-shrink: 0; }
 
-.story.add {
-  background-color: #ff7b0053;
-  color: white;
-  font-size: 1.5rem;
-}
+.story.add { background-color: var(--color-accent-bg-faint); color: #fff; font-size: 1.5rem; }
 
 
 .feed {
@@ -195,28 +142,6 @@
 .post-actions {
   display: flex;
   gap: 1rem;
-}
-
-.action-btn {
-  background: none;
-  border: none;
-  font-size: 0.8rem;
-  cursor: pointer;
-  color: #777;
-  transition: color 0.3s ease;
-}
-
-.action-btn:hover {
-  color: rgb(255, 47, 0);
-}
-
-.logo1 {
-  position: absolute;
-  top: 0.5%;
-  left: 3rem;
-  width: 90px;
-  height: auto;
-  z-index: 10;
 }
 
 /* Estilos para los resultados de búsqueda */

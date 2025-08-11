@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
 import PostCard from './PostCard';
+
 import './RecommendedPosts.css';
 import './Sidebar.css';
 

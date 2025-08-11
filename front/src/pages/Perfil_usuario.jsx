@@ -2,13 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import "./Perfil_usuario.css";
 import { API_ENDPOINTS } from "../config/api.js";
 import { useFollowSystem } from "../hooks/useFollowSystem.js";
+import NavBar from "../components/Home/Navbar.jsx";
+import Swal from 'sweetalert2';
 
 // Componentes
-import ProfileHeader from "../components/Profile/ProfileHeader";
 import ProfileBanner from "../components/Profile/ProfileBanner";
 import ProfileContent from "../components/Profile/ProfileContent";
 import "../components/Profile/ProfileContent.css";
@@ -58,11 +57,24 @@ export const Perfil_usuario = () => {
       setError("");
       
       try {
-        const res = await axios.get(API_ENDPOINTS.GET_USER(userId));
+        const currentLocal = JSON.parse(localStorage.getItem('user'));
+        const res = await axios.get(`${API_ENDPOINTS.GET_USER(userId)}?viewerId=${currentLocal?._id || ''}`);
         setProfileUser(res.data.user);
       } catch (error) {
+        // Si es mi propio perfil y recibo 403, reintentar sin restricción (podría ser un estado inconsistente local)
+        const currentLocal = JSON.parse(localStorage.getItem('user'));
+        if (currentLocal?._id === userId && error?.response?.status === 403) {
+          try {
+            const res2 = await axios.get(`${API_ENDPOINTS.GET_USER(userId)}?viewerId=${userId}`);
+            setProfileUser(res2.data.user);
+            setError('');
+            return;
+          } catch (e2) {
+            console.error('Retry failed:', e2);
+          }
+        }
         console.error("Error al obtener el usuario:", error);
-        setError("No se pudo cargar el perfil del usuario");
+        setError(error?.response?.status === 403 ? 'Este perfil es privado' : 'No se pudo cargar el perfil del usuario');
         setProfileUser(null);
       } finally {
         setLoading(false);
@@ -81,7 +93,13 @@ export const Perfil_usuario = () => {
   if (loading) {
     return (
       <div className="contenedor">
-        <ProfileHeader />
+        <NavBar
+          user={currentUser}
+          followLoading={followLoading}
+          onFollowUser={followUser}
+          onUnfollowUser={unfollowUser}
+          isFollowing={isFollowing}
+        />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <p>Cargando perfil...</p>
         </div>
@@ -92,7 +110,13 @@ export const Perfil_usuario = () => {
   if (error) {
     return (
       <div className="contenedor">
-        <ProfileHeader />
+        <NavBar
+          user={currentUser}
+          followLoading={followLoading}
+          onFollowUser={followUser}
+          onUnfollowUser={unfollowUser}
+          isFollowing={isFollowing}
+        />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <p style={{ color: '#e74c3c' }}>{error}</p>
           <button onClick={() => navigate('/home')} className="btn-red">
@@ -105,7 +129,13 @@ export const Perfil_usuario = () => {
 
   return (
     <div className="contenedor">
-      <ProfileHeader />
+      <NavBar
+        user={currentUser}
+        followLoading={followLoading}
+        onFollowUser={followUser}
+        onUnfollowUser={unfollowUser}
+        isFollowing={isFollowing}
+      />
       
       <ProfileBanner
         profileUser={profileUser}
@@ -115,6 +145,37 @@ export const Perfil_usuario = () => {
         isFollowing={isFollowing}
         followLoading={userFollowLoading}
       />
+      {/* Botón reportar (si no es propio perfil) */}
+      {!isOwnProfile && currentUser && profileUser && (
+        <div style={{ padding: '0 2rem', marginBottom: '1rem' }}>
+          <button
+            className="btn-red"
+            style={{ background: '#e74c3c', padding: '0.5rem 1rem', borderRadius: 6 }}
+            onClick={async () => {
+              const { value: reason } = await Swal.fire({
+                title: 'Reportar usuario',
+                input: 'text',
+                inputLabel: 'Motivo breve',
+                inputPlaceholder: 'Spam, abuso, etc.',
+                showCancelButton: true,
+                confirmButtonText: 'Enviar',
+                cancelButtonText: 'Cancelar'
+              });
+              if (!reason) return;
+              try {
+                await axios.post(API_ENDPOINTS.REPORT_USER(profileUser._id), { userId: currentUser._id, reason });
+                Swal.fire('Enviado', 'Reporte registrado', 'success');
+              } catch (e) {
+                if (e?.response?.status === 429) {
+                  Swal.fire('Ya enviado', 'Ya reportaste este usuario en las últimas 24h', 'info');
+                } else {
+                  Swal.fire('Error', 'No se pudo enviar el reporte', 'error');
+                }
+              }
+            }}
+          >Reportar usuario</button>
+        </div>
+      )}
       
       {/* Componente de conexión con Spotify */}
   <div style={{ padding: '0 2rem', flex: 1 }}>
@@ -132,7 +193,14 @@ export const Perfil_usuario = () => {
           
           {/* Profile Content buttons - lado derecho */}
           <div className="profile-buttons-section right-panel-narrow">
-            <ProfileContent userId={userId} />
+            <ProfileContent
+              userId={userId}
+              viewerUser={currentUser}
+              followLoading={followLoading}
+              isFollowing={isFollowing}
+              onFollow={followUser}
+              onUnfollow={unfollowUser}
+            />
           </div>
         </div>
       </div>

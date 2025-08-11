@@ -3,7 +3,7 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background-color: #f1c8a1;
+  background-color: var(--color-app-bg);
 }
 
 .contenedor {
@@ -13,7 +13,7 @@ body {
 }
 
 .encabezado {
-  background-color: #ff7a00;
+  background-color: var(--color-primary-start);
   height: 60px;
   display: flex;
   align-items: center;
@@ -35,8 +35,8 @@ body {
 
 .columna-izquierda {
   flex: 2;
-  max-width: 600px;
-  width: 70%;
+  max-width: 750px;
+  width: 100%;
 }
 
 .columna-izquierda h2 {
@@ -55,7 +55,7 @@ body {
   height: 120px;
   border-radius: 100%;
   object-fit: cover;
-  border: 1px solid #000;
+  border: 1px solid var(--color-border-strong);
 }
 
 .info-usuario h3 {
@@ -64,7 +64,7 @@ body {
 }
 
 .info-usuario .rol {
-  color: #333;
+  color: var(--color-text-secondary);
   font-weight: 500;
   margin-bottom: 10px;
 }
@@ -89,7 +89,7 @@ body {
 }
 
 .opciones {
-  background-color: white;
+  background-color: var(--color-surface);
   margin-left: 150px;
   border-radius: 20px;
   padding: 25px 20px;
@@ -106,14 +106,14 @@ body {
 
 .opciones p {
   font-size: 14px;
-  color: #333;
+  color: var(--color-text-secondary);
   margin: 5px 0;
   cursor: pointer;
 }
 
 .opciones hr {
   margin: 15px 0;
-  border: 0.5px solid #ddd;
+  border: 0.5px solid var(--color-border-subtle);
 }
 
 .acciones {
@@ -123,7 +123,7 @@ body {
 }
 
 .reporte {
-  background-color: #ff7a00;
+  background-color: var(--color-primary-start);
   border: none;
   color: white;
   padding: 6px 12px;
@@ -135,7 +135,7 @@ body {
 .cerrar-sesion {
   background: none;
   border: none;
-  color: #ff7a00;
+  color: var(--color-primary-start);
   font-size: 13px;
   cursor: pointer;
   font-weight: bold;
@@ -148,7 +148,7 @@ body {
   text-align: center;
   font-size: 16px;
   font-weight: bold;
-  color: #333;
+  color: var(--color-text-secondary);
   padding: 10px 0;
   margin: 5px 0;
   cursor: pointer;
@@ -156,5 +156,5 @@ body {
 }
 
 .btn-opcion:hover {
-  color: #ff7a00;
+  color: var(--color-primary-end);
 }
