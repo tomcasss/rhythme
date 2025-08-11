@@ -123,9 +123,15 @@
   color: var(--color-text-muted);
 }
 
-.mt-1 { margin-top: 1rem; }
-.mb-1 { margin-bottom: 1rem; }
-.mb-05 { margin-bottom: 0.5rem; }
+.mt-1 { 
+  margin-top: 1rem; 
+}
+.mb-1 { 
+  margin-bottom: 1rem; 
+}
+.mb-05 { 
+  margin-bottom: 0.5rem; 
+}
 
 /* Reuso de estilos de uploader (similar a CreatePostForm) */
 .dropzone {
@@ -137,8 +143,13 @@
   background: var(--color-surface-alt);
   margin-top: 0.5rem;
 }
-.dropzone.dragover { border-color: var(--color-primary-start); background: var(--color-accent-bg); }
-.create-image-preview { position: relative; }
+.dropzone.dragover { 
+  border-color: var(--color-primary-start); 
+  background: var(--color-accent-bg); 
+}
+.create-image-preview { 
+  position: relative; 
+}
 .remove-image-btn {
   position: absolute;
   top: 8px;

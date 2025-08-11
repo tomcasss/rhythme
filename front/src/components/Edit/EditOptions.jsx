@@ -28,7 +28,11 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     desc: '',
     from: '',
     relationship: 1,
-    musicPreferences: []
+    musicPreferences: [],
+    privacy: { profile: 'public', posts: 'public', friends: 'public' }, // Objeto de privacidad
+    currentPassword: '',
+    newPassword: '',
+    accountAction: ''
   });
 
   const ALL_GENRES = [
@@ -51,7 +55,16 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     // Obtener datos actuales del usuario desde localStorage
     const currentUser = JSON.parse(localStorage.getItem("user"));
     if (currentUser) {
-      setFormData({
+      const privacyObj = currentUser.privacy && typeof currentUser.privacy === 'object'
+        ? {
+            profile: currentUser.privacy.profile || 'public',
+            posts: currentUser.privacy.posts || 'public',
+            friends: currentUser.privacy.friends || 'public'
+          }
+        : { profile: 'public', posts: 'public', friends: 'public' };
+
+      setFormData(prev => ({
+        ...prev,
         username: currentUser.username || '',
         email: currentUser.email || '',
         profilePicture: currentUser.profilePicture || '',
@@ -59,8 +72,12 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         desc: currentUser.desc || '',
         from: currentUser.from || '',
         relationship: currentUser.relationship || 1,
-        musicPreferences: currentUser.musicPreferences || []
-      });
+        musicPreferences: currentUser.musicPreferences || [],
+        privacy: privacyObj,
+        currentPassword: '',
+        newPassword: '',
+        accountAction: ''
+      }));
     }
   };
 
@@ -89,6 +106,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
 
     try {
       let updateData = {};
+      let request;
 
       // Preparar datos según el tipo de edición
       switch (modalType) {
@@ -117,40 +135,80 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         case 'preferences':
           updateData = { musicPreferences: formData.musicPreferences, userId: currentUser._id };
           break;
+        case 'privacy': {
+          updateData = { privacy: formData.privacy, userId: currentUser._id };
+          request = axios.patch(API_ENDPOINTS.UPDATE_PRIVACY(currentUser._id), updateData);
+          break;
+        }
+        case 'password': {
+          if (!formData.currentPassword || !formData.newPassword) {
+            setError('Debes completar ambos campos');
+            return;
+          }
+          request = axios.patch(API_ENDPOINTS.UPDATE_PASSWORD(currentUser._id), { userId: currentUser._id, currentPassword: formData.currentPassword, newPassword: formData.newPassword });
+          break;
+        }
+        case 'account': {
+          if (formData.accountAction === 'deactivate') {
+            request = axios.patch(API_ENDPOINTS.DEACTIVATE_ACCOUNT(currentUser._id), { userId: currentUser._id });
+          } else if (formData.accountAction === 'reactivate') {
+            request = axios.patch(API_ENDPOINTS.REACTIVATE_ACCOUNT(currentUser._id), { userId: currentUser._id });
+          } else if (formData.accountAction === 'delete') {
+            const confirm = await Swal.fire({ title: 'Eliminar cuenta', text: 'Esta acción es irreversible. ¿Continuar?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, eliminar' });
+            if (!confirm.isConfirmed) { setLoading(false); return; }
+            request = axios.delete(API_ENDPOINTS.DELETE_USER(currentUser._id), { data: { userId: currentUser._id } });
+          }
+          if (!request) { setLoading(false); return; }
+          break;
+        }
         default:
           setError("Tipo de edición no válido");
           return;
       }
 
-      // Llamar al backend
-      const response = await axios.put(API_ENDPOINTS.UPDATE_USER(currentUser._id), updateData);
+      if (!request) {
+        // Fallback a flujo existente
+        const response = await axios.put(API_ENDPOINTS.UPDATE_USER(currentUser._id), updateData);
 
-      if (response.data && response.data.user) {
-        // Actualizar localStorage con los datos del usuario completo del backend
-        const updatedUser = { ...currentUser, ...response.data.user };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+        if (response.data && response.data.user) {
+          // Actualizar localStorage con los datos del usuario completo del backend
+          const updatedUser = { ...currentUser, ...response.data.user };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
 
-        // Llamar callback del componente padre
-        if (onUpdateUser) {
-          await onUpdateUser(response.data.user);
+          // Llamar callback del componente padre
+          if (onUpdateUser) {
+            await onUpdateUser(response.data.user);
+          }
+
+          // Cerrar modal
+          setShowModal(false);
+          Swal.fire({
+            icon: 'success',
+            title: 'Perfil actualizado',
+            text: '¡Perfil actualizado exitosamente!',
+          });
+        } else {
+          setError("Error: Respuesta inválida del servidor");
         }
-
-        // Cerrar modal
-        setShowModal(false);
-        Swal.fire({
-          icon: 'success',
-          title: 'Perfil actualizado',
-          text: '¡Perfil actualizado exitosamente!',
-        });
       } else {
-        setError("Error: Respuesta inválida del servidor");
+        const response = await request;
+        if (modalType === 'privacy' && response.data?.user) {
+          const updatedUser = { ...currentUser, ...response.data.user };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+        // Acciones post-cambio de cuenta
+        if (modalType === 'account' && ['deactivate', 'delete'].includes(formData.accountAction)) {
+          // Limpiar sesión local y cerrar sesión
+            localStorage.removeItem('user');
+            if (onLogout) onLogout();
+            Swal.fire({ icon: 'success', title: formData.accountAction === 'delete' ? 'Cuenta eliminada' : 'Cuenta desactivada', timer: 1800, showConfirmButton: false });
+        } else {
+          Swal.fire({ icon: 'success', title: 'Cambios aplicados', timer: 1500, showConfirmButton: false });
+        }
+        setShowModal(false);
       }
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al actualizar perfil',
-        text: error.response?.data?.message || "Error al actualizar el perfil",
-      });
+      Swal.fire({ icon: 'error', title: 'Error', text: error.response?.data?.message || 'Operación fallida' });
     } finally {
       setLoading(false);
     }
@@ -478,14 +536,82 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           </>
         );
 
-      default:
+      case 'privacy':
         return (
           <>
-            <h3>Funcionalidad en desarrollo</h3>
-            <p>La opción "{modalType}" estará disponible próximamente.</p>
-            <button onClick={() => setShowModal(false)} className="modal-btn">
-              Cerrar
-            </button>
+            <h3>Privacidad y visibilidad</h3>
+            <p className="modal-hint">Controla quién puede ver tu perfil, tus posts y tu lista de amigos/seguidores.</p>
+            <div className="mb-1">
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Perfil</label>
+              <select
+                className="modal-select"
+                value={formData.privacy?.profile || 'public'}
+                onChange={e => setFormData(p => ({ ...p, privacy: { ...(p.privacy||{}), profile: e.target.value } }))}
+              >
+                <option value="public">Público (todos)</option>
+                <option value="followers">Solo seguidores</option>
+                <option value="private">Solo yo</option>
+              </select>
+            </div>
+            <div className="mb-1">
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Posts</label>
+              <select
+                className="modal-select"
+                value={formData.privacy?.posts || 'public'}
+                onChange={e => setFormData(p => ({ ...p, privacy: { ...(p.privacy||{}), posts: e.target.value } }))}
+              >
+                <option value="public">Público (todos)</option>
+                <option value="followers">Solo seguidores</option>
+                <option value="private">Solo yo</option>
+              </select>
+            </div>
+            <div className="mb-1">
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Amigos / Seguidores</label>
+              <select
+                className="modal-select"
+                value={formData.privacy?.friends || 'public'}
+                onChange={e => setFormData(p => ({ ...p, privacy: { ...(p.privacy||{}), friends: e.target.value } }))}
+              >
+                <option value="public">Público (todos)</option>
+                <option value="followers">Solo seguidores</option>
+                <option value="private">Solo yo</option>
+              </select>
+            </div>
+            <small className="text-muted">Los cambios afectan inmediatamente el acceso a tu contenido.</small>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>{loading ? 'Guardando...' : 'Guardar'}</button>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">Cancelar</button>
+            </div>
+          </>
+        );
+      case 'password':
+        return (
+          <>
+            <h3>Cambiar contraseña</h3>
+            <input type="password" placeholder="Contraseña actual" value={formData.currentPassword||''} onChange={e=>setFormData(p=>({...p,currentPassword:e.target.value}))} />
+            <input type="password" placeholder="Nueva contraseña" value={formData.newPassword||''} onChange={e=>setFormData(p=>({...p,newPassword:e.target.value}))} />
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>{loading ? 'Actualizando...' : 'Actualizar'}</button>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">Cancelar</button>
+            </div>
+          </>
+        );
+      case 'account':
+        return (
+          <>
+            <h3>Estado de la cuenta</h3>
+            <p>Selecciona una acción:</p>
+            <select value={formData.accountAction||''} onChange={e=>setFormData(p=>({...p,accountAction:e.target.value}))}>
+              <option value="">-- Seleccionar --</option>
+              <option value="deactivate">Desactivar</option>
+              <option value="reactivate">Reactivar</option>
+              <option value="delete">Eliminar permanentemente</option>
+            </select>
+            {formData.accountAction === 'delete' && <p style={{color:'#e74c3c'}}>Esta acción no se puede deshacer.</p>}
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading || !formData.accountAction}>{loading ? 'Procesando...' : 'Confirmar'}</button>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">Cancelar</button>
+            </div>
           </>
         );
     }
@@ -556,6 +682,20 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           Privacidad y Seguridad
         </button>
 
+        <button
+          className="btn-opcion"
+          onClick={() => handleEditOption('password')}
+        >
+          Cambiar contraseña
+        </button>
+
+        <button
+          className="btn-opcion"
+          onClick={() => handleEditOption('account')}
+        >
+          Configuración de cuenta
+        </button>
+
         <hr />
 
         <button
@@ -563,15 +703,6 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           onClick={() => handleEditOption('preferences')}
         >
           Mis Preferencias
-        </button>
-
-        <hr />
-
-        <button
-          className="btn-opcion"
-          onClick={() => handleEditOption('activity')}
-        >
-          Mi Actividad
         </button>
 
         <hr />

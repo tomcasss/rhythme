@@ -96,6 +96,27 @@ const userSchema = new Schema({
       default: null,
     }
   },
+
+  // Privacidad granular
+  privacy: {
+    profile: { type: String, enum: ['public', 'followers', 'private'], default: 'public' },
+    posts: { type: String, enum: ['public', 'followers', 'private'], default: 'public' },
+    friends: { type: String, enum: ['public', 'followers', 'private'], default: 'public' },
+  },
+
+  // Usuarios bloqueados por este usuario
+  blockedUsers: [
+    { type: Schema.Types.ObjectId, ref: 'User', default: [] }
+  ],
+
+  // Estado de cuenta: activo, desactivado, pendiente de eliminación (soft delete)
+  accountStatus: {
+    type: String,
+    enum: ['active', 'desactivado', 'deletedPending'],
+    default: 'active'
+  },
+  deletedAt: { type: Date, default: null },
+  passwordUpdatedAt: { type: Date, default: null },
 });
 
 export default mongoose.model("User", userSchema);

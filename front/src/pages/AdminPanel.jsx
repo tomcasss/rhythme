@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../AdminPanel.css";
 import Swal from "sweetalert2";
+import { API_ENDPOINTS } from "../config/api";
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -11,15 +12,19 @@ export default function AdminPanel() {
   const [showPosts, setShowPosts] = useState(false);
   const [showUserOptions, setShowUserOptions] = useState(null);
   const [showPostOptions, setShowPostOptions] = useState(null);
+  const [reports, setReports] = useState([]);
+  const [showReports, setShowReports] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const usersRes = await axios.get("http://localhost:5000/api/v1/users");
-        const postsRes = await axios.get("http://localhost:5000/api/v1/posts");
+  const usersRes = await axios.get("http://localhost:5000/api/v1/users");
+  const postsRes = await axios.get("http://localhost:5000/api/v1/posts");
+  const reportsRes = await axios.get(API_ENDPOINTS.LIST_REPORTS('open'), { data: { isAdmin: true } }).catch(()=>({data:{reports:[]}}));
         setUsers(usersRes.data);
         setPosts(postsRes.data);
+  setReports(reportsRes.data.reports || []);
       } catch (err) {
         console.error("Error cargando datos del panel:", err);
       }
@@ -130,6 +135,38 @@ const handleNotifyPost = async (postId) => {
     navigate("/");
   };
 
+  const refreshReports = async () => {
+    try {
+      const reportsRes = await axios.get(API_ENDPOINTS.LIST_REPORTS('open'), { data: { isAdmin: true } });
+      setReports(reportsRes.data.reports || []);
+  } catch { /* silencio */ }
+  };
+
+  const handleMarkReviewed = async (reportId) => {
+    try {
+      await axios.patch(API_ENDPOINTS.REVIEW_REPORT(reportId), { isAdmin: true });
+      Swal.fire('Revisado', 'Reporte marcado como revisado', 'success');
+      setReports(r => r.filter(rep => rep._id !== reportId));
+    } catch {
+      Swal.fire('Error', 'No se pudo actualizar el reporte', 'error');
+    }
+  };
+
+  const handleShowReportDetail = (rep) => {
+    Swal.fire({
+      title: 'Detalle del Reporte',
+      html: `<div style="text-align:left">\n<p><strong>ID:</strong> ${rep._id}</p>\n<p><strong>Reportado:</strong> ${rep.targetUserId}</p>\n<p><strong>Reportante:</strong> ${rep.reporterId}</p>\n<p><strong>Motivo:</strong> ${rep.reason}</p>\n${rep.description ? `<p><strong>Descripción:</strong><br>${rep.description.replace(/</g,'&lt;')}</p>` : ''}</div>` ,
+      showCancelButton: true,
+      cancelButtonText: 'Cerrar',
+      confirmButtonText: 'Marcar revisado',
+      confirmButtonColor: '#27ae60'
+    }).then(async (r) => {
+      if (r.isConfirmed) {
+        await handleMarkReviewed(rep._id);
+      }
+    });
+  };
+
   return (
     <div className="admin-container">
       <button onClick={handleLogout} className="options-btn">
@@ -222,6 +259,28 @@ const handleNotifyPost = async (postId) => {
                     </button>
                   </div>
                 )}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h2 onClick={() => { setShowReports(!showReports); if(!showReports) refreshReports(); }} className="collapsible-title">
+          Reportes {showReports ? '🔍' : '🗂️'}
+        </h2>
+        {showReports && (
+          <div className="admin-list">
+            {reports.length === 0 && <p>No hay reportes abiertos.</p>}
+            {reports.map(rep => (
+              <div className="admin-card" key={rep._id}>
+                <p><strong>Reportado:</strong> {rep.targetUserId}</p>
+                <p><strong>Reportante:</strong> {rep.reporterId}</p>
+                <p><strong>Motivo:</strong> {rep.reason}</p>
+                <div style={{ display:'flex', gap:'0.5rem' }}>
+                  <button className="options-btn" onClick={() => handleShowReportDetail(rep)}>Ver</button>
+                  <button className="options-btn" onClick={() => handleMarkReviewed(rep._id)}>Revisado</button>
+                </div>
               </div>
             ))}
           </div>

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { API_ENDPOINTS } from "../config/api.js";
 import { useFollowSystem } from "../hooks/useFollowSystem.js";
 import NavBar from "../components/Home/Navbar.jsx";
+import Swal from 'sweetalert2';
 
 // Componentes
 import ProfileBanner from "../components/Profile/ProfileBanner";
@@ -56,11 +57,24 @@ export const Perfil_usuario = () => {
       setError("");
       
       try {
-        const res = await axios.get(API_ENDPOINTS.GET_USER(userId));
+        const currentLocal = JSON.parse(localStorage.getItem('user'));
+        const res = await axios.get(`${API_ENDPOINTS.GET_USER(userId)}?viewerId=${currentLocal?._id || ''}`);
         setProfileUser(res.data.user);
       } catch (error) {
+        // Si es mi propio perfil y recibo 403, reintentar sin restricción (podría ser un estado inconsistente local)
+        const currentLocal = JSON.parse(localStorage.getItem('user'));
+        if (currentLocal?._id === userId && error?.response?.status === 403) {
+          try {
+            const res2 = await axios.get(`${API_ENDPOINTS.GET_USER(userId)}?viewerId=${userId}`);
+            setProfileUser(res2.data.user);
+            setError('');
+            return;
+          } catch (e2) {
+            console.error('Retry failed:', e2);
+          }
+        }
         console.error("Error al obtener el usuario:", error);
-        setError("No se pudo cargar el perfil del usuario");
+        setError(error?.response?.status === 403 ? 'Este perfil es privado' : 'No se pudo cargar el perfil del usuario');
         setProfileUser(null);
       } finally {
         setLoading(false);
@@ -131,6 +145,37 @@ export const Perfil_usuario = () => {
         isFollowing={isFollowing}
         followLoading={userFollowLoading}
       />
+      {/* Botón reportar (si no es propio perfil) */}
+      {!isOwnProfile && currentUser && profileUser && (
+        <div style={{ padding: '0 2rem', marginBottom: '1rem' }}>
+          <button
+            className="btn-red"
+            style={{ background: '#e74c3c', padding: '0.5rem 1rem', borderRadius: 6 }}
+            onClick={async () => {
+              const { value: reason } = await Swal.fire({
+                title: 'Reportar usuario',
+                input: 'text',
+                inputLabel: 'Motivo breve',
+                inputPlaceholder: 'Spam, abuso, etc.',
+                showCancelButton: true,
+                confirmButtonText: 'Enviar',
+                cancelButtonText: 'Cancelar'
+              });
+              if (!reason) return;
+              try {
+                await axios.post(API_ENDPOINTS.REPORT_USER(profileUser._id), { userId: currentUser._id, reason });
+                Swal.fire('Enviado', 'Reporte registrado', 'success');
+              } catch (e) {
+                if (e?.response?.status === 429) {
+                  Swal.fire('Ya enviado', 'Ya reportaste este usuario en las últimas 24h', 'info');
+                } else {
+                  Swal.fire('Error', 'No se pudo enviar el reporte', 'error');
+                }
+              }
+            }}
+          >Reportar usuario</button>
+        </div>
+      )}
       
       {/* Componente de conexión con Spotify */}
   <div style={{ padding: '0 2rem', flex: 1 }}>

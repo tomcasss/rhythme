@@ -46,7 +46,7 @@ const Editar_usuario = () => {
     setError("");
 
     try {
-      const response = await axios.get(API_ENDPOINTS.GET_USER(userId));
+  const response = await axios.get(`${API_ENDPOINTS.GET_USER(userId)}?viewerId=${userId}`);
       setUser(response.data.user);
     } catch (error) {
       console.error("Error al obtener el usuario:", error);

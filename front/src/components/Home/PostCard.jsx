@@ -4,6 +4,9 @@ import ImageModal from "../common/ImageModal.jsx";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPencil , faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../../config/api.js';
 import CommentsSection from './CommentsSection';
 import SpotifyContent from './SpotifyContent';
 import "./PostCard.css";
@@ -235,34 +238,67 @@ export default function PostCard({
           </div>
         )}
 
-        {/* Menú de opciones para posts propios */}
-        {isOwnPost() && (
-          <div className="post-options-wrapper">
-            <button
-              className="action-btn"
-              onClick={() => setOpenMenu(!openMenu)}
-              title="Opciones"
-            >
-              ⋮
-            </button>
-            {openMenu && (
-              <div ref={menuRef} className="post-options-panel">
-                <button
-                  className="action-btn post-options-item"
-                  onClick={handleDelete}
-                >
-                  <FontAwesomeIcon icon={faTrash} /> Eliminar
-                </button>
-                <button
-                  className="action-btn post-options-item"
-                  onClick={startEdit}
-                >
-                  <FontAwesomeIcon icon={faPencil} /> Editar
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Menú de opciones (propios: editar/eliminar, ajenos: reportar) */}
+        <div className="post-options-wrapper">
+          <button
+            className="action-btn"
+            onClick={() => setOpenMenu(!openMenu)}
+            title="Opciones"
+          >
+            ⋮
+          </button>
+          {openMenu && (
+            <div ref={menuRef} className="post-options-panel">
+              {isOwnPost() ? (
+                <>
+                  <button
+                    className="action-btn post-options-item"
+                    onClick={handleDelete}
+                  >
+                    <FontAwesomeIcon icon={faTrash} /> Eliminar
+                  </button>
+                  <button
+                    className="action-btn post-options-item"
+                    onClick={startEdit}
+                  >
+                    <FontAwesomeIcon icon={faPencil} /> Editar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="action-btn post-options-item"
+                    onClick={async () => {
+                      setOpenMenu(false);
+                      const { value: reason } = await Swal.fire({
+                        title: 'Reportar post',
+                        input: 'text',
+                        inputLabel: 'Motivo breve',
+                        inputPlaceholder: 'Spam, abuso, etc.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Enviar',
+                        cancelButtonText: 'Cancelar'
+                      });
+                      if (!reason) return;
+                      try {
+                        await axios.post(API_ENDPOINTS.REPORT_USER(getPostUserId()), { userId: user?._id, reason, postId: post._id });
+                        Swal.fire('Enviado', 'Reporte registrado', 'success');
+                      } catch (e) {
+                        if (e?.response?.status === 429) {
+                          Swal.fire('Ya enviado', 'Ya reportaste este usuario en las últimas 24h', 'info');
+                        } else {
+                          Swal.fire('Error', 'No se pudo enviar el reporte', 'error');
+                        }
+                      }
+                    }}
+                  >
+                    🚩 Reportar
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Contenido del post */}

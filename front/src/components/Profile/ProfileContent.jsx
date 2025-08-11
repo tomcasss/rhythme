@@ -36,7 +36,8 @@ export default function ProfileContent({ userId, viewerUser, followLoading = {},
         setPostsError("");
 
         try {
-            const response = await axios.get(API_ENDPOINTS.GET_USER_POSTS(userId));
+            // Pasamos viewerId para que el backend pueda aplicar reglas de visibilidad correctamente
+            const response = await axios.get(`${API_ENDPOINTS.GET_USER_POSTS(userId)}?viewerId=${viewerUser?._id || ''}`);
             setUserPosts(response.data.posts || []);
         } catch (error) {
             console.error("Error al obtener posts del usuario:", error);
@@ -52,10 +53,7 @@ export default function ProfileContent({ userId, viewerUser, followLoading = {},
         console.log(`Clicked on ${type}`);
 
         // Si se hace clic en posts, obtener los posts del usuario
-        if (type === 'posts') {
-            fetchUserPosts();
-        }
-        if (type === 'photos') {
+        if (type === 'posts' || type === 'photos') {
             fetchUserPosts();
         }
     };
