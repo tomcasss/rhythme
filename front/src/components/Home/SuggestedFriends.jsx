@@ -1,10 +1,12 @@
 // src/components/Home/SuggestedFriends.jsx
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import userImg from '../../assets/user.png';
 import { API_ENDPOINTS } from '../../config/api.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import './SuggestedFriends.css';
 import './Sidebar.css';
+
 
 export default function SuggestedFriends({ user, limit = 5, onFollow, onUnfollow, isFollowing, followLoading }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -38,7 +40,15 @@ export default function SuggestedFriends({ user, limit = 5, onFollow, onUnfollow
       <div className="suggested-grid">
         {suggestions.map(friendSuggestion => (
           <div key={friendSuggestion._id} className="suggested-card">
-            <img src={friendSuggestion.profilePicture || userImg} alt={friendSuggestion.username || 'usuario'} className="suggested-avatar" />
+            {friendSuggestion.profilePicture ? (
+              <img
+                src={friendSuggestion.profilePicture}
+                alt={friendSuggestion.username || 'usuario'}
+                className="suggested-avatar"
+              />
+            ) : (
+              <FontAwesomeIcon icon={faCircleUser} className="suggested-avatar" />
+            )}
             <div className="suggested-info">
               <div className="suggested-name">{friendSuggestion.username || 'Usuario'}</div>
               <div className="suggested-email">{friendSuggestion.email}</div>

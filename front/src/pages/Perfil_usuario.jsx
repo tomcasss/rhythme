@@ -79,7 +79,13 @@ export const Perfil_usuario = () => {
   if (loading) {
     return (
       <div className="contenedor">
-        <NavBar />
+        <NavBar
+          user={currentUser}
+          followLoading={followLoading}
+          onFollowUser={followUser}
+          onUnfollowUser={unfollowUser}
+          isFollowing={isFollowing}
+        />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <p>Cargando perfil...</p>
         </div>
@@ -90,7 +96,13 @@ export const Perfil_usuario = () => {
   if (error) {
     return (
       <div className="contenedor">
-        <NavBar />
+        <NavBar
+          user={currentUser}
+          followLoading={followLoading}
+          onFollowUser={followUser}
+          onUnfollowUser={unfollowUser}
+          isFollowing={isFollowing}
+        />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <p style={{ color: '#e74c3c' }}>{error}</p>
           <button onClick={() => navigate('/home')} className="btn-red">
@@ -103,7 +115,13 @@ export const Perfil_usuario = () => {
 
   return (
     <div className="contenedor">
-      <NavBar />
+      <NavBar
+        user={currentUser}
+        followLoading={followLoading}
+        onFollowUser={followUser}
+        onUnfollowUser={unfollowUser}
+        isFollowing={isFollowing}
+      />
       
       <ProfileBanner
         profileUser={profileUser}

@@ -1,9 +1,8 @@
 // src/components/Home/PostCard.jsx
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import userImg from '../../assets/user.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPencil } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPencil , faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import CommentsSection from './CommentsSection';
 import SpotifyContent from './SpotifyContent';
 import "./PostCard.css";
@@ -150,17 +149,35 @@ export default function PostCard({
       navigate(`/profile/${postUserId}`);
     }
   };
+  // Autor del post (cuando viene populado será un objeto en post.userId, si no intentar fallback a post.user)
+  const author = typeof post.userId === 'object' ? post.userId : (post.user || null);
+  // Resolver avatar: puede venir en author.profilePicture, o si no está poblado intentar coincidir con usuario actual
+  let authorAvatar = author?.profilePicture || author?.profileImg || null;
+  if (!authorAvatar) {
+    // Si el post solo trae un id y corresponde al usuario actual, usar su avatar
+    const postUserId = getPostUserId();
+    if (!author && user?._id && postUserId === user._id) {
+      authorAvatar = user.profilePicture || null;
+    }
+  }
+  const authorName = author?.username || author?.email || 'usuario';
 
   return (
     <div className="post-card">
       {/* Header del post */}
       <div className="post-header">
-        <img
-          src={userImg}
-          alt="user"
-          className="avatar avatar-clickable"
-          onClick={goToProfile}
-        />
+        {authorAvatar ? (
+          <img
+            src={authorAvatar}
+            alt={authorName}
+            className="avatar avatar-clickable"
+            onClick={goToProfile}
+          />
+        ) : (
+          <FontAwesomeIcon icon={faCircleUser} className="avatar avatar-clickable" onClick={goToProfile} />
+        )}
+ 
+
         <div className="post-user">
           <strong onClick={goToProfile} className="post-user-name">
             {post.userId && typeof post.userId === 'object'

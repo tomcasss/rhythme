@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/api.js";
-import userImg from '../../assets/user.png';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import "./CommentsSection.css";
 
@@ -120,11 +121,17 @@ export default function CommentsSection({ postId, user }) {
           ) : (
             comments.map((comment, index) => (
               <div key={comment._id || index} className="comment-item">
-                <img 
-                  src={comment.userId?.profilePicture || userImg} 
-                  alt="user" 
-                  className="comment-avatar"
-                />
+                {comment.userId?.profilePicture ? (
+                  <img
+                    src={comment.userId.profilePicture}
+                    alt="user"
+                    className="comment-avatar"
+                  />
+                ) : (
+
+                    <FontAwesomeIcon icon={faCircleUser} className="comment-avatar"/>
+                  
+                )}
                 <div className="comment-content">
                   <div className="comment-header">
                     <span className="comment-author">

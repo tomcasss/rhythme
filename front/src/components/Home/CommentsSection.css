@@ -48,6 +48,8 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid var(--color-border);
+  color: var(--color-text-faint);
 }
 
 .comment-content {

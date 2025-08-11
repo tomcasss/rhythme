@@ -1,5 +1,5 @@
-// src/components/Home/Navbar.jsx
-import { useState, useRef, useEffect } from "react";
+// Limpieza y reconstrucción completa para eliminar duplicaciones y errores.
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "../../assets/logoR.png";
@@ -10,237 +10,309 @@ import { API_ENDPOINTS } from "../../config/api.js";
 import "./Navbar.css";
 import ThemeToggle from "../ThemeToggle.jsx";
 
-/**
- * Componente Navbar - Barra de navegación con búsqueda de usuarios
- * @param {Object} props - Propiedades del componente
- * @param {Object} props.user - Usuario actual
- * @param {Set} props.followingUsers - Set de usuarios que sigue el usuario actual
- * @param {Object} props.followLoading - Estado de carga de seguimiento por usuario
- * @param {Function} props.onFollowUser - Función para seguir usuario
- * @param {Function} props.onUnfollowUser - Función para dejar de seguir usuario
- * @param {Function} props.isFollowing - Función para verificar si sigue a un usuario
- */
 export default function Navbar({
   user,
-  followLoading,
-  onFollowUser,
-  onUnfollowUser,
-  isFollowing,
+  followLoading = {},
+  onFollowUser = async () => false,
+  onUnfollowUser = async () => false,
+  isFollowing = () => false,
 }) {
   const navigate = useNavigate();
 
-  // Estados para el menú de usuario
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userMenuRef = useRef();
+  // Refs
+  const userMenuRef = useRef(null);
+  const searchRef = useRef(null);
 
-  // Estados para búsqueda de usuarios
+  // Menú usuario
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // Búsqueda
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState([]); // usuarios
+  const [postResults, setPostResults] = useState([]); // posts
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const searchRef = useRef();
+  const [isPostSearch, setIsPostSearch] = useState(false);
 
-    // ---------------------- notificaciones
+  // Notificaciones
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
+  // Fetch notificaciones
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user?._id) return;
+      try {
+        const res = await axios.get(
+          API_ENDPOINTS.GET_USER_NOTIFICATIONS(user._id)
+        );
+        setNotifications(res.data || []);
+      } catch (err) {
+        console.error("Error al obtener notificaciones", err);
+      }
+    };
+    fetchNotifications();
+  }, [user]);
 
-  // Cargar notificaciones al montar el componente
-useEffect(() => {
-  const fetchNotifications = async () => {
+  const toggleDropdown = () => setShowDropdown((v) => !v);
+  const markAsRead = async (notifId) => {
     try {
-      const res = await axios.get(API_ENDPOINTS.GET_USER_NOTIFICATIONS(user._id));
-      setNotifications(res.data);
+      await axios.put(API_ENDPOINTS.MARK_NOTIFICATION_AS_READ(notifId));
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === notifId ? { ...n, isRead: true } : n))
+      );
     } catch (err) {
-      console.error("Error al obtener notificaciones", err);
+      console.error("Error al marcar notificación como leída", err);
     }
   };
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  if (user?._id) fetchNotifications();
-}, [user]);
-
-const toggleDropdown = () => {
-  setShowDropdown(!showDropdown);
-};
-
-const markAsRead = async (notifId) => {
-  try {
-    await axios.put(API_ENDPOINTS.MARK_NOTIFICATION_AS_READ(notifId));
-    setNotifications((prev) =>
-      prev.map((n) => (n._id === notifId ? { ...n, isRead: true } : n))
-    );
-  } catch (err) {
-    console.error("Error al marcar notificación como leída", err);
-  }
-};
-
-const unreadCount = notifications.filter((n) => !n.isRead).length;
-
-  // Cerrar menú de usuario al hacer clic fuera
+  // Outside click: user menu
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+    const handler = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
         setUserMenuOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Cerrar resultados de búsqueda al hacer clic fuera
+  // Outside click: search results
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
+    const handler = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
         setShowSearchResults(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Búsqueda de usuarios con debounce
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery.trim()) {
-        handleSearchUsers(searchQuery);
-      } else {
-        setSearchResults([]);
+  // Handlers búsqueda -----------------------------------------------------
+  const handleSearchPosts = useCallback(
+    async (query, { invokedByFallback = false } = {}) => {
+      if (!query || query.trim() === "") {
+        setPostResults([]);
         setShowSearchResults(false);
+        return;
       }
-  }, 300);
+      setSearchLoading(true);
+      try {
+        const res = await axios.get(
+          API_ENDPOINTS.SEARCH_POSTS(query.trim())
+        );
+        setPostResults(res.data.posts || []);
+        setSearchResults([]);
+        setShowSearchResults(true);
+        setIsPostSearch(true);
+      } catch (error) {
+        console.error("Error al buscar posts:", error);
+        setPostResults([]);
+        if (invokedByFallback) setIsPostSearch(false);
+      } finally {
+        setSearchLoading(false);
+      }
+    },
+    []
+  );
 
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  const handleSearchUsers = useCallback(
+    async (query, { fallbackTried = false } = {}) => {
+      if (!query || query.trim() === "") {
+        setSearchResults([]);
+        setPostResults([]);
+        setShowSearchResults(false);
+        return;
+      }
+      setSearchLoading(true);
+      try {
+        const res = await axios.get(
+          API_ENDPOINTS.SEARCH_USERS(query.trim())
+        );
+        const users = res.data.users || [];
+        setSearchResults(users);
+        setPostResults([]);
+        setShowSearchResults(true);
+        if (users.length === 0 && !fallbackTried) {
+          await handleSearchPosts(query.trim(), { invokedByFallback: true });
+        }
+      } catch (error) {
+        console.error("Error al buscar usuarios:", error);
+        setSearchResults([]);
+        setPostResults([]);
+        if (!fallbackTried) {
+          await handleSearchPosts(query.trim(), { invokedByFallback: true });
+        }
+      } finally {
+        setSearchLoading(false);
+      }
+    },
+    [handleSearchPosts]
+  );
 
-  /**
-   * Buscar usuarios en la base de datos
-   */
-  const handleSearchUsers = async (query) => {
-    if (!query || query.trim() === "") {
-      setSearchResults([]);
-      setShowSearchResults(false);
-      return;
-    }
-  setSearchLoading(true);
-    try {
-      const res = await axios.get(API_ENDPOINTS.SEARCH_USERS(query.trim()));
-      setSearchResults(res.data.users || []);
-      setShowSearchResults(true);
-    } catch (error) {
-      console.error("Error al buscar usuarios:", error);
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
+  // Debounce --------------------------------------------------------------
+  useEffect(() => {
+    const id = setTimeout(() => {
+      const raw = searchQuery.trim();
+      if (!raw) {
+        setSearchResults([]);
+        setPostResults([]);
+        setShowSearchResults(false);
+        setIsPostSearch(false);
+        return;
+      }
+      const postPrefix = /^post:\s*/i;
+      if (postPrefix.test(raw)) {
+        const cleaned = raw.replace(postPrefix, "").trim();
+        setIsPostSearch(true);
+        handleSearchPosts(cleaned);
+      } else if (raw.startsWith("#")) {
+        const cleaned = raw.slice(1).trim();
+        setIsPostSearch(true);
+        handleSearchPosts(cleaned);
+      } else {
+        setIsPostSearch(false);
+        handleSearchUsers(raw);
+      }
+    }, 150);
+    return () => clearTimeout(id);
+  }, [searchQuery, handleSearchUsers, handleSearchPosts]);
 
-  /**
-   * Seleccionar usuario de los resultados de búsqueda
-   */
+  // Selección -------------------------------------------------------------
   const handleSelectUser = (selectedUser) => {
     setShowSearchResults(false);
     setSearchQuery("");
     setSearchResults([]);
-    console.log("Usuario seleccionado:", selectedUser);
-    // Aquí puedes navegar al perfil del usuario
-    // navigate(`/perfil/${selectedUser._id}`);
+    navigate(`/profile/${selectedUser._id}`);
   };
 
-  /**
-   * Seguir usuario desde los resultados de búsqueda
-   */
+  const handleSelectPost = (post) => {
+    navigate(`/profile/${post.userId?._id || post.userId}`);
+    setShowSearchResults(false);
+    setSearchQuery("");
+    setPostResults([]);
+  };
+
+  // Follow / Unfollow -----------------------------------------------------
   const handleFollowFromSearch = async (targetUserId, e) => {
     e.stopPropagation();
-
-    // Verificar si ya está siguiendo al usuario usando la función isFollowing
-    if (isFollowing(targetUserId)) {
-      console.log("Ya sigues a este usuario");
-      return;
-    }
-
+    if (isFollowing(targetUserId)) return;
     const success = await onFollowUser(targetUserId);
-
-    // Solo recargar resultados si la operación fue exitosa
     if (success && searchQuery.trim()) {
-      setTimeout(() => {
-        handleSearchUsers(searchQuery);
-      }, 200);
+      setTimeout(() => handleSearchUsers(searchQuery), 200);
     }
   };
 
-  /**
-   * Dejar de seguir usuario desde los resultados de búsqueda
-   */
   const handleUnfollowFromSearch = async (targetUserId, e) => {
     e.stopPropagation();
-
-    // Verificar si realmente sigue al usuario usando la función isFollowing
-    if (!isFollowing(targetUserId)) {
-      console.log("No sigues a este usuario");
-      return;
-    }
-
+    if (!isFollowing(targetUserId)) return;
     const success = await onUnfollowUser(targetUserId);
-
-    // Solo recargar resultados si la operación fue exitosa
     if (success && searchQuery.trim()) {
-      setTimeout(() => {
-        handleSearchUsers(searchQuery);
-      }, 200);
+      setTimeout(() => handleSearchUsers(searchQuery), 200);
     }
   };
 
-  /**
-   * Cerrar sesión del usuario
-   */
+  // Logout ---------------------------------------------------------------
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/");
   };
 
-  /**
-   * Limpiar búsqueda
-   */
+  // Limpiar búsqueda -----------------------------------------------------
   const clearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
+    setPostResults([]);
     setShowSearchResults(false);
+    setIsPostSearch(false);
   };
-
-  
 
   return (
     <header className="navbar">
-      {/* Logo */}
-  <div className="logo-area" onClick={() => navigate("/home")}> 
+      <div className="logo-area" onClick={() => navigate("/home")}>
         <img src={logo} alt="RhythMe logo" className="logo1" />
       </div>
 
-      {/* Barra de búsqueda */}
       <div className="search-container" ref={searchRef}>
         <div className="search-input-wrapper" style={{ position: "relative" }}>
           <input
             type="text"
-            placeholder="Buscar usuarios..."
-            className={`search-bar ${searchQuery ? 'has-clear' : ''}`}
+            placeholder="Buscar usuarios o escribe 'post: palabra' / '#tag'..."
+            className={`search-bar ${searchQuery ? "has-clear" : ""}`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => searchQuery.trim() && setShowSearchResults(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const q = searchQuery.trim();
+                if (!q) return;
+                const postPrefix = /^post:\s*/i;
+                if (postPrefix.test(q)) {
+                  const cleaned = q.replace(postPrefix, "").trim();
+                  setIsPostSearch(true);
+                  handleSearchPosts(cleaned);
+                } else if (q.startsWith("#")) {
+                  const cleaned = q.slice(1).trim();
+                  setIsPostSearch(true);
+                  handleSearchPosts(cleaned);
+                } else {
+                  setIsPostSearch(false);
+                  handleSearchUsers(q, { fallbackTried: false });
+                }
+              }
+            }}
           />
-
-          {/* Botón limpiar búsqueda */}
           {searchQuery && (
-            <button onClick={clearSearch} className="clear-search-btn" title="Limpiar búsqueda">
+            <button
+              onClick={clearSearch}
+              className="clear-search-btn"
+              title="Limpiar búsqueda"
+            >
               ✕
             </button>
           )}
         </div>
-
-        {/* Resultados de búsqueda */}
         {showSearchResults && (
           <div className="search-results-panel">
             {searchLoading ? (
-              <div className="search-panel-loading">Buscando usuarios...</div>
+              <div className="search-panel-loading">
+                Buscando {isPostSearch ? "posts" : "usuarios"}...
+              </div>
+            ) : isPostSearch ? (
+              postResults.length > 0 ? (
+                <>
+                  <div className="search-panel-header">
+                    {postResults.length} post
+                    {postResults.length !== 1 ? "s" : ""} encontrado
+                    {postResults.length !== 1 ? "s" : ""}
+                  </div>
+                  {postResults.map((p) => (
+                    <div
+                      key={p._id}
+                      className="search-result-item"
+                      onClick={() => handleSelectPost(p)}
+                    >
+                      <div className="search-result-main">
+                        <div className="search-result-name">
+                          {(p.userId?.username || p.userId?.email || "Autor")} ▸
+                          {" "}
+                          {p.desc?.slice(0, 60) || "(sin descripción)"}
+                        </div>
+                        <div className="search-result-email time">
+                          {p.createdAt
+                            ? new Date(p.createdAt).toLocaleString()
+                            : ""}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : searchQuery.trim() && !searchLoading ? (
+                <div className="search-panel-empty">
+                  No se encontraron posts para "{searchQuery}"
+                </div>
+              ) : null
             ) : searchResults.length > 0 ? (
               <>
                 <div className="search-panel-header">
@@ -248,58 +320,48 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
                   {searchResults.length !== 1 ? "s" : ""} encontrado
                   {searchResults.length !== 1 ? "s" : ""}
                 </div>
-                {searchResults.map((searchUser) => (
+                {searchResults.map((su) => (
                   <div
-                    key={searchUser._id}
+                    key={su._id}
                     className="search-result-item"
-                    onClick={() => handleSelectUser(searchUser)}
+                    onClick={() => handleSelectUser(su)}
                   >
                     <img
-                      src={searchUser.profilePicture || userImg}
+                      src={su.profilePicture || userImg}
                       alt="avatar"
                       className="search-result-avatar"
                     />
                     <div className="search-result-main">
                       <div className="search-result-name">
-                        {searchUser.username || searchUser.name || "Usuario"}
+                        {su.username || su.name || "Usuario"}
                       </div>
-                      <div className="search-result-email">
-                        {searchUser.email}
-                      </div>
-                      {searchUser.desc && (
+                      <div className="search-result-email">{su.email}</div>
+                      {su.desc && (
                         <div className="search-result-desc">
-                          {searchUser.desc.length > 50
-                            ? `${searchUser.desc.substring(0, 50)}...`
-                            : searchUser.desc}
+                          {su.desc.length > 50
+                            ? `${su.desc.substring(0, 50)}...`
+                            : su.desc}
                         </div>
                       )}
                     </div>
-
-                    {/* Botones de seguir/dejar de seguir */}
                     <div className="search-result-actions">
-                      {searchUser._id === user?._id ? (
+                      {su._id === user?._id ? (
                         <span className="search-self-pill">Tú</span>
-                      ) : isFollowing(searchUser._id) ? (
+                      ) : isFollowing(su._id) ? (
                         <button
-                          onClick={(e) =>
-                            handleUnfollowFromSearch(searchUser._id, e)
-                          }
-                          disabled={followLoading[searchUser._id]}
+                          onClick={(e) => handleUnfollowFromSearch(su._id, e)}
+                          disabled={followLoading[su._id]}
                           className="btn-unfollow"
                         >
-                          {followLoading[searchUser._id]
-                            ? "..."
-                            : "Dejar de seguir"}
+                          {followLoading[su._id] ? "..." : "Dejar de seguir"}
                         </button>
                       ) : (
                         <button
-                          onClick={(e) =>
-                            handleFollowFromSearch(searchUser._id, e)
-                          }
-                          disabled={followLoading[searchUser._id]}
+                          onClick={(e) => handleFollowFromSearch(su._id, e)}
+                          disabled={followLoading[su._id]}
                           className="btn-follow"
                         >
-                          {followLoading[searchUser._id] ? "..." : "Seguir"}
+                          {followLoading[su._id] ? "..." : "Seguir"}
                         </button>
                       )}
                     </div>
@@ -307,78 +369,73 @@ const unreadCount = notifications.filter((n) => !n.isRead).length;
                 ))}
               </>
             ) : searchQuery.trim() && !searchLoading ? (
-              <div className="search-panel-empty">No se encontraron usuarios para "{searchQuery}"</div>
+              <div className="search-panel-empty">
+                No se encontraron {isPostSearch ? "posts" : "usuarios"} para "
+                {searchQuery}"
+              </div>
             ) : null}
           </div>
         )}
       </div>
 
-      {/* Iconos de navegación */}
-      <div className="navbar-icons" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div
+        className="navbar-icons"
+        style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
+      >
         <ThemeToggle />
         <span className="icon notif notif-wrapper">
-  <button
-    onClick={toggleDropdown}
-    className="notif-button"
-    title="Notificaciones"
-  >
-    <FontAwesomeIcon icon={faBell} size="lg" />
-    {unreadCount > 0 && (
-      <span className="notif-badge">
-        {unreadCount}
-      </span>
-    )}
-  </button>
-
-  {showDropdown && (
-    <div className="notif-dropdown">
-      <div className="notif-title">
-        Notificaciones
-      </div>
-      {notifications.length === 0 ? (
-        <div className="notif-empty">
-          No tienes notificaciones.
-        </div>
-      ) : (
-        notifications.map((n) => (
-          <div
-            key={n._id}
-            onClick={() => markAsRead(n._id)}
-            className={`notif-item ${n.isRead ? '' : 'notif-item-unread'}`}
-          >
-            {n.message}
-          </div>
-        ))
-      )}
-    </div>
-  )}
-</span>
-
-
-        {/* Menú de usuario */}
-    <span className="icon user user-menu-wrapper">
           <button
-      className="action-btn user-menu-button"
+            onClick={toggleDropdown}
+            className="notif-button"
+            title="Notificaciones"
+          >
+            <FontAwesomeIcon icon={faBell} size="lg" />
+            {unreadCount > 0 && (
+              <span className="notif-badge">{unreadCount}</span>
+            )}
+          </button>
+          {showDropdown && (
+            <div className="notif-dropdown">
+              <div className="notif-title">Notificaciones</div>
+              {notifications.length === 0 ? (
+                <div className="notif-empty">No tienes notificaciones.</div>
+              ) : (
+                notifications.map((n) => (
+                  <div
+                    key={n._id}
+                    onClick={() => markAsRead(n._id)}
+                    className={`notif-item ${n.isRead ? "" : "notif-item-unread"}`}
+                  >
+                    {n.message}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </span>
+        <span className="icon user user-menu-wrapper">
+          <button
+            className="action-btn user-menu-button"
             onClick={() => setUserMenuOpen((v) => !v)}
           >
             <FontAwesomeIcon icon={faUser} className="user-menu-icon" />
           </button>
           {userMenuOpen && (
-      <div ref={userMenuRef} className="user-menu-panel">
+            <div ref={userMenuRef} className="user-menu-panel">
               <button
-        className="action-btn user-menu-item"
+                className="action-btn user-menu-item"
                 onClick={() => navigate(`/profile/${user._id}`)}
               >
                 Mi Perfil
               </button>
               <button
-        className="action-btn user-menu-item"
-                onClick={() => navigate('/edit-profile')}
+                className="action-btn user-menu-item"
+                onClick={() => navigate("/edit-profile")}
               >
                 Editar Perfil
               </button>
               <button
-        className="action-btn user-menu-item"
+                className="action-btn user-menu-item"
                 onClick={handleLogout}
               >
                 Cerrar sesión

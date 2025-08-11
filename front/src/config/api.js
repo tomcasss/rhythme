@@ -33,6 +33,7 @@ export const API_ENDPOINTS = {
   GET_TIMELINE_POSTS: (userId) => `${BASE_URL}/posts/get-timeline-posts/${userId}`,
   GET_USER_POSTS: (userId) => `${BASE_URL}/posts/get-user-posts/${userId}`,
   GET_RECOMMENDED_POSTS: (userId, limit) => `${BASE_URL}/posts/recommended/${userId}${limit ? `?limit=${limit}` : ''}`,
+  SEARCH_POSTS: (query) => `${BASE_URL}/posts/search?q=${encodeURIComponent(query)}`,
   
   // Comment endpoints
   COMMENT_POST: (id) => `${BASE_URL}/posts/comment-post/${id}`,

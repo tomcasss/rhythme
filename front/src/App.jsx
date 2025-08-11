@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import AdminPanel from './pages/AdminPanel';
-import { Perfil_usuario } from './pages/Perfil_usuario';
-import { Editar_usuario } from './pages/Editar_usuario';
+import { Perfil_usuario } from './pages/Perfil_usuario.jsx';
+import Editar_usuario from './pages/Editar_usuario.jsx';
 import SpotifyCallback from './components/SpotifyCallback';
 
 function App() {

@@ -2,7 +2,6 @@
   position: sticky;
   top: 70px; /* keep below sticky navbar (70px) */
   z-index: 900; /* below navbar (1000), above content */
-  margin-top: 180px;
   margin-bottom: 2rem;
 }
 
