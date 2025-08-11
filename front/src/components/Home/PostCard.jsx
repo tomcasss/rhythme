@@ -241,7 +241,7 @@ export default function PostCard({
         {/* Menú de opciones (propios: editar/eliminar, ajenos: reportar) */}
         <div className="post-options-wrapper">
           <button
-            className="action-btn"
+            className="action-btn-options"
             onClick={() => setOpenMenu(!openMenu)}
             title="Opciones"
           >
@@ -252,13 +252,13 @@ export default function PostCard({
               {isOwnPost() ? (
                 <>
                   <button
-                    className="action-btn post-options-item"
+                    className="action-btn-options post-options-item"
                     onClick={handleDelete}
                   >
                     <FontAwesomeIcon icon={faTrash} /> Eliminar
                   </button>
                   <button
-                    className="action-btn post-options-item"
+                    className="action-btn-options post-options-item"
                     onClick={startEdit}
                   >
                     <FontAwesomeIcon icon={faPencil} /> Editar
@@ -267,7 +267,7 @@ export default function PostCard({
               ) : (
                 <>
                   <button
-                    className="action-btn post-options-item"
+                    className="action-btn-options post-options-item"
                     onClick={async () => {
                       setOpenMenu(false);
                       const { value: reason } = await Swal.fire({
@@ -360,10 +360,10 @@ export default function PostCard({
       {/* Acciones del post */}
       {!isEditing && (
         <div className="post-actions">
-          <button className="action-btn" onClick={() => onLike(post._id)}>
+          <button className="action-btn-inter" onClick={() => onLike(post._id)}>
             {post.likes && post.likes.includes(user?._id) ? "🎶" : "🎵"} {post.likes?.length || 0}
           </button>
-          <button className="action-btn" onClick={toggleComments}>
+          <button className="action-btn-inter" onClick={toggleComments}>
             💬 {post.comments?.length || 0}
           </button>
         </div>

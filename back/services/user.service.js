@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import userModel from "../models/user.model.js";
 import ReportModel from "../models/report.model.js";
+import { createNotification } from "./notification.service.js";
 import postModel from "../models/post.model.js";
 
 export const updateUser = async (userId, updateData) => {
@@ -295,25 +296,50 @@ export const isVisibilityAllowed = (viewer, owner, section) => {
 };
 
 // ----- Reportes de usuarios -----
-export const reportUser = async ({ reporterId, targetUserId, reason, description }) => {
+export const reportUser = async ({ reporterId, targetUserId, targetPostId = null, reason, description }) => {
   if (reporterId === targetUserId) throw new Error('Cannot report yourself');
   const today = new Date();
   const since = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-  const existing = await ReportModel.findOne({ reporterId, targetUserId, createdAt: { $gte: since } });
+  const existing = await ReportModel.findOne({ reporterId, targetUserId, targetPostId, createdAt: { $gte: since } });
   if (existing) {
     return { throttled: true };
   }
-  const doc = await ReportModel.create({ reporterId, targetUserId, reason, description });
+  const doc = await ReportModel.create({ reporterId, targetUserId, targetPostId, reason, description });
   return { success: true, report: doc };
 };
 
 export const listReports = async ({ status = 'open', limit = 50 } = {}) => {
   const query = status ? { status } : {};
-  return ReportModel.find(query).sort({ createdAt: -1 }).limit(limit).lean();
+  return ReportModel.find(query)
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .populate('reporterId', 'username email')
+    .populate('targetUserId', 'username email')
+    .populate('targetPostId', 'desc createdAt')
+    .lean();
 };
 
-export const markReportReviewed = async (reportId) => {
-  const report = await ReportModel.findByIdAndUpdate(reportId, { $set: { status: 'reviewed' } }, { new: true });
+export const markReportReviewed = async (reportId, { adminResponseMessage, adminId } = {}) => {
+  const update = { status: 'reviewed' };
+  if (adminResponseMessage) {
+    update.adminResponse = { message: adminResponseMessage, adminId, respondedAt: new Date() };
+  }
+  const report = await ReportModel.findByIdAndUpdate(reportId, { $set: update }, { new: true })
+    .populate('reporterId', 'username email')
+    .populate('targetUserId', 'username email')
+    .populate('targetPostId', 'desc createdAt');
   if (!report) throw new Error('Report not found');
+  if (adminResponseMessage && report.reporterId?._id) {
+    try {
+      await createNotification({
+        userId: report.reporterId._id,
+        type: 'report_response',
+        message: adminResponseMessage,
+        postId: report.targetPostId?._id || null
+      });
+    } catch (e) {
+      console.warn('Failed to create report response notification', e?.message || e);
+    }
+  }
   return report;
 };

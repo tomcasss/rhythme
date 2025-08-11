@@ -91,7 +91,7 @@ export const deletePost = async (params, body) => {
     // Solo el autor puede eliminar
     if (!deletedPost) {
       throw new Error("Post not found");
-    } else if (deletedPost.userId.toString() === body.userId.toString()) {
+  } else if (deletedPost.userId.toString() === body.userId.toString() || body.isAdmin) {
       await postModel.deleteOne({ _id: params.id });
       return deletedPost;
     } else {

@@ -215,12 +215,12 @@ export const reactivateAccountController = async (req, res) => {
 };
 
 export const reportUserController = async (req, res) => {
-  const reporterId = req.body.userId;
-  const targetUserId = req.params.id;
-  const { reason, description } = req.body;
+  const reporterId = req.body.userId; // usuario autenticado
+  const targetUserId = req.params.id; // usuario reportado
+  const { reason, description, postId } = req.body;
   if (!reporterId) return res.status(400).json({ message: 'Missing reporterId' });
   try {
-    const result = await reportUser({ reporterId, targetUserId, reason, description });
+    const result = await reportUser({ reporterId, targetUserId, targetPostId: postId, reason, description });
     if (result.throttled) return res.status(429).json({ message: 'Report already submitted in last 24h' });
     res.status(201).json({ message: 'Report submitted', report: result.report });
   } catch (error) {
@@ -229,8 +229,12 @@ export const reportUserController = async (req, res) => {
 };
 
 export const listReportsController = async (req, res) => {
-  // Simple: require isAdmin flag in body (placeholder auth)
-  if (!req.body.isAdmin) return res.status(403).json({ message: 'Admin only' });
+  // Placeholder auth: accept admin flag from body, query (?isAdmin=true) or header (x-admin:true)
+  const bodyFlag = req.body && (req.body.isAdmin === true || req.body.isAdmin === 'true');
+  const queryFlag = req.query && req.query.isAdmin === 'true';
+  const headerFlag = /true/i.test(String(req.headers['x-admin'] || ''));
+  const isAdmin = bodyFlag || queryFlag || headerFlag;
+  if (!isAdmin) return res.status(403).json({ message: 'Admin only' });
   try {
     const reports = await listReports({ status: req.query.status, limit: req.query.limit ? Number(req.query.limit) : 50 });
     res.status(200).json({ reports, message: 'Reports listed' });
@@ -240,9 +244,11 @@ export const listReportsController = async (req, res) => {
 };
 
 export const markReportReviewedController = async (req, res) => {
-  if (!req.body.isAdmin) return res.status(403).json({ message: 'Admin only' });
+  const isAdmin = req.body?.isAdmin || req.query?.isAdmin || req.headers['x-admin'] === 'true';
+  if (!isAdmin) return res.status(403).json({ message: 'Admin only' });
   try {
-    const report = await markReportReviewed(req.params.reportId);
+    const { adminResponseMessage, adminId } = req.body || {};
+    const report = await markReportReviewed(req.params.reportId, { adminResponseMessage, adminId });
     res.status(200).json({ message: 'Report marked as reviewed', report });
   } catch (error) {
     res.status(404).json({ message: error.message || 'Update failed' });

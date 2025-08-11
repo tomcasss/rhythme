@@ -144,20 +144,6 @@
   gap: 1rem;
 }
 
-.action-btn {
-  background: none;
-  border: none;
-  font-size: 0.8rem;
-  cursor: pointer;
-  color: #777;
-  transition: color 0.3s ease;
-}
-
-.action-btn:hover {
-  color: rgb(255, 47, 0);
-}
-
-
 /* Estilos para los resultados de búsqueda */
 .search-results {
   position: absolute !important;

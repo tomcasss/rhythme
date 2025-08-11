@@ -30,21 +30,28 @@ export default function PostDetail() {
 
   useEffect(() => {
     const fetchPost = async () => {
-      if (!postId) return;
+      if (!postId || !currentUser?._id) return;
       setLoading(true);
       setError('');
       try {
-        const res = await axios.get(API_ENDPOINTS.GET_POST(postId));
+        // incluir viewerId para que el backend pueda evaluar privacidad/bloqueo
+        const res = await axios.get(API_ENDPOINTS.GET_POST(postId), { params: { viewerId: currentUser._id } });
         setPost(res.data.post || res.data);
       } catch (err) {
-        console.error('Error obteniendo post:', err);
-        setError('No se pudo cargar el post');
+        console.error('Error obteniendo post:', err?.response?.status, err?.response?.data);
+        if (err?.response?.status === 403) {
+          setError('No tienes permiso para ver este post');
+        } else if (err?.response?.status === 404) {
+          setError('Post no encontrado');
+        } else {
+          setError('No se pudo cargar el post');
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchPost();
-  }, [postId]);
+  }, [postId, currentUser?._id]);
 
   // Placeholder handlers simplificados (puedes extender luego)
   const handleLike = async () => {};

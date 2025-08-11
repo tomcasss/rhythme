@@ -427,19 +427,19 @@ export default function Navbar({
           {userMenuOpen && (
             <div ref={userMenuRef} className="user-menu-panel">
               <button
-                className="action-btn user-menu-item"
+                className="action-btn-menu user-menu-item"
                 onClick={() => navigate(`/profile/${user._id}`)}
               >
                 Mi Perfil
               </button>
               <button
-                className="action-btn user-menu-item"
+                className="action-btn-menu user-menu-item"
                 onClick={() => navigate("/edit-profile")}
               >
                 Editar Perfil
               </button>
               <button
-                className="action-btn user-menu-item"
+                className="action-btn-menu user-menu-item"
                 onClick={handleLogout}
               >
                 Cerrar sesión

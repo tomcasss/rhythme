@@ -52,6 +52,7 @@ export const deletePostController = async (req, res) => {
   try {
     const deletedPost = await deletePost(req.params, {
       userId: req.params.userId,
+      isAdmin: req.body?.isAdmin || req.query?.isAdmin || req.headers['x-admin'] === 'true'
     });
     res.status(200).json({
       deletedPost,
@@ -61,7 +62,7 @@ export const deletePostController = async (req, res) => {
     console.log(error);
     res.status(500).json({
       message: "Post deletion failed",
-      error,
+      error: error.message || error,
     });
   }
 };

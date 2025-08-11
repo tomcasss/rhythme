@@ -57,6 +57,7 @@
   width: 100%;
   text-align: left;
   color: var(--color-primary-end);
+  background-color: none;
 }
 
 .post-edit-form {
@@ -143,4 +144,28 @@
   border-radius: 12px;
 }
 
+.action-btn-options {
+  background: none;
+  border: none;
+  color: var(--color-primary-end); 
+  padding: 0.5rem 1rem;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.action-btn-inter{
+  background: none;
+  border: none;
+  color: var(--color-text-faint);
+  padding: 0.5rem 1rem;
+  text-align: left;
+  width: 10%;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-size: 0.9rem;
+}
 
+.action-btn-options:hover {
+  background: var(--color-background-hover);
+}
