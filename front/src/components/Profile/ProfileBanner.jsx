@@ -2,6 +2,8 @@
 import perfil from '../../assets/perfil.png';
 import './ProfileBanner.css';
 import MusicPreferencesChips from './MusicPreferencesChips.jsx';
+import { useState } from 'react';
+import ImageModal from '../common/ImageModal.jsx';
 
 /**
  * Componente ProfileBanner - Banner principal del perfil de usuario
@@ -22,6 +24,7 @@ export default function ProfileBanner({
     isFollowing,
     followLoading
 }) {
+    const [showAvatarModal, setShowAvatarModal] = useState(false);
 
     /**
      * Manejar seguir usuario
@@ -56,7 +59,6 @@ export default function ProfileBanner({
     }
 
     return (
-
         <div className="banner-musico profile-banner-container">
             {/* Foto de portada/banner si existe */}
             {profileUser.coverPicture ? (
@@ -77,6 +79,9 @@ export default function ProfileBanner({
                     src={profileUser.profilePicture || perfil}
                     className="foto-perfil-grande"
                     alt="Perfil"
+                    onClick={() => (profileUser.profilePicture ? setShowAvatarModal(true) : null)}
+                    style={{ cursor: profileUser.profilePicture ? 'pointer' : 'default' }}
+                    title={profileUser.profilePicture ? 'Ver imagen' : undefined}
                 />
                 <div className="info-banner">
                     <h2>
@@ -146,8 +151,9 @@ export default function ProfileBanner({
                     )}
                 </div>
             </div>
+            {showAvatarModal && (
+                <ImageModal src={profileUser.profilePicture} alt="Foto de perfil" onClose={() => setShowAvatarModal(false)} />
+            )}
         </div>
-
-
     );
 }

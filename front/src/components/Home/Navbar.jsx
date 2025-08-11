@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "../../assets/logoR.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faBell } from "@fortawesome/free-solid-svg-icons";
-import userImg from "../../assets/user.png";
+import { faUser, faBell, faCircleUser} from "@fortawesome/free-solid-svg-icons";
 import { API_ENDPOINTS } from "../../config/api.js";
 import "./Navbar.css";
 import ThemeToggle from "../ThemeToggle.jsx";
@@ -188,7 +187,8 @@ export default function Navbar({
   };
 
   const handleSelectPost = (post) => {
-    navigate(`/profile/${post.userId?._id || post.userId}`);
+    // Navegar directamente al detalle del post
+    navigate(`/post/${post._id}`);
     setShowSearchResults(false);
     setSearchQuery("");
     setPostResults([]);
@@ -320,48 +320,52 @@ export default function Navbar({
                   {searchResults.length !== 1 ? "s" : ""} encontrado
                   {searchResults.length !== 1 ? "s" : ""}
                 </div>
-                {searchResults.map((su) => (
+                {searchResults.map((searchedUser) => (
                   <div
-                    key={su._id}
+                    key={searchedUser._id}
                     className="search-result-item"
-                    onClick={() => handleSelectUser(su)}
+                    onClick={() => handleSelectUser(searchedUser)}
                   >
-                    <img
-                      src={su.profilePicture || userImg}
-                      alt="avatar"
-                      className="search-result-avatar"
-                    />
+                    {searchedUser.profilePicture ? (
+                      <img
+                        src={searchedUser.profilePicture}
+                        alt={searchedUser.username || "usuario"}
+                        className="search-result-icon"
+                      />
+                    ) : (
+                      <FontAwesomeIcon icon={faCircleUser} className="search-result-icon" />
+                    )}
                     <div className="search-result-main">
                       <div className="search-result-name">
-                        {su.username || su.name || "Usuario"}
+                        {searchedUser.username || searchedUser.name || "Usuario"}
                       </div>
-                      <div className="search-result-email">{su.email}</div>
-                      {su.desc && (
+                      <div className="search-result-email">{searchedUser.email}</div>
+                      {searchedUser.desc && (
                         <div className="search-result-desc">
-                          {su.desc.length > 50
-                            ? `${su.desc.substring(0, 50)}...`
-                            : su.desc}
+                          {searchedUser.desc.length > 50
+                            ? `${searchedUser.desc.substring(0, 50)}...`
+                            : searchedUser.desc}
                         </div>
                       )}
                     </div>
                     <div className="search-result-actions">
-                      {su._id === user?._id ? (
+                      {searchedUser._id === user?._id ? (
                         <span className="search-self-pill">Tú</span>
-                      ) : isFollowing(su._id) ? (
+                      ) : isFollowing(searchedUser._id) ? (
                         <button
-                          onClick={(e) => handleUnfollowFromSearch(su._id, e)}
-                          disabled={followLoading[su._id]}
+                          onClick={(e) => handleUnfollowFromSearch(searchedUser._id, e)}
+                          disabled={followLoading[searchedUser._id]}
                           className="btn-unfollow"
                         >
-                          {followLoading[su._id] ? "..." : "Dejar de seguir"}
+                          {followLoading[searchedUser._id] ? "..." : "Dejar de seguir"}
                         </button>
                       ) : (
                         <button
-                          onClick={(e) => handleFollowFromSearch(su._id, e)}
-                          disabled={followLoading[su._id]}
+                          onClick={(e) => handleFollowFromSearch(searchedUser._id, e)}
+                          disabled={followLoading[searchedUser._id]}
                           className="btn-follow"
                         >
-                          {followLoading[su._id] ? "..." : "Seguir"}
+                          {followLoading[searchedUser._id] ? "..." : "Seguir"}
                         </button>
                       )}
                     </div>

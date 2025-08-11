@@ -103,14 +103,31 @@
 .search-result-main { 
   flex: 1; 
 }
-.search-result-name { font-weight: 600; color: var(--color-text-secondary); }
-.search-result-email { font-size: 0.85rem; color: var(--color-text-muted); }
-.search-result-desc { font-size: 0.8rem; color: var(--color-text-faint); margin-top: 0.25rem; }
+.search-result-name { 
+  font-weight: 600; 
+  color: var(--color-text-secondary); 
+}
+.search-result-email { 
+  font-size: 0.85rem; 
+  color: var(--color-text-muted); 
+}
+.search-result-desc { 
+  font-size: 0.8rem; 
+  color: var(--color-text-faint); 
+  margin-top: 0.25rem; 
+}
 
 .search-result-actions { 
   display: flex; 
   align-items: center; 
   gap: 0.5rem; 
+}
+.search-result-icon {
+  width: 40px; 
+  height: 40px; 
+  border-radius: 50%; 
+  object-fit: cover; 
+  color: var(--color-text-faint);
 }
 
 .btn-unfollow { background: var(--color-danger); color: #fff; border: none; border-radius: 6px; padding: 0.25rem 0.5rem; font-size: 0.75rem; cursor: pointer; font-weight: 500; }

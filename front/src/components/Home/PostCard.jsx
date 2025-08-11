@@ -1,5 +1,6 @@
 // src/components/Home/PostCard.jsx
 import { useState, useRef, useEffect } from "react";
+import ImageModal from "../common/ImageModal.jsx";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPencil , faCircleUser } from "@fortawesome/free-solid-svg-icons";
@@ -30,7 +31,8 @@ export default function PostCard({
   onEdit,
   onFollow,
   onUnfollow,
-  isFollowing
+  isFollowing,
+  full = false // modo de detalle para mostrar contenido completo
 }) {
   const navigate = useNavigate();
 
@@ -47,6 +49,7 @@ export default function PostCard({
 
   // Estados para comentarios
   const [showComments, setShowComments] = useState(false);
+  const [showImgModal, setShowImgModal] = useState(false);
 
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
@@ -263,7 +266,7 @@ export default function PostCard({
       </div>
 
       {/* Contenido del post */}
-      <div className="post-content">
+  <div className={`post-content ${full ? 'post-content-full' : ''}`}>
         {isEditing ? (
           <form onSubmit={handleEditSubmit} className="post-edit-form">
             <textarea
@@ -302,8 +305,17 @@ export default function PostCard({
           </form>
         ) : (
           <>
-            <p className="post-text">{post.desc}</p>
-            {post.img && <img src={post.img} alt="post content" className="post-image" />}
+            <p className={`post-text ${full ? 'post-text-full' : ''}`}>{post.desc}</p>
+            {post.img && (
+              <img
+                src={post.img}
+                alt="post content"
+                className={`post-image ${full ? 'post-image-full' : ''}`}
+                onClick={() => setShowImgModal(true)}
+                style={{ cursor: 'pointer' }}
+                title="Ver imagen"
+              />
+            )}
             {post.spotifyContent && <SpotifyContent spotifyContent={post.spotifyContent} />}
           </>
         )}
@@ -324,6 +336,9 @@ export default function PostCard({
       {/* Sección de comentarios */}
       {showComments && !isEditing && (
         <CommentsSection postId={post._id} user={user} />
+      )}
+      {showImgModal && (
+        <ImageModal src={post.img} alt="Imagen del post" onClose={() => setShowImgModal(false)} />
       )}
     </div>
   );

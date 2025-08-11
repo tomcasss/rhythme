@@ -126,4 +126,21 @@
   color: var(--color-text-faint);
 }
 
+/* Modo detalle (full) */
+.post-content-full {
+  padding: 1rem 0.25rem 0.5rem;
+}
+.post-text-full {
+  white-space: pre-wrap;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.post-image-full {
+  width: 100%;
+  max-height: none;
+  object-fit: cover;
+  margin-top: 0.75rem;
+  border-radius: 12px;
+}
+
 

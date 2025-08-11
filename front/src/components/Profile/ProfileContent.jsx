@@ -1,6 +1,7 @@
 
 // src/components/Profile/ProfileContent.jsx
 import { useState } from 'react';
+import ImageModal from '../common/ImageModal.jsx';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
 import './ProfileContent.css';
@@ -21,6 +22,7 @@ import PostCard from '../Home/PostCard';
 export default function ProfileContent({ userId, viewerUser, followLoading = {}, isFollowing = () => false, onFollow = () => {}, onUnfollow = () => {} }) {
     const [selectedSection, setSelectedSection] = useState(null);
     const [userPosts, setUserPosts] = useState([]);
+    const [viewImageSrc, setViewImageSrc] = useState("");
     const [postsLoading, setPostsLoading] = useState(false);
     const [postsError, setPostsError] = useState("");
 
@@ -199,7 +201,14 @@ export default function ProfileContent({ userId, viewerUser, followLoading = {},
                                 )}
                                 {userPosts.filter(p => !!p.img).map(p => (
                                     <div key={p._id} className="photo-item">
-                                        <img src={p.img} alt="Foto" className="photo-img" />
+                                        <img
+                                            src={p.img}
+                                            alt="Foto"
+                                            className="photo-img"
+                                            onClick={() => setViewImageSrc(p.img)}
+                                            style={{ cursor: 'pointer' }}
+                                            title="Ver imagen"
+                                        />
                                     </div>
                                 ))}
                             </div>
@@ -217,6 +226,9 @@ export default function ProfileContent({ userId, viewerUser, followLoading = {},
                     </div>
                 )}
             </div>
+        {viewImageSrc && (
+            <ImageModal src={viewImageSrc} alt="Foto" onClose={() => setViewImageSrc("")} />
+        )}
         </div>
 
     );
