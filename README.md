@@ -34,10 +34,22 @@ RhythMe es una red social musical construida con el stack MERN (MongoDB, Express
 - Integración visual con FontAwesome para iconografía moderna.
 - Sistema de notificaciones para likes y comentarios.
 - Panel de administracion para los moderadores y admins de la red.
+- Controles de privacidad avanzados por sección: cada usuario puede definir la visibilidad de su perfil, posts, seguidores, y más, incluyendo bloqueo de usuarios.
+- Nuevo sistema de reportes: permite reportar usuarios y publicaciones, con gestión centralizada y workflow de revisión para administradores.
+- Gestión completa de cuenta: cambio de contraseña, actualización de privacidad, bloqueo/desbloqueo de usuarios, desactivación/reactivación y eliminación (soft/hard) de cuentas.
+- Acceso y visibilidad a posts y usuarios según configuración de privacidad y relación entre usuarios.
+- Mejoras en administración: soporte para cuentas admin reales y lógica mejorada en acciones sensibles.
 
 ## Novedades
 
 **Julio-Agosto 2025:**
+- Nuevo modelo y controlador para reportes de usuario y post (Report).
+- Nuevos endpoints: reporte de usuarios/posts, revisión de reportes, administración avanzada de cuentas y privacidad.
+- Mejoras en flujos de administración y control de permisos.
+- Mejoras de manejo de errores y feedback en acciones sensibles.
+- Soporte para búsqueda avanzada de posts y ampliación de información de usuario.
+- Configuración de Jest en VSCode para ejecución y debugging de tests.
+- Refactor de lógica de visibilidad y privacidad.
 - Se añadieron pruebas unitarias y de integración usando Jest para backend y frontend.
 - Incremento en el límite de elementos mostrados en componentes de Spotify (de 20 a 50).
 - Mejoras en el manejo de errores en servicios y controladores de posts y comentarios.
@@ -177,7 +189,20 @@ Accede al frontend normalmente en `http://localhost:5173` (o el puerto que indiq
   - **Seguir usuario:** `POST /api/v1/users/follow/:id`
   - **Dejar de seguir usuario:** `POST /api/v1/users/unfollow/:id`
   - **Buscar usuarios:** `GET /api/v1/users/search`
+  - **Reportar un usuario:** `POST /api/report/user`
+  - **Reportar un post:** `POST /api/report/post`
+  - **Listar reportes (solo admin):** `GET /api/report`
+  - **Marcar reporte como revisado (admin):** `PUT /api/report/:id/review`
+  - **Actualizar privacidad de usuario:** `PUT /api/user/privacy`
+  - **Bloquear usuario:** `PUT /api/user/block/:id`
+  - **Desbloquear usuario:** `PUT /api/user/unblock/:id`
+  - **Desactivar cuenta:** `PUT /api/user/deactivate`
+  - **Reactivar cuenta:** `PUT /api/user/reactivate`
+  - **Eliminar cuenta (soft o hard):** `DELETE /api/user`
+  - **Cambiar contraseña:** `PUT /api/user/password`
 - Posts y comentarios:
+  - **Buscar posts por descripción:** `GET /api/posts/search`
+  - **Obtener post con info avanzada de usuario:** `GET /api/posts/:id/details`
   - **Crear post:** `POST /api/v1/posts/`
   - **Editar post:** `PUT /api/v1/posts/:id`
   - **Eliminar post:** `DELETE /api/v1/posts/:id`
@@ -201,6 +226,8 @@ Accede al frontend normalmente en `http://localhost:5173` (o el puerto que indiq
   - `npm start` (corre el servidor en `localhost:5000`)
 - **Frontend:**
   - `npm run dev` (corre Vite en modo desarrollo)
+- **Tests:**
+  - `npm test` (Ejecuta los tests con Jest)
 
 ## Licencia
 
