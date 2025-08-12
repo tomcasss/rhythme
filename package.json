@@ -1,0 +1,21 @@
+{
+  "name": "rhythme-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Root workspace for RhythMe front and back projects",
+  "workspaces": [
+    "front",
+    "back"
+  ],
+  "scripts": {
+    "test": "jest --config=jest.config.mjs",
+    "test:all-seq": "npm run test -w front && npm run test -w back",
+    "test:front": "npm run test -w front",
+    "test:back": "npm run test -w back",
+    "test:watch": "jest --config=jest.config.mjs --watchAll",
+    "coverage": "jest --config=jest.config.mjs --coverage"
+  },
+  "devDependencies": {
+    "jest": "^30.0.5"
+  }
+}

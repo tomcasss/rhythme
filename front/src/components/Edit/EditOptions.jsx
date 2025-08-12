@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
+import Swal from 'sweetalert2';
+import './EditOptions.css';
 
 /**
  * Componente EditOptions - Opciones de edición y configuración del usuario
@@ -14,7 +16,9 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
   const [modalType, setModalType] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+  const [dragOver, setDragOver] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
   // Estados para los formularios
   const [formData, setFormData] = useState({
     username: '',
@@ -23,8 +27,20 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     coverPicture: '',
     desc: '',
     from: '',
-    relationship: 1
+    relationship: 1,
+    musicPreferences: [],
+    privacy: { profile: 'public', posts: 'public', friends: 'public' }, // Objeto de privacidad
+    currentPassword: '',
+    newPassword: '',
+    accountAction: ''
   });
+
+  const ALL_GENRES = [
+    'Rock', 'Pop', 'Metal', 'Hip-Hop', 'Rap', 'R&B', 'Reggaeton', 'Trap', 'Salsa', 'Cumbia',
+    'Bachata', 'Jazz', 'Blues', 'Country', 'Funk', 'Soul', 'Disco', 'House', 'Techno', 'Trance',
+    'EDM', 'Dubstep', 'Drum & Bass', 'Indie', 'Alternative', 'K-Pop', 'J-Pop', 'Lo-Fi', 'Classical',
+    'Opera', 'Soundtrack', 'Latin', 'Flamenco', 'Folk', 'Punk', 'Hardcore', 'Ska', 'Gospel', 'Ambient'
+  ];
 
   /**
    * Mostrar modal de edición
@@ -33,19 +49,35 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     setModalType(type);
     setShowModal(true);
     setError('');
-    
+    setUploadError('');
+    setDragOver(false);
+
     // Obtener datos actuales del usuario desde localStorage
     const currentUser = JSON.parse(localStorage.getItem("user"));
     if (currentUser) {
-      setFormData({
+      const privacyObj = currentUser.privacy && typeof currentUser.privacy === 'object'
+        ? {
+            profile: currentUser.privacy.profile || 'public',
+            posts: currentUser.privacy.posts || 'public',
+            friends: currentUser.privacy.friends || 'public'
+          }
+        : { profile: 'public', posts: 'public', friends: 'public' };
+
+      setFormData(prev => ({
+        ...prev,
         username: currentUser.username || '',
         email: currentUser.email || '',
         profilePicture: currentUser.profilePicture || '',
         coverPicture: currentUser.coverPicture || '',
         desc: currentUser.desc || '',
         from: currentUser.from || '',
-        relationship: currentUser.relationship || 1
-      });
+        relationship: currentUser.relationship || 1,
+        musicPreferences: currentUser.musicPreferences || [],
+        privacy: privacyObj,
+        currentPassword: '',
+        newPassword: '',
+        accountAction: ''
+      }));
     }
   };
 
@@ -74,14 +106,15 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
 
     try {
       let updateData = {};
-      
+      let request;
+
       // Preparar datos según el tipo de edición
       switch (modalType) {
         case 'name':
           updateData = { username: formData.username, userId: currentUser._id };
           break;
         case 'contact':
-          updateData = { 
+          updateData = {
             email: formData.email,
             from: formData.from,
             userId: currentUser._id
@@ -99,35 +132,148 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         case 'relationship':
           updateData = { relationship: parseInt(formData.relationship), userId: currentUser._id };
           break;
+        case 'preferences':
+          updateData = { musicPreferences: formData.musicPreferences, userId: currentUser._id };
+          break;
+        case 'privacy': {
+          updateData = { privacy: formData.privacy, userId: currentUser._id };
+          request = axios.patch(API_ENDPOINTS.UPDATE_PRIVACY(currentUser._id), updateData);
+          break;
+        }
+        case 'password': {
+          if (!formData.currentPassword || !formData.newPassword) {
+            setError('Debes completar ambos campos');
+            return;
+          }
+          request = axios.patch(API_ENDPOINTS.UPDATE_PASSWORD(currentUser._id), { userId: currentUser._id, currentPassword: formData.currentPassword, newPassword: formData.newPassword });
+          break;
+        }
+        case 'account': {
+          if (formData.accountAction === 'deactivate') {
+            request = axios.patch(API_ENDPOINTS.DEACTIVATE_ACCOUNT(currentUser._id), { userId: currentUser._id });
+          } else if (formData.accountAction === 'reactivate') {
+            request = axios.patch(API_ENDPOINTS.REACTIVATE_ACCOUNT(currentUser._id), { userId: currentUser._id });
+          } else if (formData.accountAction === 'delete') {
+            const confirm = await Swal.fire({ title: 'Eliminar cuenta', text: 'Esta acción es irreversible. ¿Continuar?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, eliminar' });
+            if (!confirm.isConfirmed) { setLoading(false); return; }
+            request = axios.delete(API_ENDPOINTS.DELETE_USER(currentUser._id), { data: { userId: currentUser._id } });
+          }
+          if (!request) { setLoading(false); return; }
+          break;
+        }
         default:
           setError("Tipo de edición no válido");
           return;
       }
 
-      // Llamar al backend
-      const response = await axios.put(API_ENDPOINTS.UPDATE_USER(currentUser._id), updateData);
-      
-      if (response.data && response.data.user) {
-        // Actualizar localStorage con los datos del usuario completo del backend
-        const updatedUser = { ...currentUser, ...response.data.user };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        
-        // Llamar callback del componente padre
-        if (onUpdateUser) {
-          await onUpdateUser(response.data.user);
+      if (!request) {
+        // Fallback a flujo existente
+        const response = await axios.put(API_ENDPOINTS.UPDATE_USER(currentUser._id), updateData);
+
+        if (response.data && response.data.user) {
+          // Actualizar localStorage con los datos del usuario completo del backend
+          const updatedUser = { ...currentUser, ...response.data.user };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+
+          // Llamar callback del componente padre
+          if (onUpdateUser) {
+            await onUpdateUser(response.data.user);
+          }
+
+          // Cerrar modal
+          setShowModal(false);
+          Swal.fire({
+            icon: 'success',
+            title: 'Perfil actualizado',
+            text: '¡Perfil actualizado exitosamente!',
+          });
+        } else {
+          setError("Error: Respuesta inválida del servidor");
         }
-        
-        // Cerrar modal
-        setShowModal(false);
-        alert("¡Perfil actualizado exitosamente!");
       } else {
-        setError("Error: Respuesta inválida del servidor");
+        const response = await request;
+        if (modalType === 'privacy' && response.data?.user) {
+          const updatedUser = { ...currentUser, ...response.data.user };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+        // Acciones post-cambio de cuenta
+        if (modalType === 'account' && ['deactivate', 'delete'].includes(formData.accountAction)) {
+          // Limpiar sesión local y cerrar sesión
+            localStorage.removeItem('user');
+            if (onLogout) onLogout();
+            Swal.fire({ icon: 'success', title: formData.accountAction === 'delete' ? 'Cuenta eliminada' : 'Cuenta desactivada', timer: 1800, showConfirmButton: false });
+        } else {
+          Swal.fire({ icon: 'success', title: 'Cambios aplicados', timer: 1500, showConfirmButton: false });
+        }
+        setShowModal(false);
       }
     } catch (error) {
-      console.error("Error al actualizar perfil:", error);
-      setError(error.response?.data?.message || "Error al actualizar el perfil");
+      Swal.fire({ icon: 'error', title: 'Error', text: error.response?.data?.message || 'Operación fallida' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Helpers para imágenes (mismo patrón que CreatePostForm)
+  const validateImageFile = (file, setErr) => {
+    if (!file.type || !file.type.startsWith('image/')) {
+      setErr('Solo se permiten imágenes');
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErr('La imagen debe ser menor a 5MB');
+      return false;
+    }
+    setErr('');
+    return true;
+  };
+
+  const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const handleFileInputChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!validateImageFile(file, setUploadError)) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      if (modalType === 'profile-picture') {
+        setFormData(prev => ({ ...prev, profilePicture: dataUrl }));
+      } else if (modalType === 'cover-picture') {
+        setFormData(prev => ({ ...prev, coverPicture: dataUrl }));
+      }
+    } catch {
+      setUploadError('No se pudo leer la imagen');
+    }
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    if (!validateImageFile(file, setUploadError)) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      if (modalType === 'profile-picture') {
+        setFormData(prev => ({ ...prev, profilePicture: dataUrl }));
+      } else if (modalType === 'cover-picture') {
+        setFormData(prev => ({ ...prev, coverPicture: dataUrl }));
+      }
+    } catch {
+      setUploadError('No se pudo leer la imagen');
+    }
+  };
+
+  const clearLocalImage = () => {
+    if (modalType === 'profile-picture') {
+      setFormData(prev => ({ ...prev, profilePicture: '' }));
+    } else if (modalType === 'cover-picture') {
+      setFormData(prev => ({ ...prev, coverPicture: '' }));
     }
   };
 
@@ -135,32 +281,16 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
    * Renderizar contenido del modal según el tipo
    */
   const renderModalContent = () => {
-    const inputStyle = {
-      width: '100%',
-      padding: '0.75rem',
-      border: '1px solid #ddd',
-      borderRadius: '5px',
-      fontSize: '1rem',
-      marginBottom: '1rem',
-      color: '#333',
-      backgroundColor: '#fff'
-    };
-
-    const buttonStyle = {
-      background: '#ff7a00',
-      color: 'white',
-      border: 'none',
-      padding: '0.75rem 1.5rem',
-      borderRadius: '5px',
-      cursor: 'pointer',
-      fontSize: '1rem',
-      marginRight: '0.5rem'
-    };
-
-    const cancelButtonStyle = {
-      ...buttonStyle,
-      background: '#6c757d'
-    };
+    const chip = (label, selected, onClick) => (
+      <button
+        key={label}
+        type="button"
+        onClick={onClick}
+        className={`chip ${selected ? 'chip-selected' : ''}`}
+      >
+        {label}
+      </button>
+    );
 
     switch (modalType) {
       case 'profile-picture':
@@ -168,33 +298,34 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           <>
 
             <h3>Editar Foto de Perfil</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
-            <div>
-              <label>URL de la imagen:</label>
-              <input
-                type="url"
-                placeholder="https://ejemplo.com/mi-foto.jpg"
-                value={formData.profilePicture}
-                onChange={(e) => handleInputChange('profilePicture', e.target.value)}
-                style={inputStyle}
-              />
-              {formData.profilePicture && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <p>Vista previa:</p>
-                  <img 
-                    src={formData.profilePicture} 
-                    alt="Preview" 
-                    style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%' }}
-                    onError={() => setError('URL de imagen no válida')}
-                  />
-                </div>
-              )}
+            {error && <p className="error-text">{error}</p>}
+            <div
+              className={`dropzone ${dragOver ? 'dragover' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+            >
+              <p style={{ margin: 0 }}>
+                Arrastra y suelta una imagen aquí o
+                <label style={{ color: '#fb7202', cursor: 'pointer', marginLeft: 4 }}>
+                  selecciónala
+                  <input type="file" accept="image/*" onChange={handleFileInputChange} disabled={loading} style={{ display: 'none' }} />
+                </label>
+              </p>
+              <small style={{ color: '#666' }}>Máximo 5MB. Formatos comunes de imagen.</small>
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            {formData.profilePicture && (
+              <div className="create-image-preview" style={{ marginTop: 12 }}>
+                <button type="button" className="remove-image-btn" onClick={clearLocalImage} title="Quitar imagen">×</button>
+                <img src={formData.profilePicture} alt="Preview" className="preview-image profile" />
+              </div>
+            )}
+            {uploadError && <div className="error-text" style={{ marginTop: 8 }}>{uploadError}</div>}
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -205,7 +336,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Nombre</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>Nombre de usuario:</label>
               <input
@@ -213,14 +344,14 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
                 placeholder="Tu nombre de usuario"
                 value={formData.username}
                 onChange={(e) => handleInputChange('username', e.target.value)}
-                style={inputStyle}
+                className="modal-input"
               />
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -231,7 +362,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Información de Contacto</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>Email:</label>
               <input
@@ -239,23 +370,23 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
                 placeholder="tu@email.com"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                style={inputStyle}
+                className="modal-input"
               />
-              
+
               <label>Ubicación (from):</label>
               <input
                 type="text"
                 placeholder="Ciudad, País"
                 value={formData.from}
                 onChange={(e) => handleInputChange('from', e.target.value)}
-                style={inputStyle}
+                className="modal-input"
               />
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -266,33 +397,34 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Foto de Portada</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
-            <div>
-              <label>URL de la imagen de portada:</label>
-              <input
-                type="url"
-                placeholder="https://ejemplo.com/mi-portada.jpg"
-                value={formData.coverPicture}
-                onChange={(e) => handleInputChange('coverPicture', e.target.value)}
-                style={inputStyle}
-              />
-              {formData.coverPicture && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <p>Vista previa:</p>
-                  <img 
-                    src={formData.coverPicture} 
-                    alt="Preview" 
-                    style={{ width: '200px', height: '100px', objectFit: 'cover', borderRadius: '10px' }}
-                    onError={() => setError('URL de imagen no válida')}
-                  />
-                </div>
-              )}
+            {error && <p className="error-text">{error}</p>}
+            <div
+              className={`dropzone ${dragOver ? 'dragover' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+            >
+              <p style={{ margin: 0 }}>
+                Arrastra y suelta una imagen aquí o
+                <label style={{ color: '#fb7202', cursor: 'pointer', marginLeft: 4 }}>
+                  selecciónala
+                  <input type="file" accept="image/*" onChange={handleFileInputChange} disabled={loading} style={{ display: 'none' }} />
+                </label>
+              </p>
+              <small style={{ color: '#666' }}>Máximo 5MB. Formatos comunes de imagen.</small>
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            {formData.coverPicture && (
+              <div className="create-image-preview" style={{ marginTop: 12 }}>
+                <button type="button" className="remove-image-btn" onClick={clearLocalImage} title="Quitar imagen">×</button>
+                <img src={formData.coverPicture} alt="Preview" className="preview-image cover" />
+              </div>
+            )}
+            {uploadError && <div className="error-text" style={{ marginTop: 8 }}>{uploadError}</div>}
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -303,7 +435,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Biografía</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>Descripción (máximo 250 caracteres):</label>
               <textarea
@@ -312,17 +444,64 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
                 onChange={(e) => handleInputChange('desc', e.target.value)}
                 maxLength={250}
                 rows={4}
-                style={{...inputStyle, resize: 'vertical'}}
+                className="modal-textarea"
               />
-              <small style={{color: '#6c757d'}}>
+              <small className="text-muted">
                 {formData.desc.length}/250 caracteres
               </small>
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
+                Cancelar
+              </button>
+            </div>
+          </>
+        );
+
+      case 'preferences':
+        return (
+          <>
+            <h3>Mis géneros musicales</h3>
+            {error && <p className="error-text">{error}</p>}
+            <p className="modal-hint">
+              Selecciona tus géneros favoritos. Se usarán para conectar con usuarios con gustos similares y mejorar las recomendaciones.
+            </p>
+            <div className="chips-container">
+              {ALL_GENRES.map((genre) => {
+                const selected = formData.musicPreferences.includes(genre);
+                return chip(genre, selected, () => {
+                  setFormData(prev => ({
+                    ...prev,
+                    musicPreferences: selected
+                      ? prev.musicPreferences.filter(x => x !== genre)
+                      : [...prev.musicPreferences, genre]
+                  }));
+                });
+              })}
+            </div>
+
+            {formData.musicPreferences.length > 0 && (
+              <div className="mt-1">
+                <strong>Seleccionados:</strong>
+                <div className="chips-selected">
+                  {formData.musicPreferences.map(genre => chip(genre, true, () => {
+                    setFormData(prev => ({
+                      ...prev,
+                      musicPreferences: prev.musicPreferences.filter(x => x !== genre)
+                    }));
+                  }))}
+                </div>
+              </div>
+            )}
+
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
+                {loading ? 'Guardando...' : 'Guardar'}
+              </button>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
@@ -333,38 +512,106 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Editar Estado de Relación</h3>
-            {error && <p style={{ color: '#e74c3c', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             <div>
               <label>Estado de relación:</label>
               <select
                 value={formData.relationship}
                 onChange={(e) => handleInputChange('relationship', e.target.value)}
-                style={inputStyle}
+                className="modal-select"
               >
                 <option value={1}>Soltero/a</option>
                 <option value={2}>En una relación</option>
                 <option value={3}>Casado/a</option>
               </select>
             </div>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button onClick={handleSaveChanges} style={buttonStyle} disabled={loading}>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>
-              <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">
                 Cancelar
               </button>
             </div>
           </>
         );
 
-      default:
+      case 'privacy':
         return (
           <>
-            <h3>Funcionalidad en desarrollo</h3>
-            <p>La opción "{modalType}" estará disponible próximamente.</p>
-            <button onClick={() => setShowModal(false)} style={buttonStyle}>
-              Cerrar
-            </button>
+            <h3>Privacidad y visibilidad</h3>
+            <p className="modal-hint">Controla quién puede ver tu perfil, tus posts y tu lista de amigos/seguidores.</p>
+            <div className="mb-1">
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Perfil</label>
+              <select
+                className="modal-select"
+                value={formData.privacy?.profile || 'public'}
+                onChange={e => setFormData(p => ({ ...p, privacy: { ...(p.privacy||{}), profile: e.target.value } }))}
+              >
+                <option value="public">Público (todos)</option>
+                <option value="followers">Solo seguidores</option>
+                <option value="private">Solo yo</option>
+              </select>
+            </div>
+            <div className="mb-1">
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Posts</label>
+              <select
+                className="modal-select"
+                value={formData.privacy?.posts || 'public'}
+                onChange={e => setFormData(p => ({ ...p, privacy: { ...(p.privacy||{}), posts: e.target.value } }))}
+              >
+                <option value="public">Público (todos)</option>
+                <option value="followers">Solo seguidores</option>
+                <option value="private">Solo yo</option>
+              </select>
+            </div>
+            <div className="mb-1">
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Amigos / Seguidores</label>
+              <select
+                className="modal-select"
+                value={formData.privacy?.friends || 'public'}
+                onChange={e => setFormData(p => ({ ...p, privacy: { ...(p.privacy||{}), friends: e.target.value } }))}
+              >
+                <option value="public">Público (todos)</option>
+                <option value="followers">Solo seguidores</option>
+                <option value="private">Solo yo</option>
+              </select>
+            </div>
+            <small className="text-muted">Los cambios afectan inmediatamente el acceso a tu contenido.</small>
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>{loading ? 'Guardando...' : 'Guardar'}</button>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">Cancelar</button>
+            </div>
+          </>
+        );
+      case 'password':
+        return (
+          <>
+            <h3>Cambiar contraseña</h3>
+            <input type="password" placeholder="Contraseña actual" value={formData.currentPassword||''} onChange={e=>setFormData(p=>({...p,currentPassword:e.target.value}))} />
+            <input type="password" placeholder="Nueva contraseña" value={formData.newPassword||''} onChange={e=>setFormData(p=>({...p,newPassword:e.target.value}))} />
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading}>{loading ? 'Actualizando...' : 'Actualizar'}</button>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">Cancelar</button>
+            </div>
+          </>
+        );
+      case 'account':
+        return (
+          <>
+            <h3>Estado de la cuenta</h3>
+            <p>Selecciona una acción:</p>
+            <select value={formData.accountAction||''} onChange={e=>setFormData(p=>({...p,accountAction:e.target.value}))}>
+              <option value="">-- Seleccionar --</option>
+              <option value="deactivate">Desactivar</option>
+              <option value="reactivate">Reactivar</option>
+              <option value="delete">Eliminar permanentemente</option>
+            </select>
+            {formData.accountAction === 'delete' && <p style={{color:'#e74c3c'}}>Esta acción no se puede deshacer.</p>}
+            <div className="modal-actions">
+              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading || !formData.accountAction}>{loading ? 'Procesando...' : 'Confirmar'}</button>
+              <button onClick={() => setShowModal(false)} className="modal-btn cancel">Cancelar</button>
+            </div>
           </>
         );
     }
@@ -383,87 +630,92 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
     <div className="columna-derecha">
       <div className="opciones">
         <h3>Editar mi información</h3>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('profile-picture')}
         >
           Editar mi foto de perfil
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('cover-picture')}
         >
           Editar foto de portada
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('name')}
         >
           Editar mi nombre
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('contact')}
         >
           Editar mi contacto
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('bio')}
         >
           Editar biografía
         </button>
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('relationship')}
         >
           Estado de relación
         </button>
-        
+
         <hr />
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('privacy')}
         >
           Privacidad y Seguridad
         </button>
-        
+
+        <button
+          className="btn-opcion"
+          onClick={() => handleEditOption('password')}
+        >
+          Cambiar contraseña
+        </button>
+
+        <button
+          className="btn-opcion"
+          onClick={() => handleEditOption('account')}
+        >
+          Configuración de cuenta
+        </button>
+
         <hr />
-        
-        <button 
+
+        <button
           className="btn-opcion"
           onClick={() => handleEditOption('preferences')}
         >
           Mis Preferencias
         </button>
-        
+
         <hr />
-        
-        <button 
-          className="btn-opcion"
-          onClick={() => handleEditOption('activity')}
-        >
-          Mi Actividad
-        </button>
-        
-        <hr />
-        
+
         <div className="acciones">
-          <button 
+          <button
             className="reporte"
             onClick={() => handleEditOption('report')}
           >
             Reportar un problema
           </button>
-          
-          <button 
+
+          <button
             className="cerrar-sesion"
             onClick={handleLogoutConfirm}
           >
@@ -474,27 +726,8 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
 
       {/* Modal funcional para edición */}
       {showModal && (
-        <div className="modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div className="modal-content" style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '10px',
-            maxWidth: '500px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflowY: 'auto'
-          }}>
+        <div className="modal-overlay">
+          <div className="modal-content">
             {renderModalContent()}
           </div>
         </div>

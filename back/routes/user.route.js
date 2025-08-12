@@ -1,5 +1,5 @@
 import express from 'express';
-import { deleteUserController, getUserController, updateUserController, followUserController, unFollowUserController, searchUsersController } from '../controllers/user.controller.js';
+import { deleteUserController, getUserController, updateUserController, followUserController, unFollowUserController, searchUsersController, getFriendRecommendationsController, changePasswordController, updatePrivacyController, blockUserController, unblockUserController, deactivateAccountController, reactivateAccountController, reportUserController, listReportsController, markReportReviewedController } from '../controllers/user.controller.js';
 import User from "../models/user.model.js";
 
 
@@ -7,8 +7,28 @@ const router = express.Router();
 
 // Search users
 router.get('/search', searchUsersController);
+// Friend recommendations
+router.get('/:userId/recommendations/friends', getFriendRecommendationsController);
 //Update user profile
 router.put('/:id', updateUserController);
+// Change password
+router.patch('/:id/password', changePasswordController);
+// Update privacy settings
+router.patch('/:id/privacy', updatePrivacyController);
+// Block user
+router.post('/:id/block/:targetId', blockUserController);
+// Unblock user
+router.delete('/:id/block/:targetId', unblockUserController);
+// Deactivate account
+router.patch('/:id/deactivate', deactivateAccountController);
+// Reactivate account
+router.patch('/:id/reactivate', reactivateAccountController);
+// Report user
+router.post('/:id/report', reportUserController);
+// List reports (admin)
+router.get('/reports/all', listReportsController);
+// Mark report reviewed
+router.patch('/reports/:reportId/review', markReportReviewedController);
 // Delete user profile
 router.delete('/:id', deleteUserController);
 // Get user profile

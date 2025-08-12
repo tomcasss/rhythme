@@ -435,7 +435,7 @@ export const validateSpotifyToken = async (accessToken) => {
 /**
  * Obtener playlists del usuario autenticado
  */
-export const getUserPlaylists = async (accessToken, limit = 20, offset = 0) => {
+export const getUserPlaylists = async (accessToken, limit = 50, offset = 0) => {
     try {
         const response = await axios({
             method: 'get',
@@ -459,7 +459,7 @@ export const getUserPlaylists = async (accessToken, limit = 20, offset = 0) => {
 /**
  * Obtener canciones guardadas del usuario
  */
-export const getUserSavedTracks = async (accessToken, limit = 20, offset = 0) => {
+export const getUserSavedTracks = async (accessToken, limit = 50, offset = 0) => {
     try {
         const response = await axios({
             method: 'get',
@@ -483,7 +483,7 @@ export const getUserSavedTracks = async (accessToken, limit = 20, offset = 0) =>
 /**
  * Obtener top artistas del usuario
  */
-export const getUserTopArtists = async (accessToken, limit = 20, timeRange = 'medium_term') => {
+export const getUserTopArtists = async (accessToken, limit = 50, timeRange = 'medium_term') => {
     try {
         const response = await axios({
             method: 'get',
@@ -507,7 +507,7 @@ export const getUserTopArtists = async (accessToken, limit = 20, timeRange = 'me
 /**
  * Obtener top canciones del usuario
  */
-export const getUserTopTracks = async (accessToken, limit = 20, timeRange = 'medium_term') => {
+export const getUserTopTracks = async (accessToken, limit = 50, timeRange = 'medium_term') => {
     try {
         const response = await axios({
             method: 'get',

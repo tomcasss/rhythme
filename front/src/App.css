@@ -3,11 +3,11 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-  background-color: #df8939;
+  background-color: var(--color-app-bg-alt);
 }
 
 body, html {
-  background-color: #eaaf77;
+  background-color: var(--color-app-bg);
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -15,17 +15,17 @@ body, html {
 
 /* Aplicar fondo a toda la aplicación */
 .App {
-  background-color: #eaa86a;
+  background-color: var(--color-app-bg);
   min-height: 100vh;
 }
 
 /* Asegurar que todos los contenedores principales tengan el fondo */
-.container, .contenido {
-  background-color: #df8939;
+.container, .contenido { 
+  background-color: var(--color-app-bg-alt); 
 }
 
-.body {
-  background-color: #eaaf77;
+.body { 
+  background-color: var(--color-app-bg); 
 }
 .logo {
   height: 6em;
@@ -33,11 +33,11 @@ body, html {
   will-change: filter;
   transition: filter 300ms;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.logo:hover { 
+  filter: drop-shadow(0 0 2em var(--color-primary-end)); 
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.logo.react:hover { 
+  filter: drop-shadow(0 0 2em var(--color-primary-start)); 
 }
 
 @keyframes logo-spin {
@@ -59,6 +59,6 @@ body, html {
   padding: 2em;
 }
 
-.read-the-docs {
-  color: #888;
+.read-the-docs { 
+  color: var(--color-text-faint); 
 }

@@ -44,11 +44,11 @@ export const useFollowSystem = (user) => {
     const followingArray = Array.from(followingUsers).map(id => String(id));
     const hasUser = followingArray.includes(targetIdStr);
     
-    console.log(`🔍 isFollowing(${targetIdStr}):`, {
+    /* console.log(`🔍 isFollowing(${targetIdStr}):`, {
       followingArray,
       hasUser,
       followingUsersSize: followingUsers.size
-    });
+    }); */
     
     return hasUser;
   }, [followingUsers]);

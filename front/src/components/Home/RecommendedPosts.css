@@ -1,0 +1,12 @@
+/* Styles for RecommendedPosts component */
+.reco-section {
+  margin-top: 1.5rem;
+}
+
+.reco-title {
+  margin: 0 0 0.5rem 0;
+}
+
+.reco-error {
+  color: var(--color-danger-alt);
+}

@@ -4,7 +4,20 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+  "test": "jest",
+    "test:all": "node tests/run-all-tests.js",
+    "test:services": "node tests/user.service.test.js && node tests/post.service.test.js && node tests/notification.service.test.js && node tests/auth.service.test.js",
+    "test:controllers": "node tests/post.controller.test.js",
+    "test:routes": "node tests/routes.integration.test.js",
+    "test:models": "node tests/models.validation.test.js",
+    "test:api": "node tests/api.integration.test.js",
+    "test:comprehensive": "npm run test:services && npm run test:controllers && npm run test:routes && npm run test:models && npm run test:api",
+    "test:user": "node tests/user.service.test.js",
+    "test:post": "node tests/post.service.test.js",
+    "test:notification": "node tests/notification.service.test.js",
+    "test:auth": "node tests/auth.service.test.js",
+    "test:watch": "nodemon --exec \"npm test\" --watch tests/"
   },
   "keywords": [],
   "author": "",
@@ -22,5 +35,8 @@
     "morgan": "^1.10.0",
     "nodemon": "^3.1.10",
     "querystring": "^0.2.1"
+  },
+  "devDependencies": {
+    "jest": "^30.0.5"
   }
 }

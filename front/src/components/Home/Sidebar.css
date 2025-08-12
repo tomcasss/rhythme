@@ -1,0 +1,15 @@
+/* Shared styles for left sidebar sections (themed) */
+.sidebar-box {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow-soft);
+}
+
+.sidebar-title {
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+

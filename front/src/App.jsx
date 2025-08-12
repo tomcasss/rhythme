@@ -3,8 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import AdminPanel from './pages/AdminPanel';
-import { Perfil_usuario } from './pages/Perfil_usuario';
-import { Editar_usuario } from './pages/Editar_usuario';
+import { Perfil_usuario } from './pages/Perfil_usuario.jsx';
+import Editar_usuario from './pages/Editar_usuario.jsx';
+import PostDetail from './pages/PostDetail.jsx';
 import SpotifyCallback from './components/SpotifyCallback';
 import PostView from './pages/PostView';
 
@@ -17,6 +18,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/profile/:userId" element={<Perfil_usuario />} />
         <Route path="/edit-profile" element={<Editar_usuario />} />
+        <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/callback/spotify" element={<SpotifyCallback />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/post/:postId" element={<PostView />} />

@@ -1,0 +1,6 @@
+.posts-loading, .posts-empty { 
+    color: var(--color-text-muted); 
+}
+.posts-error { 
+    color: var(--color-danger-alt); 
+}

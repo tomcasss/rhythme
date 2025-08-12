@@ -25,15 +25,13 @@ export default function Login() {
         email,
         password,
       });
-    const userData = res.data.data;
-    localStorage.setItem("user", JSON.stringify(userData));
-    setLoading(false);
-
-    if (userData.role === "admin") {
-      navigate("/admin");
-    } else {
-      navigate("/home");
-    }
+  const userData = res.data.data;
+  // Normalizar flag admin (role antiguo o isAdmin boolean)
+  const isAdmin = userData.isAdmin || userData.role === 'admin';
+  const stored = { ...userData, isAdmin };
+  localStorage.setItem("user", JSON.stringify(stored));
+  setLoading(false);
+  navigate(isAdmin ? '/admin' : '/home');
     } catch (err) {
       setLoading(false);
       setError(

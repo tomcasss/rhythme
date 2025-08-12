@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/api.js";
 import { useFollowSystem } from "../hooks/useFollowSystem.js";
+import Swal from "sweetalert2";
 
 // Componentes
 import Navbar from "../components/Home/Navbar";
@@ -12,6 +13,8 @@ import CreatePostForm from "../components/Home/CreatePostForm";
 import PostsList from "../components/Home/PostsList";
 import ChatSidebar from "../components/Chat/ChatSidebar";
 import ChatWindow from "../components/Chat/ChatWindow";
+import SuggestedFriends from "../components/Home/SuggestedFriends";
+import RecommendedPosts from "../components/Home/RecommendedPosts";
 
 /**
  * Componente Home - Página principal del timeline
@@ -55,8 +58,10 @@ export default function Home() {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.get(API_ENDPOINTS.GET_TIMELINE_POSTS(userId));
-      setPosts(res.data.timeLinePosts || []);
+  const res = await axios.get(API_ENDPOINTS.GET_TIMELINE_POSTS(userId));
+  const list = Array.isArray(res.data.timeLinePosts) ? [...res.data.timeLinePosts] : [];
+  list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  setPosts(list);
     } catch {
       setError("Error al cargar los posts. Intenta de nuevo.");
     } finally {
@@ -97,7 +102,11 @@ export default function Home() {
         })
       );
     } catch {
-      alert("Error al dar like. Intenta de nuevo.");
+      Swal.fire({
+        icon: "error",
+        title: "Error al dar like",
+        text: "Intenta de nuevo más tarde."
+      });
     }
   };
 
@@ -111,7 +120,11 @@ export default function Home() {
       await axios.delete(API_ENDPOINTS.DELETE_POST(postId, user._id));
       setPosts((prev) => prev.filter((post) => post._id !== postId));
     } catch {
-      alert("Error al eliminar el post. Intenta de nuevo.");
+      Swal.fire({
+        icon: "error",
+        title: "Error al eliminar el post",
+        text: "Intenta de nuevo más tarde."
+      });
     }
   };
 
@@ -173,6 +186,34 @@ export default function Home() {
         <main className="feed">
           {/* Formulario para crear posts */}
           <CreatePostForm user={user} onPostCreated={handlePostCreated} />
+      {/* Feed principal */}
+      <div className="content-layout">
+        <aside className="left-sidebar">
+          {/* Bloque de recomendaciones a la izquierda */}
+          <SuggestedFriends
+            user={user}
+            onFollow={followUser}
+            onUnfollow={unfollowUser}
+            isFollowing={isFollowing}
+            followLoading={followLoading}
+          />
+          <RecommendedPosts
+            user={user}
+            followingUsers={followingUsers}
+            followLoading={followLoading}
+            onLike={handleLike}
+            onFollow={followUser}
+            onUnfollow={unfollowUser}
+            isFollowing={isFollowing}
+          />
+        </aside>
+
+        <main className="feed">
+          {/* Formulario para crear posts */}
+          <CreatePostForm
+            user={user}
+            onPostCreated={handlePostCreated}
+          />
 
           {/* Lista de posts */}
           <PostsList
