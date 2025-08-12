@@ -1,8 +1,24 @@
 import Notification from "../models/notification.model.js";
 
-export const createNotification = async ({ userId, type, message, postId = null }) => {
+export const createNotification = async ({
+  userId,
+  type,
+  message,
+  postId = null,
+}) => {
   try {
-    const notif = new Notification({ userId, type, message, postId });
+    const newNotification = {
+      userId,
+      type,
+      message,
+      postId,
+    };
+
+    if (postId) {
+      newNotification.link = `/post/${postId}`;
+    }
+
+    const notif = new Notification(newNotification);
     return await notif.save();
   } catch (error) {
     throw error;
@@ -19,7 +35,11 @@ export const getNotificationsByUser = async (userId) => {
 
 export const markNotificationAsRead = async (id) => {
   try {
-    return await Notification.findByIdAndUpdate(id, { isRead: true }, { new: true });
+    return await Notification.findByIdAndUpdate(
+      id,
+      { isRead: true },
+      { new: true }
+    );
   } catch (error) {
     throw error;
   }

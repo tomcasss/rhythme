@@ -6,6 +6,8 @@ import AdminPanel from './pages/AdminPanel';
 import { Perfil_usuario } from './pages/Perfil_usuario';
 import { Editar_usuario } from './pages/Editar_usuario';
 import SpotifyCallback from './components/SpotifyCallback';
+import PostView from './pages/PostView';
+
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
         <Route path="/edit-profile" element={<Editar_usuario />} />
         <Route path="/callback/spotify" element={<SpotifyCallback />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/post/:postId" element={<PostView />} />
+
       </Routes>
     </Router>
   );
