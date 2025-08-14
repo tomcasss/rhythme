@@ -14,6 +14,27 @@ import { createNotification } from "../services/notification.service.js";
 import User from "../models/user.model.js";
 import { isVisibilityAllowed, getUser } from "../services/user.service.js";
 
+
+const emitNotification = (req, notif) => {
+  try {
+    const io = req.app.get("io");
+    if (!io || !notif) return;
+
+    const room = `user:${String(notif.userId)}`;
+    io.to(room).emit("notification:new", {
+      _id: String(notif._id),
+      type: notif.type,
+      message: notif.message,
+      postId: notif.postId,
+      link: notif.link,
+      isRead: notif.isRead,
+      createdAt: notif.createdAt,
+    });
+  } catch (e) {
+    console.error("emitNotification error:", e);
+  }
+};
+
 export const createPostController = async (req, res) => {
   try {
     console.log("Creating new post with data:", req.body);
@@ -82,12 +103,13 @@ export const likeAndUnlikePostController = async (req, res) => {
     if (!wasAlreadyLiked && post.userId.toString() !== req.body.userId) {
       const liker = await User.findById(req.body.userId);
       if (liker) {
-        await createNotification({
+        const notif = await createNotification({
           userId: post.userId,
           type: "like",
           postId: post._id,
           message: `${liker.username} le dio like a tu publicación 👍🏻`
         });
+        emitNotification(req, notif);
       }
     }
 
@@ -169,12 +191,13 @@ export const commentPostController = async (req, res) => {
     ) {
       const commenter = await User.findById(req.body.userId);
       if (commenter) {
-        await createNotification({
+        const notif = await createNotification({
           userId: post.userId,
           type: "comment",
           postId: post._id,
           message: `${commenter.username} comentó en tu publicación 💬`,
         });
+        emitNotification(req, notif);
       }
     }
     res.status(200).json({

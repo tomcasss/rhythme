@@ -30,6 +30,7 @@ export default function Login() {
   const isAdmin = userData.isAdmin || userData.role === 'admin';
   const stored = { ...userData, isAdmin };
   localStorage.setItem("user", JSON.stringify(stored));
+  window.dispatchEvent(new Event("user-updated"));
   setLoading(false);
   navigate(isAdmin ? '/admin' : '/home');
     } catch (err) {
@@ -74,6 +75,7 @@ export default function Login() {
         token: credential,
       });
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      window.dispatchEvent(new Event("user-updated"));
       setLoading(false);
       navigate("/home");
     } catch (error) {

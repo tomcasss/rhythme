@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon server.js",
-  "test": "jest",
+    "test": "jest",
     "test:all": "node tests/run-all-tests.js",
     "test:services": "node tests/user.service.test.js && node tests/post.service.test.js && node tests/notification.service.test.js && node tests/auth.service.test.js",
     "test:controllers": "node tests/post.controller.test.js",
@@ -34,7 +34,8 @@
     "mongoose": "^8.16.1",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.10",
-    "querystring": "^0.2.1"
+    "querystring": "^0.2.1",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "jest": "^30.0.5"

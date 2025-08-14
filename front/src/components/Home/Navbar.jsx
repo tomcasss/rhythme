@@ -8,6 +8,7 @@ import { faUser, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons"
 import { API_ENDPOINTS } from "../../config/api.js";
 import "./Navbar.css";
 import ThemeToggle from "../ThemeToggle.jsx";
+import { useSocket } from "../../lib/SocketProvider.jsx";
 
 export default function Navbar({
   user,
@@ -37,12 +38,45 @@ export default function Navbar({
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onNew = (notif) => {
+      console.log("[ws] notification:new", notif); // DEBUG
+      setNotifications((prev) => {
+        if (!notif?._id) return prev;
+        const exists = prev.some((n) => n._id === notif._id);
+        return exists ? prev : [notif, ...prev];
+      });
+    };
+
+    const onRead = ({ notifId }) => {
+      console.log("[ws] notification:read", notifId); // DEBUG
+      if (!notifId) return;
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === notifId ? { ...n, isRead: true } : n))
+      );
+    };
+
+    socket.on("notification:new", onNew);
+    socket.on("notification:read", onRead);
+
+    return () => {
+      socket.off("notification:new", onNew);
+      socket.off("notification:read", onRead);
+    };
+  }, [socket]);
+
   // Cargar notificaciones
   useEffect(() => {
     const fetchNotifications = async () => {
       if (!user?._id) return;
       try {
-        const res = await axios.get(API_ENDPOINTS.GET_USER_NOTIFICATIONS(user._id));
+        const res = await axios.get(
+          API_ENDPOINTS.GET_USER_NOTIFICATIONS(user._id)
+        );
         setNotifications(res.data || []);
       } catch (err) {
         console.error("Error al obtener notificaciones", err);
@@ -206,21 +240,32 @@ export default function Navbar({
     e.stopPropagation();
     if (isFollowing(targetUserId)) return;
     const ok = await onFollowUser(targetUserId);
-    if (ok && searchQuery.trim()) setTimeout(() => handleSearchUsers(searchQuery), 200);
+    if (ok && searchQuery.trim())
+      setTimeout(() => handleSearchUsers(searchQuery), 200);
   };
 
   const handleUnfollowFromSearch = async (targetUserId, e) => {
     e.stopPropagation();
     if (!isFollowing(targetUserId)) return;
     const ok = await onUnfollowUser(targetUserId);
-    if (ok && searchQuery.trim()) setTimeout(() => handleSearchUsers(searchQuery), 200);
+    if (ok && searchQuery.trim())
+      setTimeout(() => handleSearchUsers(searchQuery), 200);
   };
 
   // Logout
-  const handleLogout = () => {
+const handleLogout = () => {
+  try {
+    socket?.emit("client:logout");
+    socket?.removeAllListeners();
+    socket?.disconnect();
+  } catch (err) {
+    console.warn("socket cleanup failed:", err);
+  } finally {
     localStorage.removeItem("user");
-    navigate("/");
-  };
+    window.dispatchEvent(new Event("user-updated"));
+    navigate("/", { replace: true });
+  }
+};
 
   // Limpiar búsqueda
   const clearSearch = () => {
@@ -238,7 +283,11 @@ export default function Navbar({
       </div>
 
       {/* Búsqueda */}
-      <div className="search-container" ref={searchRef} style={{ position: "relative", flex: 1, maxWidth: 500, zIndex: 5 }}>
+      <div
+        className="search-container"
+        ref={searchRef}
+        style={{ position: "relative", flex: 1, maxWidth: 500, zIndex: 5 }}
+      >
         <div className="search-input-wrapper" style={{ position: "relative" }}>
           <input
             type="text"
@@ -267,7 +316,11 @@ export default function Navbar({
             }}
           />
           {searchQuery && (
-            <button onClick={clearSearch} className="clear-search-btn" title="Limpiar búsqueda">
+            <button
+              onClick={clearSearch}
+              className="clear-search-btn"
+              title="Limpiar búsqueda"
+            >
               ✕
             </button>
           )}
@@ -299,21 +352,30 @@ export default function Navbar({
                 postResults.length > 0 ? (
                   <>
                     <div className="search-panel-header">
-                      {postResults.length} post{postResults.length !== 1 ? "s" : ""} encontrado{postResults.length !== 1 ? "s" : ""}
+                      {postResults.length} post
+                      {postResults.length !== 1 ? "s" : ""} encontrado
+                      {postResults.length !== 1 ? "s" : ""}
                     </div>
                     {postResults.map((p) => (
                       <div
                         key={p._id}
                         className="search-result-item"
                         onClick={() => handleSelectPost(p)}
-                        style={{ padding: "12px 16px", borderBottom: "1px solid #f0f0f0", cursor: "pointer" }}
+                        style={{
+                          padding: "12px 16px",
+                          borderBottom: "1px solid #f0f0f0",
+                          cursor: "pointer",
+                        }}
                       >
                         <div className="search-result-main">
                           <div className="search-result-name">
-                            {(p.userId?.username || p.userId?.email || "Autor")} ▸ {p.desc?.slice(0, 60) || "(sin descripción)"}
+                            {p.userId?.username || p.userId?.email || "Autor"} ▸{" "}
+                            {p.desc?.slice(0, 60) || "(sin descripción)"}
                           </div>
                           <div className="search-result-email time">
-                            {p.createdAt ? new Date(p.createdAt).toLocaleString() : ""}
+                            {p.createdAt
+                              ? new Date(p.createdAt).toLocaleString()
+                              : ""}
                           </div>
                         </div>
                       </div>
@@ -327,28 +389,50 @@ export default function Navbar({
               ) : searchResults.length > 0 ? (
                 <>
                   <div className="search-panel-header">
-                    {searchResults.length} usuario{searchResults.length !== 1 ? "s" : ""} encontrado{searchResults.length !== 1 ? "s" : ""}
+                    {searchResults.length} usuario
+                    {searchResults.length !== 1 ? "s" : ""} encontrado
+                    {searchResults.length !== 1 ? "s" : ""}
                   </div>
                   {searchResults.map((searchedUser) => (
                     <div
                       key={searchedUser._id}
                       className="search-result-item"
                       onClick={() => handleSelectUser(searchedUser)}
-                      style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "1px solid #f0f0f0", cursor: "pointer" }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "12px 16px",
+                        borderBottom: "1px solid #f0f0f0",
+                        cursor: "pointer",
+                      }}
                     >
                       {searchedUser.profilePicture ? (
-                        <img src={searchedUser.profilePicture} alt={searchedUser.username || "usuario"} className="search-result-icon" />
+                        <img
+                          src={searchedUser.profilePicture}
+                          alt={searchedUser.username || "usuario"}
+                          className="search-result-icon"
+                        />
                       ) : (
-                        <FontAwesomeIcon icon={faCircleUser} className="search-result-icon" />
+                        <FontAwesomeIcon
+                          icon={faCircleUser}
+                          className="search-result-icon"
+                        />
                       )}
                       <div className="search-result-main" style={{ flex: 1 }}>
                         <div className="search-result-name">
-                          {searchedUser.username || searchedUser.name || "Usuario"}
+                          {searchedUser.username ||
+                            searchedUser.name ||
+                            "Usuario"}
                         </div>
-                        <div className="search-result-email">{searchedUser.email}</div>
+                        <div className="search-result-email">
+                          {searchedUser.email}
+                        </div>
                         {searchedUser.desc && (
                           <div className="search-result-desc">
-                            {searchedUser.desc.length > 50 ? `${searchedUser.desc.substring(0, 50)}...` : searchedUser.desc}
+                            {searchedUser.desc.length > 50
+                              ? `${searchedUser.desc.substring(0, 50)}...`
+                              : searchedUser.desc}
                           </div>
                         )}
                       </div>
@@ -357,15 +441,21 @@ export default function Navbar({
                           <span className="search-self-pill">Tú</span>
                         ) : isFollowing(searchedUser._id) ? (
                           <button
-                            onClick={(e) => handleUnfollowFromSearch(searchedUser._id, e)}
+                            onClick={(e) =>
+                              handleUnfollowFromSearch(searchedUser._id, e)
+                            }
                             disabled={followLoading[searchedUser._id]}
                             className="btn-unfollow"
                           >
-                            {followLoading[searchedUser._id] ? "..." : "Dejar de seguir"}
+                            {followLoading[searchedUser._id]
+                              ? "..."
+                              : "Dejar de seguir"}
                           </button>
                         ) : (
                           <button
-                            onClick={(e) => handleFollowFromSearch(searchedUser._id, e)}
+                            onClick={(e) =>
+                              handleFollowFromSearch(searchedUser._id, e)
+                            }
                             disabled={followLoading[searchedUser._id]}
                             className="btn-follow"
                           >
@@ -378,7 +468,8 @@ export default function Navbar({
                 </>
               ) : (
                 <div className="search-panel-empty">
-                  No se encontraron {isPostSearch ? "posts" : "usuarios"} para "{searchQuery}"
+                  No se encontraron {isPostSearch ? "posts" : "usuarios"} para "
+                  {searchQuery}"
                 </div>
               )}
             </div>
@@ -387,7 +478,10 @@ export default function Navbar({
       </div>
 
       {/* Iconos / menú derecha */}
-      <div className="navbar-icons" style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+      <div
+        className="navbar-icons"
+        style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
+      >
         <ThemeToggle />
 
         {/* Notificaciones */}
@@ -399,7 +493,9 @@ export default function Navbar({
             style={{ background: "none", border: "none", cursor: "pointer" }}
           >
             <FontAwesomeIcon icon={faBell} size="lg" />
-            {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+            {unreadCount > 0 && (
+              <span className="notif-badge">{unreadCount}</span>
+            )}
           </button>
 
           {showDropdown && (
@@ -412,7 +508,9 @@ export default function Navbar({
                   <div
                     key={n._id}
                     onClick={() => handleNotificationClick(n)}
-                    className={`notif-item ${n.isRead ? "" : "notif-item-unread"}`}
+                    className={`notif-item ${
+                      n.isRead ? "" : "notif-item-unread"
+                    }`}
                   >
                     {n.message}
                   </div>
@@ -424,18 +522,30 @@ export default function Navbar({
 
         {/* Menú usuario */}
         <span className="icon user" style={{ position: "relative" }}>
-          <button className="action-btn user-menu-button" onClick={() => setUserMenuOpen((v) => !v)}>
+          <button
+            className="action-btn user-menu-button"
+            onClick={() => setUserMenuOpen((v) => !v)}
+          >
             <FontAwesomeIcon icon={faUser} className="user-menu-icon" />
           </button>
           {userMenuOpen && (
             <div ref={userMenuRef} className="user-menu-panel">
-              <button className="action-btn-menu user-menu-item" onClick={() => navigate(`/profile/${user._id}`)}>
+              <button
+                className="action-btn-menu user-menu-item"
+                onClick={() => navigate(`/profile/${user._id}`)}
+              >
                 Mi Perfil
               </button>
-              <button className="action-btn-menu user-menu-item" onClick={() => navigate("/edit-profile")}>
+              <button
+                className="action-btn-menu user-menu-item"
+                onClick={() => navigate("/edit-profile")}
+              >
                 Editar Perfil
               </button>
-              <button className="action-btn-menu user-menu-item" onClick={handleLogout}>
+              <button
+                className="action-btn-menu user-menu-item"
+                onClick={handleLogout}
+              >
                 Cerrar sesión
               </button>
             </div>
