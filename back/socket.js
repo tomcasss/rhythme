@@ -12,7 +12,7 @@ export function setupSocket(httpServer) {
 
   io.on("connection", (socket) => {
     const userId = socket.handshake?.auth?.userId || socket.handshake?.query?.userId;
-    console.log("connection", socket.id, "auth:", socket.handshake?.auth);
+    console.log(" connection", socket.id, "auth:", socket.handshake?.auth);
 
     if (!userId) {
       console.warn("❗Sin userId, desconectando", socket.id);

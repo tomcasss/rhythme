@@ -32,7 +32,7 @@ export default function SocketProvider({ user, children }) {
 
     s.on("connect", () => console.log("🔌 socket conectada:", s.id));
     s.on("disconnect", (reason) => console.log("🔌 disconnect:", reason));
-    s.on("connect_error", (err) => console.error("❌ connect_error:", err.message));
+    s.on("connect_error", (err) => console.error("connect_error:", err.message));
 
     setSocket(s);
     return () => s.disconnect();
