@@ -1,14 +1,5 @@
 
-.home-container {
-  background-color: var(--color-app-bg);
-  min-height: 100vh;
-  width: 100%; 
-  font-family: 'Segoe UI', sans-serif;
-  display: flex;
-  flex-direction: column;
-}
 
-/* Layout principal con sidebar izquierda + feed */
 .content-layout {
   display: flex;
   width: 100%;
@@ -181,4 +172,74 @@
 /* Asegurar que el contenedor de búsqueda tenga posición relativa */
 .search-container {
   position: relative !important;
+}
+
+:root{
+  --home-left: 360px;   /* ancho de la izquierda */
+  --home-right: 320px;  /* ancho del chat */
+  --home-gap: 1.25rem;
+  --home-max: 1480px;   /* ancho total del layout */
+  --feed-max: 760px;    /* ancho máximo del feed */
+}
+
+/* GRID principal */
+.home-grid{
+  display:grid;
+  grid-template-columns: var(--home-left) minmax(0,1fr) var(--home-right);
+  gap: var(--home-gap);
+  padding: 1rem;
+  align-items: flex-start;
+  max-width: var(--home-max);
+  margin: 0 auto;              /* centra el layout */
+}
+.home-grid > * { min-width: 0; }
+
+/* Columna izquierda */
+.left-sidebar{
+  width: auto !important;      /* anula el viejo width:420px */
+  flex: 0 0 auto !important;
+  max-width: 100%;
+  position: sticky; 
+  top: 1rem; 
+  align-self: start;
+}
+
+/* Centro (feed) */
+.feed{
+  max-width: var(--feed-max);
+  justify-self: center;        /* centra el feed en su columna */
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  position: static !important;
+  box-sizing: border-box;
+}
+
+/* Derecha (chat) */
+.right-sidebar{
+  position: sticky; 
+  top: 1rem; 
+  align-self: start; 
+  min-width: 0;
+}
+
+.content-layout { all: unset; }
+
+.left-sidebar > *, .feed > *, .right-sidebar > *{
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1360px){
+  :root { --home-left: 320px; }   
+@media (max-width: 1200px){
+  .right-sidebar { display: none; } 
+  .home-grid { grid-template-columns: var(--home-left) minmax(0,1fr); }
+}
+@media (max-width: 900px){
+  .home-grid { grid-template-columns: 1fr; }
+  .left-sidebar { position: static; }
+}
+
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api.js';
-import ProfileHeader from "../components/Profile/ProfileHeader";
+//import ProfileHeader from "../components/Profile/ProfileHeader";
 
 export default function PostView() {
     const { postId } = useParams();
