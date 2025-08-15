@@ -7,7 +7,7 @@ import PostCard from './PostCard';
 import './RecommendedPosts.css';
 import './Sidebar.css';
 
-export default function RecommendedPosts({ user, limit = 5, followingUsers, followLoading, onLike, onFollow, onUnfollow, isFollowing }) {
+export default function RecommendedPosts({ user, limit = 5, followLoading, onLike, onFollow, onUnfollow, isFollowing }) {
   const [reco, setReco] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,7 +41,6 @@ export default function RecommendedPosts({ user, limit = 5, followingUsers, foll
           key={post._id}
           post={post}
           user={user}
-          followingUsers={followingUsers}
           followLoading={followLoading}
           onLike={onLike}
           onFollow={onFollow}

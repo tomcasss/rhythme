@@ -45,5 +45,15 @@ export const sendMessage = async ({ conversationId, senderId, text, peerId }) =>
     updatedAt: new Date(),
   });
 
+  // derive peerId if not provided
+  let targetPeerId = peerId;
+  if (!targetPeerId && convo?.participants?.length === 2) {
+    const a = convo.participants[0].toString();
+    const b = convo.participants[1].toString();
+    targetPeerId = a === String(senderId) ? b : a;
+  }
+
+  // Attach a convenience field for emitters
+  msg.peerId = targetPeerId;
   return msg;
 };

@@ -92,44 +92,47 @@ export default function ProfileBanner({
                     </p>
 
                     {/* Información adicional del perfil */}
-                                        <div className="profile-info">
+                    <div className="profile-info">
                         {profileUser.from && <span>📍 {profileUser.from}</span>}
                         {profileUser.relationship && (
-                            <span>💝 {
-                                profileUser.relationship === 1 ? "Soltero/a" :
-                                    profileUser.relationship === 2 ? "En una relación" :
-                                        profileUser.relationship === 3 ? "Casado/a" : ""
+                            <span>🎵 {
+                                profileUser.relationship === 1 ? "Creador de música" :
+                                    profileUser.relationship === 2 ? "Promotor" :
+                                        profileUser.relationship === 3 ? "Amante de la música" :
+                                            profileUser.relationship === 4 ? "Educador" :
+                                                profileUser.relationship === 5 ? "Comunidad y cultura" :
+                                                    ""
                             }</span>
                         )}
                         <MusicPreferencesChips musicPreferences={profileUser.musicPreferences} />
                     </div>
 
                     {/* Estadísticas */}
-            <div className="profile-stats">
+                    <div className="profile-stats">
                         <div className="stat">
-                <span className="stat-number">
+                            <span className="stat-number">
                                 {profileUser.followers?.length || 0}
                             </span>
-                <span className="stat-label">
+                            <span className="stat-label">
                                 Seguidores
                             </span>
                         </div>
                         <div className="stat">
-                <span className="stat-number">
+                            <span className="stat-number">
                                 {profileUser.following?.length || 0}
                             </span>
-                <span className="stat-label">
+                            <span className="stat-label">
                                 Siguiendo
                             </span>
                         </div>
                     </div>
 
                     {/* Botones de acción */}
-            {!isOwnProfile && (
-            <div className="botones-banner">
+                    {!isOwnProfile && (
+                        <div className="botones-banner">
                             {isFollowing(profileUser._id) ? (
                                 <button
-                    className="btn-red btn-unfollow"
+                                    className="btn-red btn-unfollow"
                                     onClick={handleUnfollow}
                                     disabled={followLoading}
                                 >
@@ -137,14 +140,14 @@ export default function ProfileBanner({
                                 </button>
                             ) : (
                                 <button
-                    className="btn-red btn-follow"
+                                    className="btn-red btn-follow"
                                     onClick={handleFollow}
                                     disabled={followLoading}
                                 >
                                     {followLoading ? 'Cargando...' : 'Seguir'}
                                 </button>
                             )}
-                <button className="btn-mensaje">
+                            <button className="btn-mensaje">
                                 Enviar un mensaje
                             </button>
                         </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/api";
+import "./Chatsidebar.css";
 
 export default function ChatSidebar({ currentUser, onOpenConversation }) {
   const [conversations, setConversations] = useState([]);
@@ -63,39 +64,26 @@ export default function ChatSidebar({ currentUser, onOpenConversation }) {
   };
 
   return (
-    <aside style={{
-      borderRight: "1px solid #eee",
-      padding: "1rem",
-      minWidth: 280,
-      maxWidth: 320,
-      background: "#fff",
-      borderRadius: 8,
-      height: "calc(100vh - 120px)",
-      overflow: "hidden",
-      display: "flex",
-      flexDirection: "column",
-      gap: "0.75rem"
-    }}>
+    <aside className="chat-sidebar">
       <h3 style={{ margin: 0 }}>Mensajes</h3>
 
       <input
         value={q}
         onChange={(e) => handleSearch(e.target.value)}
         placeholder="Buscar usuario..."
-        style={{ padding: "0.6rem 0.8rem", borderRadius: 8, border: "1px solid #ddd", background: "#fff", color: "#222", outline: "none"}}
+        className="chat-search-input"
       />
 
       {!!q && (
-        <div style={{ border: "1px solid #eee", borderRadius: 8, maxHeight: 220, overflowY: "auto" }}>
+        <div className="chat-search-results">
           {searching ? (
-            <div style={{ padding: "0.75rem" }}>Buscando...</div>
+            <div className="chat-search-state">Buscando...</div>
           ) : searchResults.length === 0 ? (
-            <div style={{ padding: "0.75rem", color: "#777" }}>Sin resultados</div>
+            <div className="chat-empty-state">Sin resultados</div>
           ) : searchResults.map(u => (
-            <div
+            <div className="chat-search-result-item"
               key={u._id}
               onClick={() => openWithUser(u)}
-              style={{ padding: "0.6rem 0.8rem", borderBottom: "1px solid #f5f5f5", cursor: "pointer" }}
             >
               {u.username || u.email}
             </div>
@@ -103,24 +91,24 @@ export default function ChatSidebar({ currentUser, onOpenConversation }) {
         </div>
       )}
 
-      <div style={{ fontWeight: 600, marginTop: "0.25rem" }}>Conversaciones</div>
-      <div style={{ flex: 1, overflowY: "auto", border: "1px solid #eee", borderRadius: 8 }}>
+      <div className="chat-conversations-title">Conversaciones</div>
+      <div className="chat-conversations-list">
         {loading ? (
-          <div style={{ padding: "0.75rem" }}>Cargando...</div>
+          <div className="chat-loading-state">Cargando...</div>
         ) : conversations.length === 0 ? (
-          <div style={{ padding: "0.75rem", color: "#777" }}>No tienes conversaciones</div>
+          <div className="chat-empty-state">No tienes conversaciones</div>
         ) : conversations.map(c => {
           const peer = c.participants.find(p => p._id !== currentUser._id);
           return (
             <div
               key={c._id}
               onClick={() => onOpenConversation(c)}
-              style={{ padding: "0.75rem 0.9rem", borderBottom: "1px solid #f5f5f5", cursor: "pointer" }}
+              className="chat-conversation-item"
             >
-              <div style={{ fontWeight: 600 }}>{peer?.username || peer?.email || "Usuario"}</div>
-              {c.lastMessage && (
-                <div style={{ fontSize: 12, color: "#666", marginTop: 2 }}>
-                  {c.lastMessage.sender === currentUser._id ? "Tú: " : ""}{c.lastMessage.text}
+              <div className="chat-conversation-title">{peer?.username || peer?.email || "Usuario"}</div>
+        {c.lastMessage && (
+                <div className="chat-last-message">
+          {String(c.lastMessage.senderId) === String(currentUser._id) ? "Tú: " : ""}{c.lastMessage.text}
                 </div>
               )}
             </div>

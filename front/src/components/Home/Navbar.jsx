@@ -286,7 +286,7 @@ const handleLogout = () => {
       <div
         className="search-container"
         ref={searchRef}
-        style={{ position: "relative", flex: 1, maxWidth: 500, zIndex: 5 }}
+        style={{ position: "relative", flex: 1, maxWidth: 500, zIndex: 1200 }}
       >
         <div className="search-input-wrapper" style={{ position: "relative" }}>
           <input
@@ -327,7 +327,7 @@ const handleLogout = () => {
         </div>
 
         {showSearchResults && (
-          <div
+      <div
             className="search-results"
             style={{
               position: "absolute",
@@ -340,7 +340,8 @@ const handleLogout = () => {
               boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
               maxHeight: 400,
               overflowY: "auto",
-              marginTop: 4,
+        marginTop: 4,
+        zIndex: 1300,
             }}
           >
             <div className="search-results-panel">
