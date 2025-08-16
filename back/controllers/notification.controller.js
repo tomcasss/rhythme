@@ -3,6 +3,7 @@ import {
   getNotificationsByUser,
   markNotificationAsRead,
 } from "../services/notification.service.js";
+import { emitToUser } from "../utils/realtime.js";
 
 export const notifyUserController = async (req, res) => {
   try {
@@ -17,16 +18,15 @@ export const notifyUserController = async (req, res) => {
         "Tu post ha sido reportado por infringir las normas, por favor, presta atención!.",
     });
 
-    const io = req.app.get("io");
-    io.to(`user:${userId}`).emit("notification:new", {
-      _id: notif._id.toString(),
-      type: notif.type,
-      message: notif.message,
-      postId: notif.postId,
-      link: notif.link,
-      isRead: notif.isRead,
-      createdAt: notif.createdAt,
-    });
+    await emitToUser(req, userId, "notification:new", {
+  _id: String(notif._id),
+  type: notif.type,
+  message: notif.message,
+  postId: notif.postId,
+  link: notif.link,
+  isRead: notif.isRead,
+  createdAt: notif.createdAt,
+});
 
     res.status(201).json(notif);
   } catch (error) {
@@ -46,10 +46,9 @@ export const getUserNotificationsController = async (req, res) => {
 export const markAsReadController = async (req, res) => {
   try {
     const notif = await markNotificationAsRead(req.params.id);
-    const io = req.app.get("io");
-    io.to(`user:${notif.userId}`).emit("notification:read", {
-      notifId: notif._id.toString(),
-    });
+    await emitToUser(req, notif.userId, "notification:read", {
+  notifId: String(notif._id),
+});
     res.status(200).json(notif);
   } catch (error) {
     res.status(500).json({ error: "Error al marcar como leída." });

@@ -1,29 +1,60 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/api";
+import { useSocket } from "../../lib/SocketProvider.jsx";
 
 export default function ChatSidebar({ currentUser, onOpenConversation }) {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [q, setQ] = useState(""); 
+  const [q, setQ] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const socket = useSocket();
+
+  const refreshConversations = useCallback(async () => {
+    if (!currentUser?._id) return;
+    try {
+      setLoading(true);
+      const res = await axios.get(API_ENDPOINTS.GET_CONVERSATIONS(currentUser._id));
+      setConversations(res.data || []);
+    } catch (e) {
+      console.error("Error cargando conversaciones", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser?._id]);
 
   useEffect(() => {
-    if (!currentUser?._id) return;
-    const fetchConvos = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(API_ENDPOINTS.GET_CONVERSATIONS(currentUser._id));
-        setConversations(res.data || []);
-      } catch (e) {
-        console.error("Error cargando conversaciones", e);
-      } finally {
-        setLoading(false);
-      }
+    refreshConversations();
+  }, [refreshConversations]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onIncoming = (msg) => {
+      setConversations((prev) => {
+        const idx = prev.findIndex((c) => String(c._id) === String(msg.conversationId));
+        if (idx === -1) {
+          refreshConversations();
+          return prev;
+        }
+
+        const updated = {
+          ...prev[idx],
+          lastMessage: {
+            text: msg.text,
+            senderId: msg.senderId,
+            createdAt: msg.createdAt,
+          },
+          updatedAt: msg.createdAt,
+        };
+        return [updated, ...prev.slice(0, idx), ...prev.slice(idx + 1)];
+      });
     };
-    fetchConvos();
-  }, [currentUser]);
+
+    socket.on("message:new", onIncoming);
+    return () => socket.off("message:new", onIncoming);
+  }, [socket, refreshConversations]);
 
   const handleSearch = async (value) => {
     setQ(value);
@@ -50,10 +81,12 @@ export default function ChatSidebar({ currentUser, onOpenConversation }) {
         peerId: peer._id,
       });
       const convo = res.data;
+
       setConversations((prev) => {
-        if (prev.find((c) => c._id === convo._id)) return prev;
+        if (prev.find((c) => String(c._id) === String(convo._id))) return prev;
         return [convo, ...prev];
       });
+
       onOpenConversation(convo);
       setQ("");
       setSearchResults([]);
