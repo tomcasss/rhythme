@@ -79,24 +79,7 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
     }
   };
 
-  useEffect(() => {
-    if (!socket || !conversation?._id) return;
-
-    const onNew = (msg) => {
-      if (msg.conversationId !== conversation._id) return;
-      setMessages((prev) =>
-        prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]
-      );
-      setTimeout(
-        () => listRef.current?.scrollTo(0, listRef.current.scrollHeight),
-        0
-      );
-    };
-
-    socket.on("message:new", onNew);
-    return () => socket.off("message:new", onNew);
-  }, [socket, conversation?._id]);
-
+  
   return (
     <div className="chat-window">
       <div className="chat-header">
