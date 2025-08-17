@@ -28,7 +28,7 @@ export const sendMessageController = async (req, res) => {
     try {
       const io = req.app.get('io');
       if (io) {
-        const roomA = `user:${msg.senderId?.toString?.() || sid}`;
+        const roomA = `user:${msg.senderId?.toString() || sid}`;
         const roomB = peerId ? `user:${peerId}` : undefined;
         const payload = {
           _id: msg._id,
