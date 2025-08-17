@@ -86,7 +86,6 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
       console.error("Error enviando mensaje", e);
     }
   };
-  const socket = useSocket();
 
   useEffect(() => {
     if (!socket || !conversation?._id) return;
@@ -127,12 +126,11 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
                 {m.text}
                 <div className="message-time">
                   {new Date(m.createdAt).toLocaleTimeString()}
-
                 </div>
               </div>
-            );
-          })
-        )}
+            </div>
+          );
+        })}
       </div>
 
       <form
