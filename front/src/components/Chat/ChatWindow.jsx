@@ -4,6 +4,7 @@ import { API_ENDPOINTS } from "../../config/api";
 import { useSocket } from "../../lib/SocketProvider.jsx";
 import "./ChatWindow.css";  
 
+
 export default function ChatWindow({ currentUser, conversation, onClose }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
@@ -11,20 +12,27 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
   const listRef = useRef(null);
   const socket = useSocket();
 
-  const peer = conversation?.participants?.find(p => p._id !== currentUser._id);
+  const peer = conversation?.participants?.find(
+    (p) => p._id !== currentUser._id
+  );
 
   useEffect(() => {
     if (!conversation?._id) return;
     const load = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(API_ENDPOINTS.GET_MESSAGES(conversation._id));
+        const res = await axios.get(
+          API_ENDPOINTS.GET_MESSAGES(conversation._id)
+        );
         setMessages(res.data || []);
       } catch (e) {
         console.error("Error cargando mensajes", e);
       } finally {
         setLoading(false);
-        setTimeout(() => listRef.current?.scrollTo(0, listRef.current.scrollHeight), 0);
+        setTimeout(
+          () => listRef.current?.scrollTo(0, listRef.current.scrollHeight),
+          0
+        );
       }
     };
     load();
@@ -46,9 +54,13 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
     if (!conversation?._id) return;
     const id = setInterval(async () => {
       try {
-        const res = await axios.get(API_ENDPOINTS.GET_MESSAGES(conversation._id));
+        const res = await axios.get(
+          API_ENDPOINTS.GET_MESSAGES(conversation._id)
+        );
         setMessages(res.data || []);
-      } catch {console.error("Error");}
+      } catch {
+        console.error("Error");
+      }
     }, 5000);
     return () => clearInterval(id);
   }, [conversation]);
@@ -59,16 +71,40 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
     try {
       const res = await axios.post(API_ENDPOINTS.SEND_MESSAGE, {
         conversationId: conversation._id,
+
         senderId: currentUser._id,
+
         text: text.trim(),
       });
-      setMessages(prev => [...prev, res.data]);
+      setMessages((prev) => [...prev, res.data]);
       setText("");
-      setTimeout(() => listRef.current?.scrollTo(0, listRef.current.scrollHeight), 0);
+      setTimeout(
+        () => listRef.current?.scrollTo(0, listRef.current.scrollHeight),
+        0
+      );
     } catch (e) {
       console.error("Error enviando mensaje", e);
     }
   };
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (!socket || !conversation?._id) return;
+
+    const onNew = (msg) => {
+      if (msg.conversationId !== conversation._id) return;
+      setMessages((prev) =>
+        prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]
+      );
+      setTimeout(
+        () => listRef.current?.scrollTo(0, listRef.current.scrollHeight),
+        0
+      );
+    };
+
+    socket.on("message:new", onNew);
+    return () => socket.off("message:new", onNew);
+  }, [socket, conversation?._id]);
 
   return (
     <div className="chat-window">
@@ -78,6 +114,7 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
       </div>
 
       <div ref={listRef} className="chat-messages" >
+
         {loading ? (
           <div className="loading-message">Cargando...</div>
         ) : messages.length === 0 ? (
@@ -90,22 +127,45 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
                 {m.text}
                 <div className="message-time">
                   {new Date(m.createdAt).toLocaleTimeString()}
+
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
-      <form onSubmit={send} style={{ padding: "0.6rem", borderTop: "1px solid #eee", display: "flex", gap: 8 }}>
+      <form
+        onSubmit={send}
+        style={{
+          padding: "0.6rem",
+          borderTop: "1px solid #eee",
+          display: "flex",
+          gap: 8,
+        }}
+      >
         <input
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={(e) => setText(e.target.value)}
           placeholder="Escribe un mensaje..."
-          style={{ flex: 1, padding: "0.6rem 0.8rem", borderRadius: 8, border: "1px solid #ddd" }}
+          style={{
+            flex: 1,
+            padding: "0.6rem 0.8rem",
+            borderRadius: 8,
+            border: "1px solid #ddd",
+          }}
         />
-        <button type="submit" style={{ padding: "0.6rem 0.9rem", borderRadius: 8, border: "none", color: "#fff", cursor: "pointer",
-          background: "linear-gradient(90deg, #fb7202, #e82c0b)" }}>
+        <button
+          type="submit"
+          style={{
+            padding: "0.6rem 0.9rem",
+            borderRadius: 8,
+            border: "none",
+            color: "#fff",
+            cursor: "pointer",
+            background: "linear-gradient(90deg, #fb7202, #e82c0b)",
+          }}
+        >
           Enviar
         </button>
       </form>

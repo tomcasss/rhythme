@@ -1,7 +1,9 @@
+import Conversation from "../models/conversation.model.js";
 import {
   listMessages,
   sendMessage,
 } from "../services/message.service.js";
+import { emitToUser } from "../utils/realtime.js";
 
 export const listMessagesController = async (req, res) => {
   try {
@@ -41,6 +43,7 @@ export const sendMessageController = async (req, res) => {
     } catch (e) {
       console.error('Socket emit failed:', e);
     }
+
 
     res.status(201).json(msg);
   } catch (err) {

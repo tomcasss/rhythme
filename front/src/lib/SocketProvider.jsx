@@ -1,4 +1,3 @@
-// src/lib/SocketProvider.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
@@ -30,7 +29,7 @@ export default function SocketProvider({ user, children }) {
       reconnectionDelay: 500,
     });
 
-    s.on("connect", () => console.log("🔌 socket conectada:", s.id));
+    s.on("connect", () => console.log("socket conectada:", s.id));
     s.on("disconnect", (reason) => console.log("🔌 disconnect:", reason));
     s.on("connect_error", (err) => console.error("connect_error:", err.message));
 
