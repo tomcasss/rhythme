@@ -17,7 +17,6 @@ const app = express();
 app.use(helmet());
 app.use(morgan('common'));
 app.use(cors());
-// Enable gzip compression for API responses
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));

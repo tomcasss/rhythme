@@ -28,8 +28,9 @@ export const sendMessageController = async (req, res) => {
     try {
       const io = req.app.get('io');
       if (io) {
-        const roomA = `user:${msg.senderId?.toString?.() || sid}`;
-        const roomB = (peerId || msg.peerId) ? `user:${peerId || msg.peerId}` : undefined;
+        const senderRoom = `user:${(msg.senderId?.toString?.() || sid || '').toString()}`;
+        const rawPeer = peerId || msg.peerId;
+        const peerRoom = rawPeer ? `user:${(rawPeer?.toString?.() || String(rawPeer))}` : undefined;
         const payload = {
           _id: msg._id,
           conversationId: msg.conversationId,
@@ -37,8 +38,8 @@ export const sendMessageController = async (req, res) => {
           text: msg.text,
           createdAt: msg.createdAt,
         };
-        io.to(roomA).emit('message:new', payload);
-        if (roomB) io.to(roomB).emit('message:new', payload);
+        io.to(senderRoom).emit('message:new', payload);
+        if (peerRoom) io.to(peerRoom).emit('message:new', payload);
       }
     } catch (e) {
       console.error('Socket emit failed:', e);

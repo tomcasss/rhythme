@@ -56,7 +56,12 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
     e.preventDefault();
     if (!text.trim()) return;
     try {
-      const peerId = peer?._id || conversation.participants?.find(p => p !== currentUser._id);
+      const participantIds = (conversation.participants || [])
+      .map(part => (typeof part === 'object' ? part._id : part))
+      .map(id => String(id));
+      const peerId = participantIds.find(id => id !== String(currentUser._id));
+      console.log('[chat] enviando mensaje:', peerId);
+
       const res = await axios.post(API_ENDPOINTS.SEND_MESSAGE, {
         conversationId: conversation._id,
         senderId: currentUser._id,
