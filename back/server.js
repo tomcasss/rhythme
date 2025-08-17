@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import http from 'http';
+import compression from 'compression';
 import { setupSocket } from './socket.js';
 import { dbConnect } from './dbConnect/dbConnect.js';
 import routes from './routes/routes.js';
@@ -16,6 +17,8 @@ const app = express();
 app.use(helmet());
 app.use(morgan('common'));
 app.use(cors());
+// Enable gzip compression for API responses
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 

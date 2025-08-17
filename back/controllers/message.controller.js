@@ -28,8 +28,8 @@ export const sendMessageController = async (req, res) => {
     try {
       const io = req.app.get('io');
       if (io) {
-        const roomA = `user:${msg.senderId?.toString() || sid}`;
-        const roomB = peerId ? `user:${peerId}` : undefined;
+        const roomA = `user:${msg.senderId?.toString?.() || sid}`;
+        const roomB = (peerId || msg.peerId) ? `user:${peerId || msg.peerId}` : undefined;
         const payload = {
           _id: msg._id,
           conversationId: msg.conversationId,

@@ -1,5 +1,7 @@
 // API Configuration
-const BASE_URL = 'http://localhost:5000/api/v1';
+const BASE_URL = (typeof window !== 'undefined')
+  ? `${window.location.protocol}//${window.location.hostname}:5000/api/v1`
+  : 'http://localhost:5000/api/v1';
 
 // Configuración específica para Spotify (requiere 127.0.0.1)
 export const SPOTIFY_CONFIG = {

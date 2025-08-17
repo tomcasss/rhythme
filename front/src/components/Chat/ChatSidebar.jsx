@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/api";
 import "./ChatSidebar.css";
-import { useSocket } from "../../lib/SocketProvider.jsx";
+import { useSocket } from "../../lib/SocketContext.js";
 
 export default function ChatSidebar({ currentUser, onOpenConversation }) {
   const [conversations, setConversations] = useState([]);

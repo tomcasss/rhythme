@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/api";
-import { useSocket } from "../../lib/SocketProvider.jsx";
+import { useSocket } from "../../lib/SocketContext.js";
 import "./ChatWindow.css";  
 
 
@@ -41,40 +41,27 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
   // live updates via socket
   useEffect(() => {
     if (!socket || !conversation?._id) return;
-    const handler = (payload) => {
-      if (String(payload.conversationId) !== String(conversation._id)) return;
-      setMessages((prev) => [...prev, payload]);
+    const onNew = (msg) => {
+      if (String(msg.conversationId) !== String(conversation._id)) return;
+      setMessages((prev) => (prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]));
       setTimeout(() => listRef.current?.scrollTo(0, listRef.current.scrollHeight), 0);
     };
-    socket.on("message:new", handler);
-    return () => socket.off("message:new", handler);
+    socket.on("message:new", onNew);
+    return () => socket.off("message:new", onNew);
   }, [socket, conversation?._id]);
 
-  useEffect(() => {
-    if (!conversation?._id) return;
-    const id = setInterval(async () => {
-      try {
-        const res = await axios.get(
-          API_ENDPOINTS.GET_MESSAGES(conversation._id)
-        );
-        setMessages(res.data || []);
-      } catch {
-        console.error("Error");
-      }
-    }, 5000);
-    return () => clearInterval(id);
-  }, [conversation]);
+  // Removed polling; rely on socket updates after initial fetch
 
   const send = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
     try {
+      const peerId = peer?._id || conversation.participants?.find(p => p !== currentUser._id);
       const res = await axios.post(API_ENDPOINTS.SEND_MESSAGE, {
         conversationId: conversation._id,
-
         senderId: currentUser._id,
-
         text: text.trim(),
+        peerId,
       });
       setMessages((prev) => [...prev, res.data]);
       setText("");

@@ -28,7 +28,7 @@ const prefetchComments = () => import('./CommentsSection');
  * @param {Function} props.onUnfollow - Función para dejar de seguir usuario
  * @param {Function} props.isFollowing - Función para verificar si sigue a un usuario
  */
-export default function PostCard({
+function PostCard({
   post,
   user,
   followLoading,
@@ -199,9 +199,9 @@ export default function PostCard({
    * Navegar al perfil del usuario del post
    */
   const goToProfile = () => {
-    const postUserId = postUserId;
-    if (postUserId) {
-      navigate(`/profile/${postUserId}`);
+    const uid = postUserId;
+    if (uid) {
+      navigate(`/profile/${uid}`);
     }
   };
   // Autor del post (cuando viene populado será un objeto en post.userId, si no intentar fallback a post.user)
@@ -439,3 +439,4 @@ export default function PostCard({
     </div>
   );
 }
+export default React.memo(PostCard);

@@ -12,6 +12,7 @@ import ChatSidebar from "../components/Chat/ChatSidebar";
 import ChatWindow from "../components/Chat/ChatWindow";
 import SuggestedFriends from "../components/Home/SuggestedFriends";
 import RecommendedPosts from "../components/Home/RecommendedPosts";
+import { useSocket } from "../lib/SocketContext.js";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
+  const socket = useSocket();
 
   const {
     followingUsers,
@@ -61,6 +63,19 @@ export default function Home() {
     fetchPosts(user._id);
     loadFollowingUsers(user._id);
   }, [user?._id, fetchPosts, loadFollowingUsers]);
+
+  // Simple notification listener (replace with UI as desired)
+  useEffect(() => {
+    if (!socket) return;
+    const onNotif = (n) => {
+      // minimal: avoid blocking UI; just log and optional toast
+      console.log('[ws] notification:new', n);
+      // Optional: show a basic alert; swap with your toast system
+      // alert(n?.message || 'Tienes una notificación');
+    };
+    socket.on('notification:new', onNotif);
+    return () => socket.off('notification:new', onNotif);
+  }, [socket]);
 
   const handlePostCreated = (newPost) => {
     setPosts((prev) => [newPost, ...prev]);
@@ -126,6 +141,27 @@ export default function Home() {
       });
     }
   };
+
+  // Realtime post updates
+  useEffect(() => {
+    if (!socket) return;
+    const onPostEvent = (payload) => {
+      const { type, post } = payload || {};
+      if (!post?._id) return;
+      setPosts((prev) => {
+        const exists = prev.some((p) => p._id === post._id);
+        if (type === 'deleted') {
+          return prev.filter((p) => p._id !== post._id);
+        }
+        if (!exists && (type === 'created')) {
+          return [post, ...prev];
+        }
+        return prev.map((p) => (p._id === post._id ? { ...p, ...post } : p));
+      });
+    };
+    socket.on('post:event', onPostEvent);
+    return () => socket.off('post:event', onPostEvent);
+  }, [socket]);
 
   // Chat
   const [activeConversation, setActiveConversation] = useState(null);

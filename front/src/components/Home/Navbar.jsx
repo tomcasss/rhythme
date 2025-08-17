@@ -8,7 +8,7 @@ import { faUser, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons"
 import { API_ENDPOINTS } from "../../config/api.js";
 import "./Navbar.css";
 import ThemeToggle from "../ThemeToggle.jsx";
-import { useSocket } from "../../lib/SocketProvider.jsx";
+import { useSocket } from "../../lib/SocketContext.js";
 
 export default function Navbar({
   user,
