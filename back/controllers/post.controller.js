@@ -131,8 +131,9 @@ export const getPostController = async (req, res) => {
 
 export const getTimelinePostsController = async (req, res) => {
   try {
-    const viewer = await User.findById(req.params.userId);
-    const allPosts = await getTimelinePosts({ userId: req.params.userId });
+  const { limit, before } = req.query;
+  const viewer = await User.findById(req.params.userId);
+  const allPosts = await getTimelinePosts({ userId: req.params.userId, limit: limit ? Number(limit) : 20, before });
 
     // Filtrar por visibilidad y bloqueo
     const filtered = [];
@@ -149,9 +150,15 @@ export const getTimelinePostsController = async (req, res) => {
       filtered.push(p);
     }
 
+    const nextCursor = filtered.length ? filtered[filtered.length - 1].createdAt : null;
     res
       .status(200)
-      .json({ timeLinePosts: filtered, message: "Timeline posts fetch Succesfully" });
+      .json({
+        timeLinePosts: filtered,
+        nextCursor,
+        hasMore: Boolean(filtered.length && filtered.length === (limit ? Number(limit) : 20)),
+        message: "Timeline posts fetch Succesfully",
+      });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Timeline posts fetching failed", error });

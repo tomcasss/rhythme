@@ -40,7 +40,12 @@ export const API_ENDPOINTS = {
   DELETE_POST: (id, userId) => `${BASE_URL}/posts/delete-post/${id}/${userId}`,
   LIKE_POST: (id) => `${BASE_URL}/posts/like-post/${id}`,
   GET_POST: (id) => `${BASE_URL}/posts/get-post/${id}`,
-  GET_TIMELINE_POSTS: (userId) => `${BASE_URL}/posts/get-timeline-posts/${userId}`,
+  GET_TIMELINE_POSTS: (userId, { limit, before } = {}) => {
+    const qs = [];
+    if (limit) qs.push(`limit=${encodeURIComponent(limit)}`);
+    if (before) qs.push(`before=${encodeURIComponent(before)}`);
+    return `${BASE_URL}/posts/get-timeline-posts/${userId}${qs.length ? `?${qs.join('&')}` : ''}`;
+  },
   GET_USER_POSTS: (userId) => `${BASE_URL}/posts/get-user-posts/${userId}`,
   GET_RECOMMENDED_POSTS: (userId, limit) => `${BASE_URL}/posts/recommended/${userId}${limit ? `?limit=${limit}` : ''}`,
   SEARCH_POSTS: (query) => `${BASE_URL}/posts/search?q=${encodeURIComponent(query)}`,

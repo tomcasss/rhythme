@@ -72,17 +72,18 @@ function PostCard({
   const postUserId = useMemo(() => {
     const uid = post?.userId;
     if (!uid) return null;
-    return typeof uid === 'object' ? uid._id : uid;
+    const raw = typeof uid === 'object' ? uid._id : uid;
+    return raw ? String(raw) : null;
   }, [post?.userId]);
 
   // Es el post del usuario actual?
   const isOwn = useMemo(() => {
-    return Boolean(user?._id && postUserId && postUserId === user._id);
+    return Boolean(user?._id && postUserId && String(postUserId) === String(user._id));
   }, [user?._id, postUserId]);
 
   // Esta siguiendo al autor del post?
   const isFollowingPostUser = useMemo(() => {
-    return postUserId ? isFollowing(postUserId) : false;
+    return postUserId ? isFollowing(String(postUserId)) : false;
   }, [isFollowing, postUserId]);
 
   // Objeto del autor (cuando viene populado vs Fallback)
@@ -113,6 +114,12 @@ function PostCard({
   const isLiked = useMemo(() => {
     return !!user?._id && Array.isArray(post.likes) && post.likes.includes(user._id);
   }, [post.likes, user?._id]);
+
+  // Contador de comentarios (en tiempo real)
+  const commentsCount = useMemo(() => {
+    if (typeof post.commentsCount === 'number') return post.commentsCount;
+    return Array.isArray(post.comments) ? post.comments.length : 0;
+  }, [post.commentsCount, post.comments]);
 
   /**
    * Obtener ID del usuario del post
@@ -237,10 +244,7 @@ function PostCard({
 
         <div className="post-user">
           <strong onClick={goToProfile} className="post-user-name">
-            {post.userId && typeof post.userId === 'object'
-              ? (post.userId.username || post.userId.email || `ID: ${post.userId._id?.slice(0, 6)}...`)
-              : (post.username || (post.userId ? `ID: ${post.userId.slice(0, 6)}...` : "Usuario"))
-            }
+            {authorName}
           </strong>
           <div className="post-user-row">
             <span className="time">
@@ -421,7 +425,7 @@ function PostCard({
           <button className="action-btn-inter"
             onMouseEnter={prefetchComments}
             onClick={toggleComments}>
-            💬 {post.comments?.length || 0}
+            💬 {commentsCount}
           </button>
         </div>
       )}

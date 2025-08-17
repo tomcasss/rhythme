@@ -1,5 +1,5 @@
 import "./Home.css";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/api.js";
@@ -18,6 +18,9 @@ export default function Home() {
   const navigate = useNavigate();
 
   const [posts, setPosts] = useState([]);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
@@ -32,16 +35,26 @@ export default function Home() {
     loadFollowingUsers,
   } = useFollowSystem(user);
 
-  const fetchPosts = useCallback(async (userId) => {
+  const fetchPosts = useCallback(async (userId, { cursor } = {}) => {
+    if (!userId) return;
     setLoading(true);
     setError("");
     try {
-      const res = await axios.get(API_ENDPOINTS.GET_TIMELINE_POSTS(userId));
-      const list = Array.isArray(res.data?.timeLinePosts)
-        ? [...res.data.timeLinePosts]
-        : [];
-      list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setPosts(list);
+      const res = await axios.get(
+        API_ENDPOINTS.GET_TIMELINE_POSTS(userId, { limit: 20, before: cursor })
+      );
+      const list = Array.isArray(res.data?.timeLinePosts) ? res.data.timeLinePosts : [];
+      setNextCursor(res.data?.nextCursor || null);
+      setHasMore(Boolean(res.data?.hasMore));
+      if (!cursor) {
+        setPosts(list);
+      } else {
+        setPosts((prev) => {
+          const ids = new Set(prev.map((p) => p._id));
+          const append = list.filter((p) => !ids.has(p._id));
+          return [...prev, ...append];
+        });
+      }
     } catch {
       setError("Error al cargar los posts. Intenta de nuevo.");
     } finally {
@@ -60,7 +73,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!user?._id) return;
-    fetchPosts(user._id);
+  fetchPosts(user._id);
     loadFollowingUsers(user._id);
   }, [user?._id, fetchPosts, loadFollowingUsers]);
 
@@ -156,7 +169,20 @@ export default function Home() {
         if (!exists && (type === 'created')) {
           return [post, ...prev];
         }
-        return prev.map((p) => (p._id === post._id ? { ...p, ...post } : p));
+        return prev.map((p) => {
+          if (p._id !== post._id) return p;
+          // Merge and preserve computed lengths if needed
+          const merged = { ...p, ...post };
+          // If incoming post.userId is a string but we already have a populated object, keep the richer object
+          if (typeof post.userId === 'string' && p && typeof p.userId === 'object') {
+            merged.userId = p.userId;
+          }
+          // Normalize commentsCount for UI that displays count
+          if (typeof post.commentsCount === 'number') merged.commentsCount = post.commentsCount;
+          // Ensure likes array exists
+          if (!Array.isArray(merged.likes)) merged.likes = [];
+          return merged;
+        });
       });
     };
     socket.on('post:event', onPostEvent);
@@ -167,6 +193,25 @@ export default function Home() {
   const [activeConversation, setActiveConversation] = useState(null);
   const handleOpenConversation = (conversation) => setActiveConversation(conversation);
   const handleCloseChat = () => setActiveConversation(null);
+
+  // Infinite scroll with IntersectionObserver
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const el = sentinelRef.current;
+    let blocked = false;
+    const obs = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (!entry.isIntersecting) return;
+      if (blocked) return;
+      if (!hasMore || !nextCursor || loading || !user?._id) return;
+      blocked = true;
+      fetchPosts(user._id, { cursor: nextCursor }).finally(() => {
+        blocked = false;
+      });
+    }, { root: null, rootMargin: '200px', threshold: 0 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasMore, nextCursor, loading, user?._id, fetchPosts]);
 
 return (
   <div className="home-container">
@@ -216,6 +261,7 @@ return (
           onUnfollow={unfollowUser}
           isFollowing={isFollowing}
         />
+  <div ref={sentinelRef} style={{ height: 1 }} />
       </main>
 
       {/* DERECHA: chat/mensajes */}
