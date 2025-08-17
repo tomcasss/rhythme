@@ -14,7 +14,6 @@ import "./PostCard.css";
 const prefetchComments = () => import('./CommentsSection');
 //const prefetchSpotify = () => import('./SpotifyContent');
 
-
 /**
  * Componente PostCard - Tarjeta individual de post
  * @param {Object} props - Propiedades del componente
