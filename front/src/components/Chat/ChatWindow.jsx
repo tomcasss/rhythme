@@ -16,6 +16,17 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
     (p) => p._id !== currentUser._id
   );
 
+  //--------------Prueba de mensajes duplicados
+  const seenIdsRef = useRef(new Set());
+
+  const mergeUniqueById = (items) =>{
+    const map = new Map();
+    for (const item of items) {
+      if  (item && item._id) map.set(String(item._id), item);
+    }
+    return Array.from(map.values());
+  }
+//----------------------Seccion uno de la prueba
   useEffect(() => {
     if (!conversation?._id) return;
     const load = async () => {
@@ -43,7 +54,14 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
     if (!socket || !conversation?._id) return;
     const onNew = (msg) => {
       if (String(msg.conversationId) !== String(conversation._id)) return;
-      setMessages((prev) => (prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]));
+//---------------------------------------------------
+      const idStr = String(msg._id || '');
+      if (idStr && seenIdsRef.current.has(idStr)){
+        seenIdsRef.current.delete(idStr);
+        return;
+      }
+//--------------------------------------------------
+      setMessages((prev) => /* (prev.some((m) => m._id === msg._id) ? prev :  */ mergeUniqueById([...prev, msg]));
       setTimeout(() => listRef.current?.scrollTo(0, listRef.current.scrollHeight), 0);
     };
     socket.on("message:new", onNew);
@@ -60,7 +78,6 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
       .map(part => (typeof part === 'object' ? part._id : part))
       .map(id => String(id));
       const peerId = participantIds.find(id => id !== String(currentUser._id));
-      console.log('[chat] enviando mensaje:', peerId);
 
       const res = await axios.post(API_ENDPOINTS.SEND_MESSAGE, {
         conversationId: conversation._id,
@@ -68,7 +85,12 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
         text: text.trim(),
         peerId,
       });
-      setMessages((prev) => [...prev, res.data]);
+
+      //------------------------------------------------------
+      const idStr = String(res.data?._id || '');
+      if (idStr) seenIdsRef.current.add(idStr);
+      //------------------------------------------------------
+      setMessages((prev) => mergeUniqueById([...prev, res.data]));
       setText("");
       setTimeout(
         () => listRef.current?.scrollTo(0, listRef.current.scrollHeight),
