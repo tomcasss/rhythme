@@ -79,4 +79,11 @@ const postSchema = new Schema({
     comments: [commentSchema]
 }, { timestamps: true });
 
+// Indexes for faster timelines and recommendations
+postSchema.index({ userId: 1, createdAt: -1 });
+postSchema.index({ createdAt: -1 });
+postSchema.index({ 'spotifyContent.genres': 1, createdAt: -1 });
+postSchema.index({ likes: 1 });
+postSchema.index({ 'comments.createdAt': -1 });
+
 export default mongoose.model("Post", postSchema);

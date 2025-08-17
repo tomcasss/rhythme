@@ -49,7 +49,7 @@ const userSchema = new Schema({
   },
   relationship: {
     type: Number,
-    enum: [1, 2, 3],
+    enum: [1, 2, 3, 4, 5],
     default: 1,
   },
 
@@ -118,5 +118,11 @@ const userSchema = new Schema({
   deletedAt: { type: Date, default: null },
   passwordUpdatedAt: { type: Date, default: null },
 });
+
+// Indexes for performance on lookups and recommendations
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ username: 1 });
+userSchema.index({ following: 1 });
+userSchema.index({ followers: 1 });
 
 export default mongoose.model("User", userSchema);

@@ -20,28 +20,30 @@ export const listMessagesController = async (req, res) => {
 export const sendMessageController = async (req, res) => {
   try {
     const { conversationId, senderId, sender, text, peerId } = req.body;
+    // support both "senderId" and legacy "sender" from front
     const sid = senderId || sender;
+    const msg = await sendMessage({ conversationId, senderId: sid, text, peerId });
 
-    const msg = await sendMessage({
-      conversationId,
-      senderId: sid,
-      text,
-      peerId,
-    });
+    // Emit socket event to both participants
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        const roomA = `user:${msg.senderId?.toString?.() || sid}`;
+        const roomB = (peerId || msg.peerId) ? `user:${peerId || msg.peerId}` : undefined;
+        const payload = {
+          _id: msg._id,
+          conversationId: msg.conversationId,
+          senderId: msg.senderId,
+          text: msg.text,
+          createdAt: msg.createdAt,
+        };
+        io.to(roomA).emit('message:new', payload);
+        if (roomB) io.to(roomB).emit('message:new', payload);
+      }
+    } catch (e) {
+      console.error('Socket emit failed:', e);
+    }
 
-    const convo = await Conversation.findById(msg.conversationId).select("participants");
-    const members = (convo?.participants || []).map(String);
-
-    const payload = {
-  _id: String(msg._id),
-  conversationId: String(msg.conversationId),
-  senderId: String(msg.senderId),
-  text: msg.text,
-  createdAt: msg.createdAt,
-};
-for (const uid of members) {
-  await emitToUser(req, uid, "message:new", payload);
-}
 
     res.status(201).json(msg);
   } catch (err) {

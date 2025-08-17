@@ -17,7 +17,7 @@ router.get('/recommended/:userId', getRecommendedPostsController);
 // Obtener todos los posts (básico)
 router.get('/', async (req, res) => {
   try {
-    const posts = await Post.find().populate('userId', 'username email profilePicture');
+    const posts = await Post.find().populate('userId', 'username email profilePicture').lean();
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los posts', error });

@@ -1,15 +1,18 @@
 // src/components/Home/PostCard.jsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import React, { lazy, Suspense } from 'react';
 import ImageModal from "../common/ImageModal.jsx";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPencil , faCircleUser } from "@fortawesome/free-solid-svg-icons";
-import Swal from 'sweetalert2';
+import { faTrash, faPencil, faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import Swal from 'sweetalert2/dist/sweetalert2.all.js';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
-import CommentsSection from './CommentsSection';
-import SpotifyContent from './SpotifyContent';
+const CommentsSection = lazy(() => import('./CommentsSection'));
+const SpotifyContent = lazy(() => import('./SpotifyContent'));
 import "./PostCard.css";
+const prefetchComments = () => import('./CommentsSection');
+//const prefetchSpotify = () => import('./SpotifyContent');
 
 /**
  * Componente PostCard - Tarjeta individual de post
@@ -25,7 +28,7 @@ import "./PostCard.css";
  * @param {Function} props.onUnfollow - Función para dejar de seguir usuario
  * @param {Function} props.isFollowing - Función para verificar si sigue a un usuario
  */
-export default function PostCard({
+function PostCard({
   post,
   user,
   followLoading,
@@ -65,30 +68,83 @@ export default function PostCard({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  //ID del autor del post
+  const postUserId = useMemo(() => {
+    const uid = post?.userId;
+    if (!uid) return null;
+    const raw = typeof uid === 'object' ? uid._id : uid;
+    return raw ? String(raw) : null;
+  }, [post?.userId]);
+
+  // Es el post del usuario actual?
+  const isOwn = useMemo(() => {
+    return Boolean(user?._id && postUserId && String(postUserId) === String(user._id));
+  }, [user?._id, postUserId]);
+
+  // Esta siguiendo al autor del post?
+  const isFollowingPostUser = useMemo(() => {
+    return postUserId ? isFollowing(String(postUserId)) : false;
+  }, [isFollowing, postUserId]);
+
+  // Objeto del autor (cuando viene populado vs Fallback)
+  const author = useMemo(() => {
+    return typeof post.userId === 'object' ? post.userId : (post.user || null);
+  }, [post.userId, post.user]);
+
+  // Resolver avatar
+  const authorAvatar = useMemo(() => {
+    let avatar = author?.profilePicture || author?.profileImg || null;
+    if (!avatar && !author && user?._id && postUserId === user._id) {
+      avatar = user.profilePicture || null;
+    }
+    return avatar;
+  }, [author, user?._id, user?.profilePicture, postUserId]);
+
+  // Desplegar autor nombre/email
+  const authorName = useMemo(() => {
+    return author?.username || author?.email || 'usuario';
+  }, [author]);
+
+  // Formato a createdAt
+  const createdAtLabel = useMemo(() => {
+    return post.createdAt ? new Date(post.createdAt).toLocaleString() : '';
+  }, [post.createdAt]);
+
+  // Computar likes
+  const isLiked = useMemo(() => {
+    return !!user?._id && Array.isArray(post.likes) && post.likes.includes(user._id);
+  }, [post.likes, user?._id]);
+
+  // Contador de comentarios (en tiempo real)
+  const commentsCount = useMemo(() => {
+    if (typeof post.commentsCount === 'number') return post.commentsCount;
+    return Array.isArray(post.comments) ? post.comments.length : 0;
+  }, [post.commentsCount, post.comments]);
+
   /**
    * Obtener ID del usuario del post
    */
-  const getPostUserId = () => {
+  /* const getPostUserId = () => {
     if (!post.userId) return null;
     return typeof post.userId === 'object' ? post.userId._id : post.userId;
-  };
+  }; */
 
   /**
    * Verificar si es post propio
    */
-  const isOwnPost = () => {
+  /* const isOwnPost = () => {
     if (!user || !user._id || !post.userId) return false;
-    const postUserId = getPostUserId();
+    const postUserId = postUserId();
     return postUserId === user._id;
-  };
+  }; */
 
   /**
    * Verificar si sigue al usuario del post
    */
-  const isFollowingUser = () => {
-    const postUserId = getPostUserId();
+  /* const isFollowingUser = () => {
+    const postUserId = postUserId();
     return postUserId ? isFollowing(postUserId) : false;
-  };
+  }; */
 
   /**
    * Iniciar edición del post
@@ -150,23 +206,23 @@ export default function PostCard({
    * Navegar al perfil del usuario del post
    */
   const goToProfile = () => {
-    const postUserId = getPostUserId();
-    if (postUserId) {
-      navigate(`/profile/${postUserId}`);
+    const uid = postUserId;
+    if (uid) {
+      navigate(`/profile/${uid}`);
     }
   };
   // Autor del post (cuando viene populado será un objeto en post.userId, si no intentar fallback a post.user)
-  const author = typeof post.userId === 'object' ? post.userId : (post.user || null);
+  //const author = typeof post.userId === 'object' ? post.userId : (post.user || null);
   // Resolver avatar: puede venir en author.profilePicture, o si no está poblado intentar coincidir con usuario actual
-  let authorAvatar = author?.profilePicture || author?.profileImg || null;
-  if (!authorAvatar) {
-    // Si el post solo trae un id y corresponde al usuario actual, usar su avatar
-    const postUserId = getPostUserId();
-    if (!author && user?._id && postUserId === user._id) {
-      authorAvatar = user.profilePicture || null;
-    }
-  }
-  const authorName = author?.username || author?.email || 'usuario';
+  /*  let authorAvatar = author?.profilePicture || author?.profileImg || null;
+   if (!authorAvatar) {
+     // Si el post solo trae un id y corresponde al usuario actual, usar su avatar
+     const postUserId = postUserId();
+     if (!author && user?._id && postUserId === user._id) {
+       authorAvatar = user.profilePicture || null;
+     }
+   } */
+  //const authorName = author?.username || author?.email || 'usuario';
 
   return (
     <div className="post-card">
@@ -177,31 +233,30 @@ export default function PostCard({
             src={authorAvatar}
             alt={authorName}
             className="avatar avatar-clickable"
+            loading="lazy"
+            decoding="async"
             onClick={goToProfile}
           />
         ) : (
           <FontAwesomeIcon icon={faCircleUser} className="avatar avatar-clickable" onClick={goToProfile} />
         )}
- 
+
 
         <div className="post-user">
           <strong onClick={goToProfile} className="post-user-name">
-            {post.userId && typeof post.userId === 'object'
-              ? (post.userId.username || post.userId.email || `ID: ${post.userId._id?.slice(0, 6)}...`)
-              : (post.username || (post.userId ? `ID: ${post.userId.slice(0, 6)}...` : "Usuario"))
-            }
+            {authorName}
           </strong>
           <div className="post-user-row">
             <span className="time">
-              {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
+              {createdAtLabel}
             </span>
 
             {/* Indicador de tipo de post */}
-            {isOwnPost() ? (
+            {isOwn ? (
               <span className="post-user-status own">
                 Tu post
               </span>
-            ) : isFollowingUser() ? (
+            ) : isFollowingPostUser ? (
               <span className="post-user-status following">
                 Siguiendo
               </span>
@@ -214,25 +269,25 @@ export default function PostCard({
         </div>
 
         {/* Botón de seguir/dejar de seguir */}
-        {!isOwnPost() && (
+        {!isOwn && (
           <div className="post-follow-wrapper">
-            {isFollowingUser() ? (
+            {isFollowingPostUser ? (
               <button
                 className="following-btn"
-                onClick={() => onUnfollow(getPostUserId())}
-                disabled={followLoading[getPostUserId()]}
+                onClick={() => onUnfollow(postUserId)}
+                disabled={followLoading[postUserId]}
                 title="Haz clic para dejar de seguir"
               >
-                {followLoading[getPostUserId()] ? '...' : 'Siguiendo'}
+                {followLoading[postUserId] ? '...' : 'Siguiendo'}
               </button>
             ) : (
               <button
                 className="follow-btn"
-                onClick={() => onFollow(getPostUserId())}
-                disabled={followLoading[getPostUserId()]}
+                onClick={() => onFollow(postUserId)}
+                disabled={followLoading[postUserId]}
                 title="Haz clic para seguir"
               >
-                {followLoading[getPostUserId()] ? '...' : 'Seguir'}
+                {followLoading[postUserId] ? '...' : 'Seguir'}
               </button>
             )}
           </div>
@@ -249,7 +304,7 @@ export default function PostCard({
           </button>
           {openMenu && (
             <div ref={menuRef} className="post-options-panel">
-              {isOwnPost() ? (
+              {isOwn ? (
                 <>
                   <button
                     className="action-btn-options post-options-item"
@@ -281,7 +336,7 @@ export default function PostCard({
                       });
                       if (!reason) return;
                       try {
-                        await axios.post(API_ENDPOINTS.REPORT_USER(getPostUserId()), { userId: user?._id, reason, postId: post._id });
+                        await axios.post(API_ENDPOINTS.REPORT_USER(postUserId), { userId: user?._id, reason, postId: post._id });
                         Swal.fire('Enviado', 'Reporte registrado', 'success');
                       } catch (e) {
                         if (e?.response?.status === 429) {
@@ -302,7 +357,7 @@ export default function PostCard({
       </div>
 
       {/* Contenido del post */}
-  <div className={`post-content ${full ? 'post-content-full' : ''}`}>
+      <div className={`post-content ${full ? 'post-content-full' : ''}`}>
         {isEditing ? (
           <form onSubmit={handleEditSubmit} className="post-edit-form">
             <textarea
@@ -343,16 +398,20 @@ export default function PostCard({
           <>
             <p className={`post-text ${full ? 'post-text-full' : ''}`}>{post.desc}</p>
             {post.img && (
-              <img
-                src={post.img}
-                alt="post content"
-                className={`post-image ${full ? 'post-image-full' : ''}`}
-                onClick={() => setShowImgModal(true)}
-                style={{ cursor: 'pointer' }}
-                title="Ver imagen"
-              />
+                <img
+                  src={post.img}
+                  alt="post content"
+                  className={`post-image ${full ? 'post-image-full' : ''} post-image-clickable`}
+                  onClick={() => setShowImgModal(true)}
+                  title="Ver imagen"
+                  loading="lazy"
+                  decoding="async"
+                />
             )}
-            {post.spotifyContent && <SpotifyContent spotifyContent={post.spotifyContent} />}
+            {post.spotifyContent && (
+              <Suspense fallback={null}>
+                <SpotifyContent spotifyContent={post.spotifyContent} />
+              </Suspense>)}
           </>
         )}
       </div>
@@ -361,17 +420,22 @@ export default function PostCard({
       {!isEditing && (
         <div className="post-actions">
           <button className="action-btn-inter" onClick={() => onLike(post._id)}>
-            {post.likes && post.likes.includes(user?._id) ? "🎶" : "🎵"} {post.likes?.length || 0}
+            {isLiked ? "🎶" : "🎵"} {post.likes?.length || 0}
           </button>
-          <button className="action-btn-inter" onClick={toggleComments}>
-            💬 {post.comments?.length || 0}
+          <button className="action-btn-inter"
+            onMouseEnter={prefetchComments}
+            onClick={toggleComments}>
+            💬 {commentsCount}
           </button>
         </div>
       )}
 
       {/* Sección de comentarios */}
       {showComments && !isEditing && (
-        <CommentsSection postId={post._id} user={user} />
+        <Suspense fallback={null}>
+          <CommentsSection postId={post._id} user={user} />
+        </Suspense>
+
       )}
       {showImgModal && (
         <ImageModal src={post.img} alt="Imagen del post" onClose={() => setShowImgModal(false)} />
@@ -379,3 +443,4 @@ export default function PostCard({
     </div>
   );
 }
+export default React.memo(PostCard);

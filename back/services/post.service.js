@@ -7,6 +7,26 @@ import {
   getAlbumDetails,
 } from "./spotify.service.js";
 
+// Simple in-memory TTL cache for recommendations (per user)
+const recoCache = new Map(); // key: `${userId}:${limit}` => { data, expires }
+const RECO_TTL_MS = 60 * 1000; // 60s; ajusta según tus necesidades
+
+function getRecoCache(userId, limit) {
+  const key = `${userId}:${limit}`;
+  const item = recoCache.get(key);
+  if (!item) return null;
+  if (Date.now() > item.expires) {
+    recoCache.delete(key);
+    return null;
+  }
+  return item.data;
+}
+
+function setRecoCache(userId, limit, data) {
+  const key = `${userId}:${limit}`;
+  recoCache.set(key, { data, expires: Date.now() + RECO_TTL_MS });
+}
+
 // Crear un nuevo post, asegurando que userId sea ObjectId
 export const createPost = async (body) => {
   try {
@@ -128,7 +148,8 @@ export const getPost = async (params) => {
     const post = await postModel
       .findById(params.id)
       .populate("userId", "username email profilePicture")
-      .populate("comments.userId", "username email profilePicture");
+  .populate("comments.userId", "username email profilePicture")
+  .lean();
     return post;
   } catch (error) {
     throw error;
@@ -136,29 +157,26 @@ export const getPost = async (params) => {
 };
 
 // Obtener timeline de posts (propios y de seguidos), usando populate para devolver username/email del autor
-export const getTimelinePosts = async (body) => {
+export const getTimelinePosts = async ({ userId, limit = 20, before } = {}) => {
   try {
-    const currentUser = await userModel.findById(body.userId);
+    const currentUser = await userModel.findById(userId).lean();
     if (!currentUser) return [];
-    // Populate para incluir username/email del autor
-    const userPosts = await postModel
-      .find({ userId: currentUser._id })
-      .populate("userId", "username email profilePicture");
-    let timeLinePosts = [];
-    if (
-      Array.isArray(currentUser.following) &&
-      currentUser.following.length > 0
-    ) {
-      const friendsPosts = await Promise.all(
-        currentUser.following.map((friendId) =>
-          postModel
-            .find({ userId: friendId })
-            .populate("userId", "username email profilePicture")
-        )
-      );
-      timeLinePosts = friendsPosts.flat();
+
+    const ids = [currentUser._id, ...(currentUser.following || [])];
+    const filter = { userId: { $in: ids } };
+    if (before) {
+      const beforeDate = new Date(before);
+      if (!isNaN(beforeDate)) filter.createdAt = { $lt: beforeDate };
     }
-    return [...userPosts, ...timeLinePosts];
+
+    const posts = await postModel
+      .find(filter)
+      .populate("userId", "username email profilePicture")
+      .sort({ createdAt: -1 })
+      .limit(Number(limit) || 20)
+      .lean();
+
+    return posts;
   } catch (error) {
     throw error;
   }
@@ -233,7 +251,8 @@ export const getPostComments = async (params) => {
     const post = await postModel
       .findById(params.id)
       .populate("comments.userId", "username email profilePicture")
-      .select("comments");
+      .select("comments")
+      .lean();
 
     if (!post) {
       throw new Error("Post not found");
@@ -254,10 +273,11 @@ export const getUserPosts = async (params) => {
     }
 
     // Obtener todos los posts del usuario
-    const posts = await postModel
+  const posts = await postModel
       .find({ userId: params.userId })
       .populate("userId", "username email profilePicture")
-      .sort({ createdAt: -1 }); // Ordenar por más recientes primero
+  .sort({ createdAt: -1 })
+  .lean(); // Devolver objetos planos para rendimiento
 
     return posts;
   } catch (error) {
@@ -268,7 +288,11 @@ export const getUserPosts = async (params) => {
 // Recomendación de contenido: mezcla de posts de amigos de amigos, posts populares recientes y afinidad por Spotify
 export const getRecommendedPosts = async (userId, { limit = 5 } = {}) => {
   try {
-    const me = await userModel.findById(userId).lean();
+  // cache fast-path
+  const cached = getRecoCache(userId, limit);
+  if (cached) return cached;
+
+  const me = await userModel.findById(userId).lean();
     if (!me) return [];
 
     // base: no mostrar mis posts
@@ -318,7 +342,7 @@ export const getRecommendedPosts = async (userId, { limit = 5 } = {}) => {
     since.setDate(since.getDate() - 30);
 
     // Filtrado por géneros preferidos: inferidos de posts del usuario y sus follows
-    const myGenrePosts = await postModel
+  const myGenrePosts = await postModel
       .find({ userId: excludeAuthorId })
       .select("spotifyContent.genres")
       .lean();
@@ -329,7 +353,7 @@ export const getRecommendedPosts = async (userId, { limit = 5 } = {}) => {
     );
     // Si no hay géneros propios, derivar de follows (opcional)
     if (myGenres.size === 0 && friends.length) {
-      const followGenrePosts = await postModel
+  const followGenrePosts = await postModel
         .find({ userId: { $in: friends } })
         .select("spotifyContent.genres")
         .lean();
@@ -339,7 +363,7 @@ export const getRecommendedPosts = async (userId, { limit = 5 } = {}) => {
       }
     }
 
-    const candidates = await postModel
+  const candidates = await postModel
       .find({
         // excluir mis posts y los de usuarios que ya sigo
         userId: {
@@ -359,7 +383,7 @@ export const getRecommendedPosts = async (userId, { limit = 5 } = {}) => {
       .populate("userId", "username email profilePicture")
       .sort({ createdAt: -1 })
       .limit(limit * 5) // traer más para poder reordenar por score
-      .lean();
+  .lean();
 
     const scored = candidates.map((p) => {
       let score = 0;
@@ -386,7 +410,8 @@ export const getRecommendedPosts = async (userId, { limit = 5 } = {}) => {
     );
 
     // Si no hay candidatos por filtro estricto y no hay géneros, retorna top por score
-    const result = scored.slice(0, limit);
+  const result = scored.slice(0, limit);
+  setRecoCache(userId, limit, result);
     return result;
   } catch (error) {
     throw error;

@@ -20,10 +20,12 @@ export const useFollowSystem = (user) => {
     if (!userId) return;
     
     try {
-      const res = await axios.get(API_ENDPOINTS.GET_USER(userId));
+      // Pass viewerId to ensure server allows access to own profile even if not public
+      const res = await axios.get(`${API_ENDPOINTS.GET_USER(userId)}?viewerId=${encodeURIComponent(userId)}`);
       if (res.data.user && res.data.user.following) {
-        const followingSet = new Set(res.data.user.following);
-        console.log("� Usuarios seguidos cargados:", Array.from(followingSet));
+        // Normalize IDs to string to avoid ObjectId vs string mismatches
+        const followingSet = new Set(res.data.user.following.map((id) => String(id)));
+        console.log("Usuarios seguidos cargados:", Array.from(followingSet));
         setFollowingUsers(followingSet);
       }
       setFollowingLoaded(true);
@@ -38,19 +40,9 @@ export const useFollowSystem = (user) => {
    */
   const isFollowing = useCallback((targetUserId) => {
     if (!targetUserId) return false;
-    
-    // Convertir a string para comparación consistente
     const targetIdStr = String(targetUserId);
-    const followingArray = Array.from(followingUsers).map(id => String(id));
-    const hasUser = followingArray.includes(targetIdStr);
-    
-    /* console.log(`🔍 isFollowing(${targetIdStr}):`, {
-      followingArray,
-      hasUser,
-      followingUsersSize: followingUsers.size
-    }); */
-    
-    return hasUser;
+    // followingUsers is normalized to strings when loaded/updated
+    return followingUsers.has(targetIdStr);
   }, [followingUsers]);
 
   /**
@@ -75,7 +67,7 @@ export const useFollowSystem = (user) => {
       // Actualizar estado local inmediatamente
       setFollowingUsers(prev => {
         const newSet = new Set(prev);
-        newSet.add(targetUserId);
+        newSet.add(String(targetUserId));
         console.log(`✅ Usuario ${targetUserId} seguido. Nuevo estado:`, Array.from(newSet));
         return newSet;
       });
@@ -89,7 +81,7 @@ export const useFollowSystem = (user) => {
         // El usuario ya está siendo seguido en el servidor
         setFollowingUsers(prev => {
           const newSet = new Set(prev);
-          newSet.add(targetUserId);
+          newSet.add(String(targetUserId));
           return newSet;
         });
         return true;
@@ -127,7 +119,7 @@ export const useFollowSystem = (user) => {
       // Actualizar estado local inmediatamente
       setFollowingUsers(prev => {
         const newSet = new Set(prev);
-        newSet.delete(targetUserId);
+        newSet.delete(String(targetUserId));
         console.log(`❌ Usuario ${targetUserId} no seguido. Nuevo estado:`, Array.from(newSet));
         return newSet;
       });
@@ -141,7 +133,7 @@ export const useFollowSystem = (user) => {
         // El usuario ya no está siendo seguido en el servidor
         setFollowingUsers(prev => {
           const newSet = new Set(prev);
-          newSet.delete(targetUserId);
+          newSet.delete(String(targetUserId));
           return newSet;
         });
         return true;
