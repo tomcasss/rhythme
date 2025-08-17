@@ -406,7 +406,7 @@ export default function PostCard({
             )}
             {post.spotifyContent && (
               <Suspense fallback={null}>
-                < SpotifyContent spotifyContent={post.spotifyContent} />
+                <SpotifyContent spotifyContent={post.spotifyContent} />
               </Suspense>)}
           </>
         )}
