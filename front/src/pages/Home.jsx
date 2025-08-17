@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/api.js";
 import { useFollowSystem } from "../hooks/useFollowSystem.js";
-import Swal from "sweetalert2";
+import Swal from "sweetalert2/dist/sweetalert2.all.js";
 import Navbar from "../components/Home/Navbar";
 import CreatePostForm from "../components/Home/CreatePostForm";
 import PostsList from "../components/Home/PostsList";

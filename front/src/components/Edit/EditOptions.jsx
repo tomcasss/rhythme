@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2/dist/sweetalert2.all.js';
 import './EditOptions.css';
 
 /**
@@ -511,18 +511,21 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
       case 'relationship':
         return (
           <>
-            <h3>Editar Estado de Relación</h3>
+            <h3>Editar intereses:</h3>
             {error && <p className="error-text">{error}</p>}
             <div>
-              <label>Estado de relación:</label>
+              <label>Tipo de usuario:</label>
               <select
                 value={formData.relationship}
                 onChange={(e) => handleInputChange('relationship', e.target.value)}
                 className="modal-select"
               >
-                <option value={1}>Soltero/a</option>
-                <option value={2}>En una relación</option>
-                <option value={3}>Casado/a</option>
+                <option value={1}>Creador de música</option>
+                <option value={2}>Promotor</option>
+                <option value={3}>Amante de la música</option>
+                <option value={4}>Educador</option> 
+                <option value={5}>Comunidad y cultura</option> 
+                
               </select>
             </div>
             <div className="modal-actions">
@@ -670,7 +673,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           className="btn-opcion"
           onClick={() => handleEditOption('relationship')}
         >
-          Estado de relación
+          Tipo de usuario
         </button>
 
         <hr />

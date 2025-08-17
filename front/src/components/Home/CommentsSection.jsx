@@ -4,7 +4,7 @@ import axios from "axios";
 import { API_ENDPOINTS } from "../../config/api.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
-import Swal from "sweetalert2";
+import Swal from "sweetalert2/dist/sweetalert2.all.js";
 import "./CommentsSection.css";
 
 /**

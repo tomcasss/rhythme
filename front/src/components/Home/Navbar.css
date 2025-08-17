@@ -56,18 +56,12 @@
 }
 
 .search-results-panel {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
+  /* Render content within the outer .search-results wrapper (already absolutely positioned) */
+  position: static;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   box-shadow: var(--shadow-soft);
-  max-height: 400px;
-  overflow-y: auto;
-  z-index: 1000;
-  margin-top: 4px;
 }
 
 .search-panel-header {

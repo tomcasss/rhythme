@@ -5,7 +5,7 @@ import axios from 'axios';
 import { API_ENDPOINTS } from "../config/api.js";
 import { useFollowSystem } from "../hooks/useFollowSystem.js";
 import NavBar from "../components/Home/Navbar.jsx";
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2/dist/sweetalert2.all.js';
 
 // Componentes
 import ProfileBanner from "../components/Profile/ProfileBanner";
