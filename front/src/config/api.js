@@ -100,5 +100,4 @@ export async function requestPaswordReset(email){
   if (!res.ok) throw new Error('No se pudo procesar la solicitud');
   return res.json();
 } */
-
 export default API_ENDPOINTS;
