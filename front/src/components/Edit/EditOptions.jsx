@@ -603,16 +603,29 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Estado de la cuenta</h3>
-            <p>Selecciona una acción:</p>
-            <select value={formData.accountAction||''} onChange={e=>setFormData(p=>({...p,accountAction:e.target.value}))}>
+            <p className="modal-hint">Selecciona la acción que deseas aplicar a tu cuenta.</p>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Acción</label>
+            <select
+              className="modal-select"
+              value={formData.accountAction||''}
+              onChange={e=>setFormData(p=>({...p,accountAction:e.target.value}))}
+            >
               <option value="">-- Seleccionar --</option>
               <option value="deactivate">Desactivar</option>
               <option value="reactivate">Reactivar</option>
               <option value="delete">Eliminar permanentemente</option>
             </select>
-            {formData.accountAction === 'delete' && <p style={{color:'#e74c3c'}}>Esta acción no se puede deshacer.</p>}
+            {formData.accountAction === 'delete' && (
+              <div className="error-text">Esta acción no se puede deshacer.</div>
+            )}
             <div className="modal-actions">
-              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading || !formData.accountAction}>{loading ? 'Procesando...' : 'Confirmar'}</button>
+              <button
+                onClick={handleSaveChanges}
+                className={`modal-btn ${formData.accountAction === 'delete' ? 'danger' : ''}`}
+                disabled={loading || !formData.accountAction}
+              >
+                {loading ? 'Procesando...' : 'Confirmar'}
+              </button>
               <button onClick={() => setShowModal(false)} className="modal-btn cancel">Cancelar</button>
             </div>
           </>
@@ -711,12 +724,6 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         <hr />
 
         <div className="acciones">
-          <button
-            className="reporte"
-            onClick={() => handleEditOption('report')}
-          >
-            Reportar un problema
-          </button>
 
           <button
             className="cerrar-sesion"

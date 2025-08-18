@@ -58,6 +58,11 @@
   background: var(--color-text-muted);
 }
 
+/* Destructive emphasis */
+.modal-btn.danger {
+  background: var(--color-danger-alt);
+}
+
 .error-text {
   color: var(--color-danger-alt);
   margin-bottom: 1rem;
