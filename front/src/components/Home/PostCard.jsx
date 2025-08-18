@@ -211,19 +211,8 @@ function PostCard({
       navigate(`/profile/${uid}`);
     }
   };
-  // Autor del post (cuando viene populado será un objeto en post.userId, si no intentar fallback a post.user)
-  //const author = typeof post.userId === 'object' ? post.userId : (post.user || null);
-  // Resolver avatar: puede venir en author.profilePicture, o si no está poblado intentar coincidir con usuario actual
-  /*  let authorAvatar = author?.profilePicture || author?.profileImg || null;
-   if (!authorAvatar) {
-     // Si el post solo trae un id y corresponde al usuario actual, usar su avatar
-     const postUserId = postUserId();
-     if (!author && user?._id && postUserId === user._id) {
-       authorAvatar = user.profilePicture || null;
-     }
-   } */
-  //const authorName = author?.username || author?.email || 'usuario';
-
+  
+  
   return (
     <div className="post-card">
       {/* Header del post */}
@@ -443,4 +432,18 @@ function PostCard({
     </div>
   );
 }
-export default React.memo(PostCard);
+function areEqual(prev, next){
+    const currentPost = prev.post, nextPost = next.post;
+    if (currentPost._id !== nextPost._id) return false;
+    if (currentPost.desc !== nextPost.desc) return false;
+    if (currentPost.img !== nextPost.img) return false;
+    const plc = typeof currentPost.commentsCount === 'number' ? currentPost.commentsCount : (Array.isArray(currentPost.comments) ? currentPost.comments.length : 0);
+    const nlc = typeof nextPost.commentsCount === 'number' ? nextPost.commentsCount : (Array.isArray(nextPost.comments) ? nextPost.comments.length : 0);
+    if (plc !== nlc) return false;
+    const pl = Array.isArray(currentPost.likes) ? currentPost.likes.length : 0;
+    const nl = Array.isArray(nextPost.likes) ? nextPost.likes.length : 0;
+    if (pl !== nl)return false;
+    if (prev.user?._id !== next.user?._id) return false;
+    return true;
+  }
+export default React.memo(PostCard, areEqual);

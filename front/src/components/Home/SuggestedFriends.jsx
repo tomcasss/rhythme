@@ -1,4 +1,4 @@
-// src/components/Home/SuggestedFriends.jsx
+import { Virtuoso } from 'react-virtuoso';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
@@ -35,10 +35,10 @@ export default function SuggestedFriends({ user, limit = 5, onFollow, onUnfollow
   if (!suggestions.length) return null;
 
   return (
-    <section className="suggested-section sidebar-box">
-      <h3 className="suggested-title sidebar-title">Personas que quizá conozcas</h3>
-      <div className="suggested-grid">
-        {suggestions.map(friendSuggestion => (
+    <>
+      <Virtuoso
+        data={suggestions}
+        itemContent={(index, friendSuggestion) => (
           <div key={friendSuggestion._id} className="suggested-card">
             {friendSuggestion.profilePicture ? (
               <img
@@ -73,8 +73,50 @@ export default function SuggestedFriends({ user, limit = 5, onFollow, onUnfollow
               </button>
             )}
           </div>
-        ))}
-      </div>
-    </section>
+        )}
+      />
+
+      <section className="suggested-section sidebar-box">
+        <h3 className="suggested-title sidebar-title">Personas que quizá conozcas</h3>
+        <div className="suggested-grid">
+          {suggestions.map(friendSuggestion => (
+            <div key={friendSuggestion._id} className="suggested-card">
+              {friendSuggestion.profilePicture ? (
+                <img
+                  src={friendSuggestion.profilePicture}
+                  alt={friendSuggestion.username || 'usuario'}
+                  className="suggested-avatar"
+                />
+              ) : (
+                <FontAwesomeIcon icon={faCircleUser} className="suggested-avatar" />
+              )}
+              <div className="suggested-info">
+                <div className="suggested-name">{friendSuggestion.username || 'Usuario'}</div>
+                <div className="suggested-email">{friendSuggestion.email}</div>
+              </div>
+              {friendSuggestion._id === user._id ? (
+                <span className="suggested-self">Tú</span>
+              ) : isFollowing(friendSuggestion._id) ? (
+                <button
+                  onClick={() => onUnfollow(friendSuggestion._id)}
+                  disabled={followLoading[friendSuggestion._id]}
+                  className="suggested-btn following"
+                >
+                  {followLoading[friendSuggestion._id] ? '...' : 'Siguiendo'}
+                </button>
+              ) : (
+                <button
+                  onClick={() => onFollow(friendSuggestion._id)}
+                  disabled={followLoading[friendSuggestion._id]}
+                  className="suggested-btn follow"
+                >
+                  {followLoading[friendSuggestion._id] ? '...' : 'Seguir'}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }

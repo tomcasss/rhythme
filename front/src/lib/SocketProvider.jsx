@@ -7,12 +7,12 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (typeof window !== 'undefi
 export default function SocketProvider({ user, children }) {
   const [socket, setSocket] = useState(null);
 
-  useEffect(() => {
+/*   useEffect(() => {
   if (!socket) return;
   const logAny = (event, ...args) => console.log("[ws] ->", event, ...args);
   socket.onAny(logAny);
   return () => socket.offAny(logAny);
-}, [socket]);
+}, [socket]); */
 
 
   useEffect(() => {

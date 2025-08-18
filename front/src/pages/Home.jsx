@@ -1,5 +1,5 @@
 import "./Home.css";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/api.js";
@@ -25,6 +25,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
   const socket = useSocket();
+  const [, startTransition] = useTransition();
 
   const {
     followingUsers,
@@ -90,105 +91,72 @@ export default function Home() {
     return () => socket.off('notification:new', onNotif);
   }, [socket]);
 
-  const handlePostCreated = (newPost) => {
-    setPosts((prev) => [newPost, ...prev]);
-  };
+  const handlePostCreated = useCallback((newPost) => {
+    setPosts( prev => [newPost, ...prev]);
+  }, []);
 
-  const handleLike = async (postId) => {
-    if (!user?._id) return;
-    try {
-      await axios.put(API_ENDPOINTS.LIKE_POST(postId), { userId: user._id });
-      setPosts((prev) =>
-        prev.map((post) => {
-          if (post._id === postId) {
-            const likes = Array.isArray(post.likes) ? post.likes : [];
-            const hasLiked = likes.includes(user._id);
-            return {
-              ...post,
-              likes: hasLiked
-                ? likes.filter((id) => id !== user._id)
-                : [...likes, user._id],
-            };
-          }
-          return post;
-        })
-      );
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "Error al dar like",
-        text: "Intenta de nuevo más tarde.",
-      });
-    }
-  };
+ const handleLike = useCallback(async (postId) => {
+  if (!user?._id) return;
+  try {
+    await axios.put(API_ENDPOINTS.LIKE_POST(postId), { userId: user._id });
+    setPosts(prev =>
+      prev.map(post => {
+        if (post._id !== postId) return post;
+        const likes = Array.isArray(post.likes) ? post.likes : [];
+        const hasLiked = likes.includes(user._id);
+        return { ...post, likes: hasLiked ? likes.filter(id => id !== user._id) : [...likes, user._id] };
+      })
+    );
+  } catch {
+    Swal.fire({ icon: "error", title: "Error al dar like", text: "Intenta de nuevo más tarde." });
+  }
+}, [user?._id]);
 
-  const handleDelete = async (postId) => {
-    if (!user?._id) return;
-    try {
-      await axios.delete(API_ENDPOINTS.DELETE_POST(postId, user._id));
-      setPosts((prev) => prev.filter((p) => p._id !== postId));
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "Error al eliminar el post",
-        text: "Intenta de nuevo más tarde.",
-      });
-    }
-  };
+  const handleDelete = useCallback(async (postId) => {
+  if (!user?._id) return;
+  try {
+    await axios.delete(API_ENDPOINTS.DELETE_POST(postId, user._id));
+    setPosts(prev => prev.filter(p => p._id !== postId));
+  } catch {
+    Swal.fire({ icon: "error", title: "Error al eliminar el post", text: "Intenta de nuevo más tarde." });
+  }
+}, [user?._id]);
 
-  const handleEdit = async (postId, updateData) => {
-    if (!user?._id) return;
-    try {
-      await axios.put(API_ENDPOINTS.UPDATE_POST(postId), {
-        userId: user._id,
-        ...updateData,
-      });
-      setPosts((prev) =>
-        prev.map((p) => (p._id === postId ? { ...p, ...updateData } : p))
-      );
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "Error al editar el post",
-        text: "Intenta de nuevo más tarde.",
-      });
-    }
-  };
+const handleEdit = useCallback(async (postId, updateData) => {
+  if (!user?._id) return;
+  try {
+    await axios.put(API_ENDPOINTS.UPDATE_POST(postId), { userId: user._id, ...updateData });
+    setPosts(prev => prev.map(p => (p._id === postId ? { ...p, ...updateData } : p)));
+  } catch {
+    Swal.fire({ icon: "error", title: "Error al editar el post", text: "Intenta de nuevo más tarde." });
+  }
+}, [user?._id]);
 
   // Realtime post updates
   useEffect(() => {
-    if (!socket) return;
-    const onPostEvent = (payload) => {
+  if (!socket) return;
+  const onPostEvent = (payload) => {
+    startTransition(() => {
       const { type, post } = payload || {};
       if (!post?._id) return;
-      setPosts((prev) => {
-        const exists = prev.some((p) => p._id === post._id);
-        if (type === 'deleted') {
-          return prev.filter((p) => p._id !== post._id);
-        }
-        if (!exists && (type === 'created')) {
-          return [post, ...prev];
-        }
-        return prev.map((p) => {
+      setPosts(prev => {
+        const exists = prev.some(p => p._id === post._id);
+        if (type === 'deleted') return prev.filter(p => p._id !== post._id);
+        if (!exists && type === 'created') return [post, ...prev];
+        return prev.map(p => {
           if (p._id !== post._id) return p;
-          // Merge and preserve computed lengths if needed
           const merged = { ...p, ...post };
-          // If incoming post.userId is a string but we already have a populated object, keep the richer object
-          if (typeof post.userId === 'string' && p && typeof p.userId === 'object') {
-            merged.userId = p.userId;
-          }
-          // Normalize commentsCount for UI that displays count
+          if (typeof post.userId === 'string' && typeof p.userId === 'object') merged.userId = p.userId;
           if (typeof post.commentsCount === 'number') merged.commentsCount = post.commentsCount;
-          // Ensure likes array exists
           if (!Array.isArray(merged.likes)) merged.likes = [];
           return merged;
         });
       });
-    };
-    socket.on('post:event', onPostEvent);
-    return () => socket.off('post:event', onPostEvent);
-  }, [socket]);
-
+    });
+  };
+  socket.on('post:event', onPostEvent);
+  return () => socket.off('post:event', onPostEvent);
+}, [socket]);
   // Chat
   const [activeConversation, setActiveConversation] = useState(null);
   const handleOpenConversation = (conversation) => setActiveConversation(conversation);
