@@ -22,5 +22,6 @@
       "jestCommandLine": "npm test --silent",
       "rootPath": "back"
     }
-  ]
+  ],
+  "editor.aiStats.enabled": true
 }

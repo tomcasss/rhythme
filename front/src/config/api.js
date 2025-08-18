@@ -77,6 +77,28 @@ export const API_ENDPOINTS = {
   // Messages
   GET_MESSAGES: (conversationId) => `${BASE_URL}/messages/${conversationId}`,
   SEND_MESSAGE: `${BASE_URL}/messages`,
+
+  //Password Reset
+  REQUEST_PASSWORD_RESET: `${BASE_URL}/auth/password-reset/request`,
+  CONFIRM_PASSWORD_RESET: `${BASE_URL}/auth/password-reset/confirm`,
 };
+/* export const API = {
+  BASE_URL,
+  AUTH: {
+    REQUEST_PASSWORD_RESET: `${BASE_URL}/auth/password-reset/request`,
+    CONFIRM_PASSWORD_RESET: `${BASE_URL}/auth/password-reset/confirm`,
+  }
+}
+  
+
+export async function requestPaswordReset(email){
+  const res = await fetch(API.AUTH.REQUEST_PASSWORD_RESET, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email}),
+  });
+  if (!res.ok) throw new Error('No se pudo procesar la solicitud');
+  return res.json();
+} */
 
 export default API_ENDPOINTS;

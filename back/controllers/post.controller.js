@@ -1,4 +1,8 @@
-// back/controllers/post.controller.js
+import { sendMail } from "../utils/mailer.js";
+import {
+  postLikedTemplate,
+  postCommentTemplate,
+} from "../utils/emailTemplates.js";
 import {
   createPost,
   deletePost,
@@ -21,8 +25,8 @@ export const createPostController = async (req, res) => {
     console.log("Creating new post with data:", req.body);
     const newPost = await createPost(req.body);
     console.log("✅ Post created successfully:", newPost);
-  // Emit event to owner so their feed updates immediately
-  emitPostEvent(req, "created", newPost);
+    // Emit event to owner so their feed updates immediately
+    emitPostEvent(req, "created", newPost);
     res.status(200).json({ newPost, message: "Post created successfully" });
   } catch (error) {
     console.error(" Error creating post:", error);
@@ -33,7 +37,7 @@ export const createPostController = async (req, res) => {
 export const updatePostController = async (req, res) => {
   try {
     const updatedPost = await updatePost(req.params, req.body);
-  emitPostEvent(req, "updated", updatedPost);
+    emitPostEvent(req, "updated", updatedPost);
     res.status(200).json({ updatedPost, message: "Post updated successfully" });
   } catch (error) {
     console.log(error);
@@ -50,7 +54,7 @@ export const deletePostController = async (req, res) => {
         req.query?.isAdmin ||
         req.headers["x-admin"] === "true",
     });
-  if (deletedPost) emitPostEvent(req, "deleted", deletedPost);
+    if (deletedPost) emitPostEvent(req, "deleted", deletedPost);
     res.status(200).json({ deletedPost, message: "Post deleted successfully" });
   } catch (error) {
     console.log(error);
@@ -67,7 +71,9 @@ export const likeAndUnlikePostController = async (req, res) => {
     if (!postBefore) return res.status(404).json({ message: "Post not found" });
 
     const owner = await User.findById(postBefore.userId);
-    const viewer = req.body.userId ? await User.findById(req.body.userId) : null;
+    const viewer = req.body.userId
+      ? await User.findById(req.body.userId)
+      : null;
     if (!isVisibilityAllowed(viewer, owner, "posts")) {
       return res
         .status(403)
@@ -75,8 +81,8 @@ export const likeAndUnlikePostController = async (req, res) => {
     }
 
     const wasAlreadyLiked = postBefore.likes.includes(req.body.userId);
-  const post = await likeAndUnlikePost(req.params, req.body);
-  emitPostEvent(req, "liked", post, { actorId: req.body.userId });
+    const post = await likeAndUnlikePost(req.params, req.body);
+    emitPostEvent(req, "liked", post, { actorId: req.body.userId });
 
     // notifica like (solo la primera vez y no al autor)
     if (!wasAlreadyLiked && post.userId.toString() !== req.body.userId) {
@@ -88,7 +94,7 @@ export const likeAndUnlikePostController = async (req, res) => {
           postId: post._id,
           message: `${liker.username} le dio like a tu publicación 👍🏻`,
         });
-    await emitToUser(req, notif.userId, "notification:new", {
+        await emitToUser(req, notif.userId, "notification:new", {
           _id: String(notif._id),
           type: notif.type,
           message: notif.message,
@@ -97,8 +103,32 @@ export const likeAndUnlikePostController = async (req, res) => {
           isRead: notif.isRead,
           createdAt: notif.createdAt,
         });
+        // Enviar email de notificación
+        if (
+          String(process.env.EMAIL_ENABLED).toLowerCase() === "true" &&
+          String(process.env.EMAIL_NOTIF_LIKES).toLowerCase() === "true"
+        ) {
+          const FRONT = process.env.FRONT_BASE_URL || "http://localhost:5173";
+          const link = `${FRONT}/posts/${post._id}`;
+
+          const recipient = await User.findById(post.userId).select(
+            "email username"
+          );
+          const actor = await User.findById(req.body.userId).select("username");
+
+          if (recipient?.email) {
+            const tpl = postLikedTemplate({ recipient, actor, link });
+            setImmediate(async () => {
+              try {
+                await sendMail({ to: recipient.email, ...tpl });
+              } catch (error) {
+                console.error("Error de envio de correo (like):", error);
+              }
+            });
+          }
+        }
       }
-  } // ← **esta llave faltaba**
+    }
 
     res
       .status(200)
@@ -131,9 +161,13 @@ export const getPostController = async (req, res) => {
 
 export const getTimelinePostsController = async (req, res) => {
   try {
-  const { limit, before } = req.query;
-  const viewer = await User.findById(req.params.userId);
-  const allPosts = await getTimelinePosts({ userId: req.params.userId, limit: limit ? Number(limit) : 20, before });
+    const { limit, before } = req.query;
+    const viewer = await User.findById(req.params.userId);
+    const allPosts = await getTimelinePosts({
+      userId: req.params.userId,
+      limit: limit ? Number(limit) : 20,
+      before,
+    });
 
     // Filtrar por visibilidad y bloqueo
     const filtered = [];
@@ -150,15 +184,17 @@ export const getTimelinePostsController = async (req, res) => {
       filtered.push(p);
     }
 
-    const nextCursor = filtered.length ? filtered[filtered.length - 1].createdAt : null;
-    res
-      .status(200)
-      .json({
-        timeLinePosts: filtered,
-        nextCursor,
-        hasMore: Boolean(filtered.length && filtered.length === (limit ? Number(limit) : 20)),
-        message: "Timeline posts fetch Succesfully",
-      });
+    const nextCursor = filtered.length
+      ? filtered[filtered.length - 1].createdAt
+      : null;
+    res.status(200).json({
+      timeLinePosts: filtered,
+      nextCursor,
+      hasMore: Boolean(
+        filtered.length && filtered.length === (limit ? Number(limit) : 20)
+      ),
+      message: "Timeline posts fetch Succesfully",
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Timeline posts fetching failed", error });
@@ -171,15 +207,17 @@ export const commentPostController = async (req, res) => {
     if (!pre) return res.status(404).json({ message: "Post not found" });
 
     const owner = await User.findById(pre.userId);
-    const viewer = req.body.userId ? await User.findById(req.body.userId) : null;
+    const viewer = req.body.userId
+      ? await User.findById(req.body.userId)
+      : null;
     if (!isVisibilityAllowed(viewer, owner, "posts")) {
       return res
         .status(403)
         .json({ message: "Not allowed to comment this post" });
     }
 
-  const post = await commentPost(req.params, req.body);
-  emitPostEvent(req, "commented", post, { actorId: req.body.userId });
+    const post = await commentPost(req.params, req.body);
+    emitPostEvent(req, "commented", post, { actorId: req.body.userId });
 
     if (
       post &&
@@ -195,7 +233,7 @@ export const commentPostController = async (req, res) => {
           postId: post._id,
           message: `${commenter.username} comentó en tu publicación 💬`,
         });
-  await emitToUser(req, notif.userId, "notification:new", {
+        await emitToUser(req, notif.userId, "notification:new", {
           _id: String(notif._id),
           type: notif.type,
           message: notif.message,
@@ -204,6 +242,28 @@ export const commentPostController = async (req, res) => {
           isRead: notif.isRead,
           createdAt: notif.createdAt,
         });
+        if (
+          String(process.env.EMAIL_ENABLED).toLowerCase() === "true" &&
+          String(process.env.EMAIL_NOTIF_COMMENTS).toLowerCase() === "true"
+        ) {
+          const FRONT = process.env.FRONT_BASE_URL || "http://localhost:5173";
+          const link = `${FRONT}/post/${post._id}`;
+
+          const recipient = await User.findById(post.userId).select("email username");
+          const actor = await User.findById(req.body.userId).select("username");
+          // Notificacion al correo
+          if (recipient?.email) {
+            const commentText = req.body?.text || "";
+            const tpl = postCommentTemplate({recipient, actor, post, commentText, link});
+            setImmediate(async () => {
+              try {
+                await sendMail({ to: recipient.email, ...tpl });
+              } catch (e) {
+                console.error("Mail fail (comment):", e);
+              }
+            });
+          }
+        }
       }
     }
 
@@ -327,9 +387,10 @@ export const getRecommendedPostsController = async (req, res) => {
       filtered.push(p);
     }
 
-    res
-      .status(200)
-      .json({ posts: filtered, message: "Recommended posts fetched successfully" });
+    res.status(200).json({
+      posts: filtered,
+      message: "Recommended posts fetched successfully",
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({

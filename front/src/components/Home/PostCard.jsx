@@ -122,31 +122,6 @@ function PostCard({
   }, [post.commentsCount, post.comments]);
 
   /**
-   * Obtener ID del usuario del post
-   */
-  /* const getPostUserId = () => {
-    if (!post.userId) return null;
-    return typeof post.userId === 'object' ? post.userId._id : post.userId;
-  }; */
-
-  /**
-   * Verificar si es post propio
-   */
-  /* const isOwnPost = () => {
-    if (!user || !user._id || !post.userId) return false;
-    const postUserId = postUserId();
-    return postUserId === user._id;
-  }; */
-
-  /**
-   * Verificar si sigue al usuario del post
-   */
-  /* const isFollowingUser = () => {
-    const postUserId = postUserId();
-    return postUserId ? isFollowing(postUserId) : false;
-  }; */
-
-  /**
    * Iniciar edición del post
    */
   const startEdit = () => {

@@ -1,6 +1,7 @@
 import { loginUser, registerUser } from "../services/auth.service.js";
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/user.model.js';
+import { contrasena_olvidada, reestablecer_contrasena } from "../services/auth.service.js";
 
 // Controller para Registrar al usuario
 export const register = async (req, res) => {
@@ -47,12 +48,10 @@ export const login = async (req, res)=> {
       data: { ...data, isAdmin: !!data.isAdmin },
     });
     } catch (error) {
-      console.log("❌ Error en login:", error);
-        res.status(500).json({
-            error: error,
-            message: 'An error occurred while login the user.'
-        });
-        console.log(error);
+      const status = error?.status || 500;
+      const message = error?.message || 'An error occurred while login the user.';
+      console.log('❌ Error en login:', message);
+      return res.status(status).json({ message });
     }
 };
 
@@ -91,3 +90,7 @@ export const loginWithGoogle = async (req, res) => {
     res.status(401).json({ message: 'Token inválido o expirado' });
   }
 };
+
+export const requestPasswordReset = contrasena_olvidada;
+
+export const confirmPasswordReset = reestablecer_contrasena;
