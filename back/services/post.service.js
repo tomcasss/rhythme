@@ -11,6 +11,15 @@ import {
 const recoCache = new Map(); // key: `${userId}:${limit}` => { data, expires }
 const RECO_TTL_MS = 60 * 1000; // 60s; ajusta según tus necesidades
 
+// Periodic cleanup of expired cache entries to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of recoCache.entries()) {
+    if (value.expires < now) {
+      recoCache.delete(key);
+    }
+  }
+}, RECO_TTL_MS); // Run cleanup every TTL interval
 function getRecoCache(userId, limit) {
   const key = `${userId}:${limit}`;
   const item = recoCache.get(key);
