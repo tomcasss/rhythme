@@ -16,7 +16,7 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
     (p) => p._id !== currentUser._id
   );
 
-  //--------------Prueba de mensajes duplicados
+  
   const seenIdsRef = useRef(new Set());
 
   const mergeUniqueById = (items) =>{
