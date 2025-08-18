@@ -417,7 +417,7 @@ function areEqual(prev, next){
     if (plc !== nlc) return false;
     const pl = Array.isArray(currentPost.likes) ? currentPost.likes.length : 0;
     const nl = Array.isArray(nextPost.likes) ? nextPost.likes.length : 0;
-    if (pl !== nl)return false;
+    if (pl !== nl) return false;
     if (prev.user?._id !== next.user?._id) return false;
     return true;
   }
