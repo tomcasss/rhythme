@@ -1,4 +1,4 @@
-// src/components/Home/PostsList.jsx
+import { Virtuoso } from 'react-virtuoso';
 import PostCard from './PostCard';
 import './PostsList.css';
 
@@ -18,17 +18,17 @@ import './PostsList.css';
  * @param {Function} props.onUnfollow - Función para dejar de seguir usuario
  * @param {Function} props.isFollowing - Función para verificar si sigue a un usuario
  */
-export default function PostsList({ 
-  posts, 
-  loading, 
-  error, 
-  user, 
-  followingUsers, 
-  followLoading, 
-  onLike, 
-  onDelete, 
-  onEdit, 
-  onFollow, 
+export default function PostsList({
+  posts,
+  loading,
+  error,
+  user,
+  followingUsers,
+  followLoading,
+  onLike,
+  onDelete,
+  onEdit,
+  onFollow,
   onUnfollow,
   isFollowing
 }) {
@@ -38,8 +38,11 @@ export default function PostsList({
   if (posts.length === 0) return <p className="posts-empty">No hay posts para mostrar.</p>;
 
   return (
-    <>
-      {posts.map((post) => (
+    <Virtuoso
+      data={posts}
+      useWindowScroll
+      computeItemKey={(index, post) => post._id}
+      itemContent={(index, post) => (
         <PostCard
           key={post._id}
           post={post}
@@ -53,7 +56,8 @@ export default function PostsList({
           onUnfollow={onUnfollow}
           isFollowing={isFollowing}
         />
-      ))}
-    </>
+      )}
+      style={{ height: "100%", overflowX: 'hidden'}}
+    />
   );
 }

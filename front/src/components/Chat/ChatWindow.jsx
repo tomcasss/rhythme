@@ -1,18 +1,32 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/api";
-import { useSocket } from "../../lib/SocketProvider.jsx";
+import { useSocket } from "../../lib/SocketContext.js";
+import "./ChatWindow.css";  
+
 
 export default function ChatWindow({ currentUser, conversation, onClose }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const listRef = useRef(null);
+  const socket = useSocket();
 
   const peer = conversation?.participants?.find(
     (p) => p._id !== currentUser._id
   );
 
+  
+  const seenIdsRef = useRef(new Set());
+
+  const mergeUniqueById = (items) =>{
+    const map = new Map();
+    for (const item of items) {
+      if  (item && item._id) map.set(String(item._id), item);
+    }
+    return Array.from(map.values());
+  }
+//----------------------Seccion uno de la prueba
   useEffect(() => {
     if (!conversation?._id) return;
     const load = async () => {
@@ -35,31 +49,48 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
     load();
   }, [conversation]);
 
+  // live updates via socket
   useEffect(() => {
-    if (!conversation?._id) return;
-    const id = setInterval(async () => {
-      try {
-        const res = await axios.get(
-          API_ENDPOINTS.GET_MESSAGES(conversation._id)
-        );
-        setMessages(res.data || []);
-      } catch {
-        console.error("Error");
+    if (!socket || !conversation?._id) return;
+    const onNew = (msg) => {
+      if (String(msg.conversationId) !== String(conversation._id)) return;
+//---------------------------------------------------
+      const idStr = String(msg._id || '');
+      if (idStr && seenIdsRef.current.has(idStr)){
+        seenIdsRef.current.delete(idStr);
+        return;
       }
-    }, 5000);
-    return () => clearInterval(id);
-  }, [conversation]);
+//--------------------------------------------------
+      setMessages((prev) => /* (prev.some((m) => m._id === msg._id) ? prev :  */ mergeUniqueById([...prev, msg]));
+      setTimeout(() => listRef.current?.scrollTo(0, listRef.current.scrollHeight), 0);
+    };
+    socket.on("message:new", onNew);
+    return () => socket.off("message:new", onNew);
+  }, [socket, conversation?._id]);
+
+  // Removed polling; rely on socket updates after initial fetch
 
   const send = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
     try {
+      const participantIds = (conversation.participants || [])
+      .map(part => (typeof part === 'object' ? part._id : part))
+      .map(id => String(id));
+      const peerId = participantIds.find(id => id !== String(currentUser._id));
+
       const res = await axios.post(API_ENDPOINTS.SEND_MESSAGE, {
         conversationId: conversation._id,
-        sender: currentUser._id,
+        senderId: currentUser._id,
         text: text.trim(),
+        peerId,
       });
-      setMessages((prev) => [...prev, res.data]);
+
+      //------------------------------------------------------
+      const idStr = String(res.data?._id || '');
+      if (idStr) seenIdsRef.current.add(idStr);
+      //------------------------------------------------------
+      setMessages((prev) => mergeUniqueById([...prev, res.data]));
       setText("");
       setTimeout(
         () => listRef.current?.scrollTo(0, listRef.current.scrollHeight),
@@ -69,116 +100,34 @@ export default function ChatWindow({ currentUser, conversation, onClose }) {
       console.error("Error enviando mensaje", e);
     }
   };
-  const socket = useSocket();
 
-  useEffect(() => {
-    if (!socket || !conversation?._id) return;
-
-    const onNew = (msg) => {
-      if (msg.conversationId !== conversation._id) return;
-      setMessages((prev) =>
-        prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]
-      );
-      setTimeout(
-        () => listRef.current?.scrollTo(0, listRef.current.scrollHeight),
-        0
-      );
-    };
-
-    socket.on("message:new", onNew);
-    return () => socket.off("message:new", onNew);
-  }, [socket, conversation?._id]);
-
+  
   return (
-    <div
-      style={{
-        position: "fixed",
-        right: 24,
-        bottom: 24,
-        width: 380,
-        maxHeight: "70vh",
-        background: "#fff",
-        border: "1px solid #eee",
-        borderRadius: 12,
-        boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        zIndex: 2000,
-      }}
-    >
-      <div
-        style={{
-          padding: "0.75rem 1rem",
-          borderBottom: "1px solid #eee",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
+    <div className="chat-window">
+      <div className="chat-header">
         <strong>{peer?.username || peer?.email || "Chat"}</strong>
-        <button
-          onClick={onClose}
-          style={{
-            marginLeft: "auto",
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            fontSize: 18,
-            color: "#333",
-          }}
-        >
-          ✕
-        </button>
+        <button onClick={onClose} className="chat-header-close">✕</button>
       </div>
 
-      <div
-        ref={listRef}
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "0.75rem 1rem",
-          background: "#fafafa",
-        }}
-      >
+      <div ref={listRef} className="chat-messages" >
+
         {loading ? (
-          <div style={{ color: "#777" }}>Cargando...</div>
+          <div className="loading-message">Cargando...</div>
         ) : messages.length === 0 ? (
-          <div style={{ color: "#777" }}>No hay mensajes aún</div>
-        ) : (
-          messages.map((m) => {
-            const isMine =
-              m.sender === currentUser._id || m.sender?._id === currentUser._id;
-            return (
-              <div
-                key={m._id}
-                style={{
-                  display: "flex",
-                  justifyContent: isMine ? "flex-end" : "flex-start",
-                  marginBottom: 8,
-                }}
-              >
-                <div
-                  style={{
-                    maxWidth: "80%",
-                    padding: "0.5rem 0.7rem",
-                    borderRadius: 10,
-                    background: isMine
-                      ? "linear-gradient(90deg, #fb7202, #e82c0b)"
-                      : "#fff",
-                    color: isMine ? "#fff" : "#333",
-                    border: isMine ? "none" : "1px solid #eee",
-                  }}
-                >
-                  {m.text}
-                  <div style={{ fontSize: 10, opacity: 0.7, marginTop: 2 }}>
-                    {new Date(m.createdAt).toLocaleTimeString()}
-                  </div>
+          <div className="loading-message">No hay mensajes aún</div>
+        ) : messages.map(m => {
+          const isMine = m.senderId === currentUser._id || m.senderId?._id === currentUser._id || m.sender === currentUser._id;
+          return (
+            <div key={m._id} className={`message-content ${isMine ? 'mine' : ''}`}>
+              <div className={`message-bubble ${isMine ? 'mine' : ''}`}>
+                {m.text}
+                <div className="message-time">
+                  {new Date(m.createdAt).toLocaleTimeString()}
                 </div>
               </div>
-            );
-          })
-        )}
+            </div>
+          );
+        })}
       </div>
 
       <form

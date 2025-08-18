@@ -189,9 +189,11 @@ export default function EditProfile({ user, onUpdateUser }) {
           <p>{user.email}</p>
           {user.desc && <p className="descripcion">{user.desc}</p>}
           <p className="relacion">
-            {user.relationship === 1 && "Soltero/a"}
-            {user.relationship === 2 && "En una relación"}
-            {user.relationship === 3 && "Casado/a"}
+            {user.relationship === 1 && "Creador de música"}
+            {user.relationship === 2 && "Promotor"}
+            {user.relationship === 3 && "Amante de la música"}
+            {user.relationship === 4 && "Educador"}
+            {user.relationship === 5 && "Comunidad y cultura"}
           </p>
         </div>
       </div>

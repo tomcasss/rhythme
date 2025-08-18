@@ -1,4 +1,4 @@
-// src/components/Home/RecommendedPosts.jsx
+import { Virtuoso } from 'react-virtuoso';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
@@ -7,7 +7,7 @@ import PostCard from './PostCard';
 import './RecommendedPosts.css';
 import './Sidebar.css';
 
-export default function RecommendedPosts({ user, limit = 5, followingUsers, followLoading, onLike, onFollow, onUnfollow, isFollowing }) {
+export default function RecommendedPosts({ user, limit = 5, followLoading, onLike, onFollow, onUnfollow, isFollowing }) {
   const [reco, setReco] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,7 +20,7 @@ export default function RecommendedPosts({ user, limit = 5, followingUsers, foll
       try {
         const res = await axios.get(API_ENDPOINTS.GET_RECOMMENDED_POSTS(user._id, limit));
         setReco(res.data.posts || []);
-  } catch {
+      } catch {
         setError('No se pudieron cargar las recomendaciones.');
       } finally {
         setLoading(false);
@@ -36,19 +36,24 @@ export default function RecommendedPosts({ user, limit = 5, followingUsers, foll
   return (
     <section className="reco-section sidebar-box">
       <h3 className="reco-title sidebar-title">Recomendados para ti</h3>
-      {reco.map(post => (
-        <PostCard
-          key={post._id}
-          post={post}
-          user={user}
-          followingUsers={followingUsers}
-          followLoading={followLoading}
-          onLike={onLike}
-          onFollow={onFollow}
-          onUnfollow={onUnfollow}
-          isFollowing={isFollowing}
-        />
-      ))}
+      <Virtuoso
+        data={reco}
+        useWindowScroll
+        computeItemKey={(index, post) => post._id}
+        itemContent={(index, post) => (
+          <div style={{ marginBottom: 12 }}>
+            <PostCard
+              post={post}
+              user={user}
+              followLoading={followLoading}
+              onLike={onLike}
+              onFollow={onFollow}
+              onUnfollow={onUnfollow}
+              isFollowing={isFollowing}
+            />
+          </div>
+        )}
+      />
     </section>
   );
 }

@@ -10,6 +10,7 @@ import PostDetail from './pages/PostDetail.jsx';
 import SpotifyCallback from './components/SpotifyCallback';
 import PostView from './pages/PostView';
 import SocketProvider from './lib/SocketProvider.jsx';
+import PasswordReset from './components/Home/PasswordReset.jsx';
 
 function App() {
   const [user, setUser] = useState(() =>
@@ -40,6 +41,7 @@ function App() {
           <Route path="/callback/spotify" element={<SpotifyCallback />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/post/:postId" element={<PostView />} />
+          <Route path="/password-reset" element={<PasswordReset />} />
         </Routes>
       </Router>
     </SocketProvider>

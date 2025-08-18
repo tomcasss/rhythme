@@ -1,18 +1,19 @@
 import { loginUser, registerUser } from "../services/auth.service.js";
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/user.model.js';
+import { contrasena_olvidada, reestablecer_contrasena } from "../services/auth.service.js";
 
-// Register user
+// Controller para Registrar al usuario
 export const register = async (req, res) => {
     try {
-        const newUser = await registerUser(req.body);
-        const {password, ...data} = newUser._doc; // Exclude password from response
-        res.status(201).json({
+        const newUser = await registerUser(req.body); 
+        const {password, ...data} = newUser._doc; // Excluye el password de la respuesta del servidor
+        res.status(201).json({ //Respuesta del servidor con exito
             data,
             message: 'User registered successfully',
         });
     } catch (error) {
-        res.status(500).json({
+        res.status(500).json({ // Respuesta del servidor cuando ocurre un error
             error: error,
             message: 'An error occurred while registering the user.'
         });
@@ -20,9 +21,10 @@ export const register = async (req, res) => {
     }
 };
 
+//Controller para Login del usuario
 export const login = async (req, res)=> {
   const { email, password } = req.body;
-
+    // Esta seccion debe quitarse para utilizar solamente los usuarios registrados como tipo Admin no el user admin y contraseña admin123
     // Soporte legacy: si se pasa 'admin' como email, intentar encontrar usuario real admin por username/email
     if (email === 'admin') {
       const existingAdmin = await User.findOne({ $or: [{ email: 'admin' }, { username: 'admin' }], isAdmin: true }).select('-password');
@@ -46,32 +48,31 @@ export const login = async (req, res)=> {
       data: { ...data, isAdmin: !!data.isAdmin },
     });
     } catch (error) {
-      console.log("❌ Error en login:", error);
-        res.status(500).json({
-            error: error,
-            message: 'An error occurred while login the user.'
-        });
-        console.log(error);
+      const status = error?.status || 500;
+      const message = error?.message || 'An error occurred while login the user.';
+      console.log('❌ Error en login:', message);
+      return res.status(status).json({ message });
     }
 };
 
-const client = new OAuth2Client();
+const client = new OAuth2Client(); // variable para manejar el OAuth2
 
+// Controller para hacer Login con Google
 export const loginWithGoogle = async (req, res) => {
-  const { token } = req.body;
+  const { token } = req.body; //Obtiene el token del usuario
 
   try {
-    const ticket = await client.verifyIdToken({
+    const ticket = await client.verifyIdToken({ //Crea un objeto Ticket con el Token recibido
       idToken: token,
       audience: '33897519693-nsv0vuemj6lhqcolqicnfek241gffvdp.apps.googleusercontent.com',
     });
 
-    const payload = ticket.getPayload();
-    const { email, name, picture } = payload;
+    const payload = ticket.getPayload(); //Obtiene el Payload
+    const { email, name, picture } = payload; //Popula el email, name y picture del usuario desde google
 
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email }); //Buscar si el email se encuentra en la base de datos
 
-    if (!user) {
+    if (!user) { //Si no hay usuario registrado con ese correo crea el usuario con los valores obtenidos del token de google
       user = new User({
         email,
         name,
@@ -79,7 +80,7 @@ export const loginWithGoogle = async (req, res) => {
         authProvider: 'google'
       });
 
-      await user.save();
+      await user.save(); //Guardar el usuario en la base de datos
     }
 
     res.status(200).json({ user });
@@ -89,3 +90,7 @@ export const loginWithGoogle = async (req, res) => {
     res.status(401).json({ message: 'Token inválido o expirado' });
   }
 };
+
+export const requestPasswordReset = contrasena_olvidada;
+
+export const confirmPasswordReset = reestablecer_contrasena;

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../../config/api.js';
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2/dist/sweetalert2.all.js';
 import './EditOptions.css';
 
 /**
@@ -511,18 +511,21 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
       case 'relationship':
         return (
           <>
-            <h3>Editar Estado de Relación</h3>
+            <h3>Editar intereses:</h3>
             {error && <p className="error-text">{error}</p>}
             <div>
-              <label>Estado de relación:</label>
+              <label>Tipo de usuario:</label>
               <select
                 value={formData.relationship}
                 onChange={(e) => handleInputChange('relationship', e.target.value)}
                 className="modal-select"
               >
-                <option value={1}>Soltero/a</option>
-                <option value={2}>En una relación</option>
-                <option value={3}>Casado/a</option>
+                <option value={1}>Creador de música</option>
+                <option value={2}>Promotor</option>
+                <option value={3}>Amante de la música</option>
+                <option value={4}>Educador</option> 
+                <option value={5}>Comunidad y cultura</option> 
+                
               </select>
             </div>
             <div className="modal-actions">
@@ -600,16 +603,29 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         return (
           <>
             <h3>Estado de la cuenta</h3>
-            <p>Selecciona una acción:</p>
-            <select value={formData.accountAction||''} onChange={e=>setFormData(p=>({...p,accountAction:e.target.value}))}>
+            <p className="modal-hint">Selecciona la acción que deseas aplicar a tu cuenta.</p>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>Acción</label>
+            <select
+              className="modal-select"
+              value={formData.accountAction||''}
+              onChange={e=>setFormData(p=>({...p,accountAction:e.target.value}))}
+            >
               <option value="">-- Seleccionar --</option>
               <option value="deactivate">Desactivar</option>
               <option value="reactivate">Reactivar</option>
               <option value="delete">Eliminar permanentemente</option>
             </select>
-            {formData.accountAction === 'delete' && <p style={{color:'#e74c3c'}}>Esta acción no se puede deshacer.</p>}
+            {formData.accountAction === 'delete' && (
+              <div className="error-text">Esta acción no se puede deshacer.</div>
+            )}
             <div className="modal-actions">
-              <button onClick={handleSaveChanges} className="modal-btn" disabled={loading || !formData.accountAction}>{loading ? 'Procesando...' : 'Confirmar'}</button>
+              <button
+                onClick={handleSaveChanges}
+                className={`modal-btn ${formData.accountAction === 'delete' ? 'danger' : ''}`}
+                disabled={loading || !formData.accountAction}
+              >
+                {loading ? 'Procesando...' : 'Confirmar'}
+              </button>
               <button onClick={() => setShowModal(false)} className="modal-btn cancel">Cancelar</button>
             </div>
           </>
@@ -670,7 +686,7 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
           className="btn-opcion"
           onClick={() => handleEditOption('relationship')}
         >
-          Estado de relación
+          Tipo de usuario
         </button>
 
         <hr />
@@ -708,12 +724,6 @@ export default function EditOptions({ onLogout, onUpdateUser }) {
         <hr />
 
         <div className="acciones">
-          <button
-            className="reporte"
-            onClick={() => handleEditOption('report')}
-          >
-            Reportar un problema
-          </button>
 
           <button
             className="cerrar-sesion"

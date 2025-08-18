@@ -1,26 +1,24 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import SocketCtx from './SocketContext.js';
 
-const SocketCtx = createContext(null);
-export const useSocket = () => useContext(SocketCtx);
-
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5000` : "http://localhost:5000");
 
 export default function SocketProvider({ user, children }) {
   const [socket, setSocket] = useState(null);
 
-  useEffect(() => {
+/*   useEffect(() => {
   if (!socket) return;
   const logAny = (event, ...args) => console.log("[ws] ->", event, ...args);
   socket.onAny(logAny);
   return () => socket.offAny(logAny);
-}, [socket]);
+}, [socket]); */
 
 
   useEffect(() => {
     if (!user?._id) return;
 
-    const s = io(SOCKET_URL, {
+  const s = io(SOCKET_URL, {
       auth: { userId: user._id },
       transports: ["websocket", "polling"],
       withCredentials: true,

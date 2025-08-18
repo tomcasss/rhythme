@@ -144,6 +144,11 @@
   border-radius: 12px;
 }
 
+/* Clickable post image */
+.post-image-clickable {
+  cursor: pointer;
+}
+
 .action-btn-options {
   background: none;
   border: none;
