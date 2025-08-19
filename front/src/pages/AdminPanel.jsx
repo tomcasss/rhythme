@@ -245,19 +245,21 @@ const handleNotifyPost = async (postId) => {
             {users.map((u) => (
               <div className="admin-card" key={u._id}>
                 <div className="card-header">
+                  <p className="card-title">
+                    <strong>Username:</strong> {u.username || "username no disponible"}
+                  </p>
                   <button
                     className="options-btn"
                     onClick={() => handleUserOptions(u._id)}
                   >
                     ⋮
                   </button>
-                  <p>
-                    <strong>Username:</strong> {u.username}
-                  </p>
                 </div>
+
                 <p>
                   <strong>Email:</strong> {u.email}
                 </p>
+
 
                 {showUserOptions === u._id && (
                   <div className="options-menu">
@@ -338,8 +340,8 @@ const handleNotifyPost = async (postId) => {
                 <p><strong>Reportante:</strong> {rep.reporterId?.username || rep.reporterId}</p>
                 <p><strong>Motivo:</strong> {rep.reason}</p>
                 <div style={{ display:'flex', gap:'0.5rem' }}>
-                  <button className="options-btn" onClick={() => handleShowReportDetail(rep)}>Ver</button>
-                  <button className="options-btn" onClick={() => handleMarkReviewed(rep._id)}>Revisado</button>
+                  <button className="options-btn-report" onClick={() => handleShowReportDetail(rep)}>Ver</button>
+                  <button className="options-btn-report" onClick={() => handleMarkReviewed(rep._id)}>Revisado</button>
                 </div>
               </div>
             ))}
