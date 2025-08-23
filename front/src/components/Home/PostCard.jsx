@@ -412,13 +412,20 @@ function areEqual(prev, next){
     if (currentPost._id !== nextPost._id) return false;
     if (currentPost.desc !== nextPost.desc) return false;
     if (currentPost.img !== nextPost.img) return false;
+  // Detectar cambios en avatar del autor (cuando userId viene populado como objeto)
+  const currentAuthorObj = typeof currentPost.userId === 'object' ? currentPost.userId : null;
+  const nextAuthorObj = typeof nextPost.userId === 'object' ? nextPost.userId : null;
+  const currentAuthorAvatar = currentAuthorObj?.profilePicture || currentAuthorObj?.profileImg || null;
+  const nextAuthorAvatar = nextAuthorObj?.profilePicture || nextAuthorObj?.profileImg || null;
+  if (currentAuthorAvatar !== nextAuthorAvatar) return false;
     const plc = typeof currentPost.commentsCount === 'number' ? currentPost.commentsCount : (Array.isArray(currentPost.comments) ? currentPost.comments.length : 0);
     const nlc = typeof nextPost.commentsCount === 'number' ? nextPost.commentsCount : (Array.isArray(nextPost.comments) ? nextPost.comments.length : 0);
     if (plc !== nlc) return false;
     const pl = Array.isArray(currentPost.likes) ? currentPost.likes.length : 0;
     const nl = Array.isArray(nextPost.likes) ? nextPost.likes.length : 0;
     if (pl !== nl) return false;
-    if (prev.user?._id !== next.user?._id) return false;
+  if (prev.user?._id !== next.user?._id) return false;
+  if (prev.user?.profilePicture !== next.user?.profilePicture) return false;
     return true;
   }
 export default React.memo(PostCard, areEqual);

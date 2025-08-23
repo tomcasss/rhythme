@@ -1,14 +1,23 @@
+/*
+const USE_TUNNEL = true; // CAMBIAR A FALSE si no usa túnel
+const TUNNEL_URL = 'https://gorgeous-eval-cube-rentals.trycloudflare.com';
+ 
+const BASE_URL = (typeof window !== 'undefined')
+  ? (USE_TUNNEL ? `${TUNNEL_URL}/api/v1` : `${window.location.protocol}//${window.location.hostname}:5000/api/v1`)
+  : 'http://localhost:5000/api/v1';*/
+  //USAR ESTE SI SE CONECTAN POR TUNNEL
+
 // API Configuration
 const BASE_URL = (typeof window !== 'undefined')
   ? `${window.location.protocol}//${window.location.hostname}:5000/api/v1`
   : 'http://localhost:5000/api/v1';
+//CAMBIAR BASE_URL SI NO ES EL SERVER (CONECTA POR TUNNEL)
 
 // Configuración específica para Spotify (requiere 127.0.0.1)
 export const SPOTIFY_CONFIG = {
-  REDIRECT_URI: 'http://127.0.0.1:5173/callback/spotify',
-  FRONTEND_HOST: '127.0.0.1:5173'
+  REDIRECT_URI: import.meta.env.VITE_SPOTIFY_REDIRECT_URI,
+  FRONTEND_HOST: import.meta.env.VITE_FRONTEND_HOST
 };
-
 export const API_ENDPOINTS = {
   // Auth endpoints
   LOGIN: `${BASE_URL}/auth/login`,

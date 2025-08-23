@@ -6,11 +6,9 @@ import querystring from 'querystring';
  */
 
 // Configuración de Spotify (se debe configurar en variables de entorno)
-const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
-// Spotify requiere 127.0.0.1 específicamente para redirect URIs
-const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'http://127.0.0.1:5173/callback/spotify';
-
+const SPOTIFY_CLIENT_ID = (process.env.SPOTIFY_CLIENT_ID || '').trim();
+const SPOTIFY_CLIENT_SECRET = (process.env.SPOTIFY_CLIENT_SECRET || '').trim();
+const SPOTIFY_REDIRECT_URI = (process.env.SPOTIFY_REDIRECT_URI || 'http://127.0.0.1:5173/callback/spotify').trim();
 // Debug: Mostrar variables de entorno cargadas
 console.log('🔍 Environment variables check:');
 console.log('SPOTIFY_CLIENT_ID exists:', !!process.env.SPOTIFY_CLIENT_ID);

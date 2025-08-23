@@ -36,6 +36,11 @@ export default function Login() {
     navigate("/login", { replace: true });
   };
 
+
+
+    //USAR ESTE AXIOS SI SE CONECTAN POR TUNEL
+  //await axios.post(${import.meta.env.VITE_API_URL}/api/v1/auth/login, {
+  //token: credential,
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -63,6 +68,11 @@ export default function Login() {
     }
   };
 
+
+
+    //USAR ESTE AXIOS SI SE CONECTAN POR TUNEL
+  //await axios.post(${import.meta.env.VITE_API_URL}/api/v1/auth/register, {
+  //token: credential,
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -88,6 +98,11 @@ export default function Login() {
     }
   };
 
+
+
+  //USAR ESTE AXIOS SI SE CONECTAN POR TUNEL
+  //await axios.post(${import.meta.env.VITE_API_URL}/api/v1/auth/google, {
+  //token: credential,
   const handleGoogleLogin = async (credentialResponse) => {
     setLoading(true);
     setError("");
